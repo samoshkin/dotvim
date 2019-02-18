@@ -24,13 +24,6 @@ if &term =~ 'xterm' && !has("gui_running")
   execute "set <A-j>=\ej"
 endif
 
-" Format options (remove most related to hard wrapping)j
-" Use autocommand to override defaults from $VIMRUNTIME/ftplugin
-augroup format_options
-  au!
-
-  au Filetype * setlocal formatoptions=rqn1j
-augroup END
 
 " Disable spellcheck
 set nospell
@@ -183,6 +176,14 @@ set breakindent
 " Toggle between 'nowrap' and 'soft wrap'
 noremap <silent> <F6> :call <SID>ToggleWrap()<CR>
 
+" Format options
+" Remove most related to hard wrapping
+" Use autocommand to override defaults from $VIMRUNTIME/ftplugin
+augroup format_options
+  au!
+
+  au Filetype * setlocal formatoptions=rqn1j
+augroup END
 
 " Make '*' and '#' search for a selection in visual mode
 " From https://github.com/nelstrom/vim-visual-star-search/blob/master/plugin/visual-star-search.vim
@@ -977,3 +978,13 @@ command! -nargs=? SessionUnload call <SID>SessionUnload(<f-args>)" }}}
 nnoremap <f10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<'
       \ . synIDattr(synID(line("."),col("."),0),"name") . "> lo<"
       \ . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<cr>
+
+" File types{{{
+augroup ft_gitcommit
+  au!
+
+  " Highlight summary line when exceeds 72 columns, not 50 as a default
+  au FileType gitcommit syn clear gitcommitSummary
+  au FileType gitcommit syn match gitcommitSummary "^.\{0,72\}" contained containedin=gitcommitFirstLine nextgroup=gitcommitOverflow contains=@Spell
+augroup END
+" }}}
