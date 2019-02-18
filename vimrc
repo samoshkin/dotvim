@@ -2,7 +2,6 @@
 set nocompatible
 filetype plugin indent on
 
-
 set shell=/bin/bash
 
 " Set 'UTF-8' as default text encoding
@@ -15,6 +14,15 @@ set number
 set tabstop=2 softtabstop=2 shiftwidth=2 expandtab
 " set smarttab
 
+" key bindings - How to map Alt key? - Vi and Vim Stack Exchange - https://vi.stackexchange.com/questions/2350/how-to-map-alt-key
+if &term =~ 'xterm' && !has("gui_running")
+  " Tell vim what escape sequence to expect for various keychords
+  " This is needed for terminal Vim to regognize Meta and Shift modifiers
+  execute "set <A-w>=\ew"
+  execute "set <S-F2>=\e[1;2Q"
+  execute "set <A-k>=\ek"
+  execute "set <A-j>=\ej"
+endif
 
 " Format options (remove most related to hard wrapping)j
 " Use autocommand to override defaults from $VIMRUNTIME/ftplugin
@@ -65,13 +73,6 @@ set clipboard=unnamed,unnamedplus
 
 " Move lines up/down
 " http://vim.wikia.com/wiki/Moving_lines_up_or_down
-
-" Mapping Alt keys is not that easy
-" key bindings - How to map Alt key? - Vi and Vim Stack Exchange - https://vi.stackexchange.com/questions/2350/how-to-map-alt-key
-" Tell vim what keycodes to expect for <Meta> mappings
-execute "set <A-j>=\ej"
-execute "set <A-k>=\ek"
-
 function! s:MoveBlockDown() range
   execute a:firstline "," a:lastline "move '>+1"
   normal! gv=gv
@@ -82,12 +83,12 @@ function! s:MoveBlockUp() range
   normal! gv=gv
 endfunction
 
-nnoremap <A-j> :m .+1<CR>==
-nnoremap <A-k> :m .-2<CR>==
-inoremap <A-j> <Esc>:m .+1<CR>==gi
-inoremap <A-k> <Esc>:m .-2<CR>==gi
-vnoremap <A-j> :call <SID>MoveBlockDown()<CR>
-vnoremap <A-k> :call <SID>MoveBlockUp()<CR>
+nnoremap <silent> <A-j> :m .+1<CR>==
+nnoremap <silent> <A-k> :m .-2<CR>==
+inoremap <silent> <A-j> <Esc>:m .+1<CR>==gi
+inoremap <silent> <A-k> <Esc>:m .-2<CR>==gi
+vnoremap <silent> <A-j> :call <SID>MoveBlockDown()<CR>
+vnoremap <silent> <A-k> :call <SID>MoveBlockUp()<CR>
 
 " Zsh like <Tab> completion in Command mode
 set wildmenu
@@ -343,8 +344,6 @@ let NERDTreeAutoDeleteBuffer=1
 noremap <F2> :NERDTreeToggle<CR>
 
 " Locate current file in a tree
-execute "set <S-F2>=\e[1;2Q"
-
 noremap  <S-F2> :NERDTreeFind<CR>
 inoremap <S-F2> <esc>:NERDTreeFind<CR>
 
@@ -600,8 +599,8 @@ set updatetime=1000
 let g:gitgutter_terminal_reports_focus=0
 let g:gitgutter_enabled = 1
 
-nnoremap <silent> <F4> :GitGutterToggle
-nnoremap <silent> <leader><F4> :GitGutterFold
+nnoremap <silent> <F4> :GitGutterToggle<CR>
+nnoremap <silent> <leader><F4> :GitGutterFold<CR>
 nmap <leader>hp <Plug>GitGutterPreviewHunk
 nmap <leader>hs <Plug>GitGutterStageHunk
 nmap <leader>hu <Plug>GitGutterUndoHunk
@@ -656,6 +655,7 @@ nnoremap <silent> <leader>n :set hlsearch!<cr>
 hi! link Search IncSearch
 
 " Trailing whitespaces
+let g:extra_whitespace_ignored_filetypes=['fugitive']
 " In addition to https://github.com/bronson/vim-trailing-whitespace
 " Highlight space characters that appear before or in-between tabs
 " Use 'autocmd' because ExtraWhitespace highlight group doesn't exist yet
@@ -674,7 +674,6 @@ let g:AutoPairsShortcutBackInsert=''
 let g:AutoPairsMoveCharacter=''
 
 " I'm using only core closing behavior + fast wrap(maybe?)
-execute "set <A-w>=\ew"
 let g:AutoPairsShortcutFastWrap='<A-w>'
 
 " Do not autoclose double quote in vimrc.
@@ -743,7 +742,7 @@ nmap P <plug>(YoinkPaste_P)
 set foldenable
 set foldmethod=marker
 set foldlevelstart=0
-set foldcolumn=2
+set foldcolumn=1
 set foldopen-=block
 
 " Remap [z and ]z to navigate to prev/next closed fold
