@@ -390,6 +390,7 @@ set noautowrite
 " In addition to autosaving, enable swap file and disable backup
 set swapfile
 set nobackup
+set undofile
 
 " Directories for backup, undo and swap files
 set undodir=~/.vim/tmp/undo//
@@ -409,9 +410,6 @@ endif
 
 " Automatically read files which are changed outside vim
 set autoread
-
-" Disable persistent undos
-set noundofile
 
 nnoremap <F3> :call ToggleAutoSave()<CR>
 function ToggleAutoSave()
