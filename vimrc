@@ -971,3 +971,8 @@ augroup END
 command! -nargs=? SessionCreate call <SID>SessionCreate(<f-args>)
 command! -nargs=? SessionLoad call <SID>SessionLoad(<f-args>)
 command! -nargs=? SessionUnload call <SID>SessionUnload(<f-args>)" }}}
+
+" Output the current syntax group
+nnoremap <f10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<'
+      \ . synIDattr(synID(line("."),col("."),0),"name") . "> lo<"
+      \ . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<cr>
