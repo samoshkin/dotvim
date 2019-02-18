@@ -587,6 +587,7 @@ nnoremap <silent> <leader>gls :silent! Glog<CR><C-l>
 nnoremap <silent> <leader>go :Git checkout<Space>
 nnoremap <silent> <leader>gb :Gblame<CR>
 cnoreabbrev gd Gdiff
+cnoreabbrev gc Gcommit -v
 cnoreabbrev ge Gedit
 cnoreabbrev gl Glog
 cnoreabbrev gr Ggrep
