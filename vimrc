@@ -22,6 +22,61 @@ set ttimeout
 set timeoutlen=2000
 set ttimeoutlen=30
 
+" Zsh like <Tab> completion in Command mode
+set wildmenu
+set wildmode=full
+
+" Set <leader> key to <Space>
+nnoremap <Space> <Nop>
+let mapleader=" "
+
+" <Backspace> in Insert mode
+set backspace=indent,eol,start
+
+" Keep some characters visible during horizontal scroll
+" Recenter cursor during horizontal scroll
+set sidescroll=0
+set sidescrolloff=3
+
+" Minimal number of screen lines to keep above and below the cursor, expect for bol and eol
+set scrolloff=2
+
+" Status line
+" Always show status line, even when 1 window is opened
+set laststatus=2
+
+" Do not warn abount unsaved changes when navigating to another buffer
+set hidden
+
+" Highlight the line with a cursor
+set cursorline
+
+" Show cursorline in current window and not in insert mode
+augroup cursor_line
+  au!
+  au WinLeave,InsertEnter * set nocursorline
+  au WinEnter,InsertLeave * set cursorline
+augroup END
+
+" Disable reading vim variables & options from special comments within file header or footer
+set modelines=0
+
+" Display uncompleted commands in the status line
+set showcmd
+
+" Show ruler
+set ruler
+
+" Use /g flag for substitute command by default
+set gdefault
+
+" Tweak autocompletion behavior
+set complete-=i
+
+" Add @@@ marks on the last column of last line if there is more text below
+set display=lastline
+
+
 " key bindings - How to map Alt key? - Vi and Vim Stack Exchange - https://vi.stackexchange.com/questions/2350/how-to-map-alt-key
 if &term =~ 'xterm' && !has("gui_running")
   " Tell vim what escape sequence to expect for various keychords
@@ -59,36 +114,6 @@ nnoremap <CR> o<ESC>
 
 
 
-" Zsh like <Tab> completion in Command mode
-set wildmenu
-set wildmode=full
-
-" Set <leader> key to <Space>
-nnoremap <Space> <Nop>
-let mapleader=" "
-let maplocalleader="\\"
-
-" <Backspace> in Insert mode
-set backspace=indent,eol,start
-
-
-
-" Center search results
-nnoremap n nzz
-nnoremap N Nzz
-nnoremap * *zz
-nnoremap # #zz
-
-" When navigating to the EOF, center the screen
-" Don't bend your neck
-nnoremap G Gzz
-
-" Show invisible characters
-set list
-set listchars=tab:→\ ,space:⋅,extends:>,precedes:<
-set showbreak=↪
-set linebreak
-
 
 " Auto indentation
 set autoindent
@@ -98,20 +123,23 @@ set pastetoggle=<F2>
 " Experimental
 set shiftround
 
-" Soft wrap
 
-" Keep some characters visible during horizontal scroll
-" Recenter cursor during horizontal scroll
-set sidescroll=0
-set sidescrolloff=3
-
-" Don't do hard wraps ever
-set textwidth=0
+" Wrapping{{{
 
 " Soft wraps by default
 set wrap
 set breakindent
 
+" Don't do hard wraps ever
+set textwidth=0
+
+" Show invisible characters
+set list
+set listchars=tab:→\ ,space:⋅,extends:>,precedes:<
+set showbreak=↪
+set linebreak
+
+" Let movements work with display lines instead of real lines
 noremap  <silent> <expr> k v:count ? 'k' : 'gk'
 noremap  <silent> <expr> j v:count ? 'j' : 'gj'
 noremap  <silent> 0 g0
@@ -129,6 +157,49 @@ augroup format_options
   au Filetype * setlocal formatoptions=rqn1j
 augroup END
 
+" }}}
+
+" Search {{{
+
+" Case sensitivity
+set ignorecase
+set smartcase
+
+" Do not highlight search results by default
+" Enable incremental searching
+" Stop when reaching last match, don't start over
+set nohlsearch
+set incsearch
+set nowrapscan
+
+" Turn on hlsearch to highlight all matches during incremental search
+" Use <C-j> and <C-k> to navigate through matches instead of <C-d>,<C-t>
+" Pitfall: Works only in vim8. CmdlineEnter and CmdlineLeave appeared in vim8
+augroup vimrc-incsearch-highlight
+  autocmd!
+  autocmd CmdlineEnter /,\? :set hlsearch
+  autocmd CmdlineEnter /,\? :cmap <C-j> <C-g>
+  autocmd CmdlineEnter /,\? :cmap <C-k> <C-t>
+
+  autocmd CmdlineLeave /,\? :set nohlsearch
+  autocmd CmdlineLeave /,\? :cunmap <C-j>
+  autocmd CmdlineLeave /,\? :cunmap <C-k>
+augroup END
+
+" Toggle search highlighting
+" Don't use :nohl, because by default searches are not highlighted
+nnoremap <silent> <leader>n :set hlsearch!<cr>
+
+" Highlight both search and incremental search identically
+" In dracula theme, one is green, whereas another is orange.
+hi! link Search IncSearch
+
+" Center search results
+nnoremap n nzz
+nnoremap N Nzz
+nnoremap * *zz
+nnoremap # #zz
+
 " Make '*' and '#' search for a selection in visual mode
 " From https://github.com/nelstrom/vim-visual-star-search/blob/master/plugin/visual-star-search.vim
 " Got Ravings?: Vim pr0n: Visual search mappings - http://got-ravings.blogspot.com/2008/07/vim-pr0n-visual-search-mappings.html
@@ -139,17 +210,9 @@ function! s:VSetSearch(cmdtype)
   let @s = temp
 endfunction
 
-
 xnoremap * :<C-u>call <SID>VSetSearch('/')<CR>/<C-R>=@/<CR><CR>
 xnoremap # :<C-u>call <SID>VSetSearch('?')<CR>?<C-R>=@/<CR><CR>
-" Status line
-" Always show status line, even when 1 window is opened
-set laststatus=2
-
-" Use 'H' and 'L' keys to move to start/end of the line
-noremap H g^
-noremap L g$
-
+" }}}
 
 " In Insert mode, treat pasting form a buffer as a separate undoable operation
 " Which can be undone with '<C-o>u'
@@ -183,6 +246,13 @@ nnoremap <silent> ]<C-l> :lnfile<CR>
 nnoremap <silent> [<C-l> :lpfile<CR>
 
 
+" When navigating to the EOF, center the screen
+" Don't bend your neck
+nnoremap G Gzz
+
+" Use 'H' and 'L' keys to move to start/end of the line
+noremap H g^
+noremap L g$
 
 " TODO: add shortcuts to navigate tags
 " TODO: add shortcuts to navigate conflict markers/diff hunks
@@ -190,43 +260,8 @@ nnoremap <silent> [<C-l> :lpfile<CR>
 " =====================
 "     Misc
 " ====================
-" Do not warn abount unsaved changes when navigating to another buffer
-set hidden
-
 " Apply '.' repeat command for selected each line in visual mode
 vnoremap . :normal .<CR>
-
-" Highlight the line with a cursor
-set cursorline
-
-" Show cursorline in current window and not in insert mode
-augroup cursor_line
-  au!
-  au WinLeave,InsertEnter * set nocursorline
-  au WinEnter,InsertLeave * set cursorline
-augroup END
-
-" Disable reading vim variables & options from special comments within file header or footer
-set modelines=0
-
-" Minimal number of screen lines to keep above and below the cursor, expect for bol and eol
-set scrolloff=2
-
-
-" Display uncompleted commands in the status line
-set showcmd
-
-" Show ruler
-set ruler
-" Use /g flag for substitute command by default
-set gdefault
-
-
-" Tweak autocompletion behavior
-set complete-=i
-
-" Add @@@ marks on the last column of last line if there is more text below
-set display=lastline
 
 
 " Plugins{{{
@@ -275,7 +310,7 @@ runtime macros/matchit.vim
 " }}}
 
 
-" NERDTree plugin
+" PLUGIN: NERDTree {{{
 
 " Automatically close tree after file is opened from it
 let NERDTreeQuitOnOpen=1
@@ -332,15 +367,39 @@ let NERDTreeIgnore=['\~$', '^\.git$[[dir]]', '^node_modules$[[dir]]']
 
 " Tweak status line, so it shortens path if it's under HOME directory
 let g:NERDTreeStatusline="%{exists('b:NERDTree')? fnamemodify(b:NERDTree.root.path.str(), ':p:~') :''}"
+" }}}
 
-" Auto-save and swap files
+" Save and backup{{{
+
+" Features defaults:
+" - autosave: off
+" - backup: off
+" - undofile: on
+" - swapfile: on
+
+" Regarding autosaving:
+" - "autowrite" saves file on buffer change and quit
+" - '907th/vim-auto-save' saves filter when cursor is inactive for few seconds
+
+" Let buffer be switched to another one without requiring to save it first
+set hidden
+
+" Disable autosave by default
+set noautowrite
+let g:auto_save=0
 let g:auto_save_events=["CursorHold"]
 let g:auto_save_silent = 1
 
-" By default auto save is off
-let g:auto_save=0
-set hidden
-set noautowrite
+" You can toggle to turn auto save off
+nnoremap <F3> :call ToggleAutoSave()<CR>
+function ToggleAutoSave()
+  AutoSaveToggle
+  set autowrite!
+  set hidden!
+endfunction
+
+" Automatically read files which are changed outside vim
+set autoread
 
 " In addition to autosaving, enable swap file and disable backup
 set swapfile
@@ -363,16 +422,7 @@ if !isdirectory(expand(&directory))
   call mkdir(expand(&directory), "p")
 endif
 
-" Automatically read files which are changed outside vim
-set autoread
-
-nnoremap <F3> :call ToggleAutoSave()<CR>
-function ToggleAutoSave()
-  AutoSaveToggle
-  set autowrite!
-  set hidden!
-endfunction
-
+" }}}
 
 
 " Color scheme
@@ -511,37 +561,8 @@ cnoreabbrev cm Commetary
 nmap <silent> <leader>c <Plug>CommentaryLine :normal j<CR>
 xmap <leader>c <Plug>Commentary
 
-" Search settings
 
-" Case sensitivity
-set ignorecase
-set smartcase
 
-set nohlsearch
-set incsearch
-set wrapscan
-
-" Turn on hlsearch  search to highlight all matches during incremental search
-" Use <C-j> and <C-k> to navigate through matches instead of <C-d>,<C-t>
-" Pitfall: Works only in vim8. CmdlineEnter and CmdlineLeave appeared in vim8
-augroup vimrc-incsearch-highlight
-  autocmd!
-  autocmd CmdlineEnter /,\? :set hlsearch
-  autocmd CmdlineEnter /,\? :cmap <C-j> <C-g>
-  autocmd CmdlineEnter /,\? :cmap <C-k> <C-t>
-
-  autocmd CmdlineLeave /,\? :set nohlsearch
-  autocmd CmdlineLeave /,\? :cunmap <C-j>
-  autocmd CmdlineLeave /,\? :cunmap <C-k>
-augroup END
-
-" Toggle search highlighting
-" Don't use :nohl, because by default searches are not highlighted
-nnoremap <silent> <leader>n :set hlsearch!<cr>
-
-" Highlight both search and incremental search identically
-" In dracula theme, one is green, whereas another is orange.
-hi! link Search IncSearch
 
 " Trailing whitespaces
 let g:extra_whitespace_ignored_filetypes=['fugitive']
