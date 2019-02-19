@@ -1,18 +1,26 @@
-" Ensure plugins are supported
+" General options
+
+" Should be first, use vim settings rather than vi settings
 set nocompatible
 filetype plugin indent on
 
+set nospell
+
 set shell=/bin/bash
-
-" Set 'UTF-8' as default text encoding
 set encoding=utf-8
-
-" Line numbering
 set number
 
 " Whitespaces and tabs
 set tabstop=2 softtabstop=2 shiftwidth=2 expandtab
-" set smarttab
+set smarttab
+
+" Timeout settings
+" Wait forever until I recall mapping
+" Don't wait to much for keycodes send by terminal, so there's no delay on <ESC>
+set notimeout
+set ttimeout
+set timeoutlen=2000
+set ttimeoutlen=30
 
 " key bindings - How to map Alt key? - Vi and Vim Stack Exchange - https://vi.stackexchange.com/questions/2350/how-to-map-alt-key
 if &term =~ 'xterm' && !has("gui_running")
@@ -25,8 +33,6 @@ if &term =~ 'xterm' && !has("gui_running")
 endif
 
 
-" Disable spellcheck
-set nospell
 
 " Automatically source vimrc on change
 augroup auto_source_vimrc
@@ -44,15 +50,6 @@ nnoremap <silent> <C-C> :noh<CR><ESC>
 " Expand '%%' for directory of current file in command line mode
 cnoremap %% <C-R>=fnameescape(expand('%:h')).'/'<cr>
 
-
-" Timeout settings
-" Wait forever until I recall mapping
-" Don't wait to much for keycodes send by terminal, so there's no delay on <ESC>
-set notimeout
-set ttimeout
-set timeoutlen=2000
-set ttimeoutlen=30
-
 " Drop into insert mode
 nnoremap <BS> i<BS>
 
@@ -60,8 +57,6 @@ nnoremap <BS> i<BS>
 nnoremap <CR> o<ESC>
 
 
-" Always use system clipboard as unnamed register
-set clipboard=unnamed,unnamedplus
 
 
 " Zsh like <Tab> completion in Command mode
@@ -577,32 +572,35 @@ augroup auto_pairs
   au FileType vim let b:AutoPairs=copy(g:AutoPairs) | unlet b:AutoPairs['"']
 augroup END
 
-" Clipboard
+" Clipboard{{{
 
-" https://github.com/svermeulen/vim-cutlass
-" Use '<leader>Y' as cut operation instead
+" Using these plugins:
+" - https://github.com/svermeulen/vim-cutlass
+" - https://github.com/svermeulen/vim-subversive
+" - https://github.com/svermeulen/vim-yoink
+
+" always use system clipboard as unnamed register
+set clipboard=unnamed,unnamedplus
+
+" Use '<leader>x' as cut operation instead
 " All other actions, like d, c, s will delete without storing in clipboard
 nnoremap <leader>x d
 nnoremap <leader>xx dd
 nnoremap <leader>X D
-xnoremap <leader>x d
+xnoremap x d
 
-" " Delete whole line without storing in clipboard
-nnoremap <silent> <S-k> :d _<CR>
-
-" " Normalize Y behavior to yank till the end of line
+" Normalize Y behavior to yank till the end of line
 nnoremap Y y$
 
-" " https://github.com/svermeulen/vim-subversive
-" " 'Use 's' as 'substitute' action, not as a shortcut to 'change' action
+" 'Use 's' as 'substitute' action, not as a shortcut to 'change' action
 nmap s <plug>(SubversiveSubstitute)
 nmap ss <plug>(SubversiveSubstituteLine)
+" Don't remap S as exception, use it to split lines (counterpart to join lines)
 " nmap S <plug>(SubversiveSubstituteToEndOfLine)
 xmap s <plug>(SubversiveSubstitute)
 
 " In visual mode, regular 'put' operation actually does a substitution
-" By remapping, we can cycle through yank ring provided by 'vim-yoink'
-" with <C-p> and <C-n>
+" After remapping we can cycle through yank ring provided by 'vim-yoink' with <C-p> and <C-n>
 xmap p <plug>(SubversiveSubstitute)
 xmap P <plug>(SubversiveSubstitute)
 
@@ -611,9 +609,11 @@ nmap <leader>s <plug>(SubversiveSubstituteRange)
 nmap <leader>ss <plug>(SubversiveSubstituteWordRange
 xmap <leader>s <plug>(SubversiveSubstituteRange)
 
+" Store text that being substituted in register 'r'
 let g:subversiveCurrentTextRegister='r'
 
-" https://github.com/svermeulen/vim-yoink{{{
+" Normally cursor remains in place during paste
+" Move it to the end, so it's easy to start editing
 let g:yoinkMoveCursorToEndOfPaste=1
 
 " Replace the need for 'vim-pasta' plugin
@@ -639,11 +639,12 @@ set foldlevelstart=0
 set foldcolumn=1
 set foldopen-=block
 
-" Remap [z and ]z to navigate to prev/next closed fold
+" Use [z and ]z to navigate to start/end of the fold
 " Use zj and zk to navigate to neighbooring folds
+" Use zJ and zK to navigate to prev/next closed fold
 " https://stackoverflow.com/questions/9403098/is-it-possible-to-jump-to-closed-folds-in-vim
-nnoremap <silent> ]z :call <SID>NextClosedFold('j')<CR>
-nnoremap <silent> [z :call <SID>NextClosedFold('k')<CR>
+nnoremap <silent> zJ :call <SID>NextClosedFold('j')<CR>
+nnoremap <silent> zK :call <SID>NextClosedFold('k')<CR>
 
 function! s:NextClosedFold(dir)
   let cmd = 'norm!z' . a:dir
@@ -733,7 +734,7 @@ nnoremap <silent> <leader>q :confirm q<CR>
 " Save and quit for multiple buffers
 nnoremap <silent> <leader>W :wall<CR>
 nnoremap <silent> <leader>Q :confirm qall<CR>
-nnoremap <silent> <leader>X :confirm xall<CR>
+nnoremap <silent> ZX :confirm xall<CR>
 
 " Cycle between main and alternate file
 nnoremap <leader><Tab> <C-^>zz
@@ -977,5 +978,8 @@ nnoremap <silent> <leader>D :<C-u>execute "normal! yy" . v:count1 . "p"<CR>
 
 " Join lines and keep the cursor in place
 nnoremap J mzJ`z
+
+" Delete whole line without storing in clipboard
+nnoremap <silent> <S-k> :d _<CR>
 
 " }}}
