@@ -103,7 +103,6 @@ set shortmess+=I
 " <C-c>, I'm so used to it after shell environment
 inoremap jk <ESC>
 noremap <C-C> <ESC>
-nnoremap <silent> <C-C> :noh<CR><ESC>
 
 " key bindings - How to map Alt key? - Vi and Vim Stack Exchange - https://vi.stackexchange.com/questions/2350/how-to-map-alt-key
 if &term =~ 'xterm' && !has("gui_running")
@@ -141,6 +140,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'svermeulen/vim-subversive'
   Plug 'svermeulen/vim-yoink'
   Plug 'farmergreg/vim-lastplace'
+  Plug 'rhysd/clever-f.vim'
 
   " Text objects
   Plug 'kana/vim-textobj-user'
@@ -468,7 +468,7 @@ function! s:NextClosedFold(dir)
 endfunction
 
 " Remap because 'za' is highly inconvenient to type
-nnoremap zp za
+nnoremap <leader><Space> za
 
 " Close all folds except the one under the cursor, and center the screen
 nnoremap <leader>z zMzvzz
@@ -523,6 +523,9 @@ nnoremap <silent> <leader>= <C-w>=
 nnoremap <silent> <leader>0 :only<CR>
 
 " Open splits right and below
+" Try these mappings, if | and _ are not OK
+" nnoremap <silent> <leader>s :split<CR>
+" nnoremap <silent> <leader>v :vsplit<CR>
 set splitbelow
 set splitright
 nnoremap <silent> _ :split<CR>
@@ -996,6 +999,16 @@ augroup auto_pairs
 augroup END
 " }}}
 
+" PLUGIN: rhysd/clever-f.vim{{{
+
+" Add highlighting for f/t searches
+" Uses f/t to advance to next match instead of using ';' and ','
+let g:clever_f_ignore_case = 1
+let g:clever_f_smart_case = 1
+
+" Use same highlighting group as a normal search
+let g:clever_f_mark_char_color = 'IncSearch'
+" }}}
 
 " File types{{{
 augroup ft_gitcommit
@@ -1014,4 +1027,5 @@ augroup ft_vim
 augroup END
 
 " }}}
+
 
