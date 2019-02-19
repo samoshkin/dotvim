@@ -375,13 +375,16 @@ inoremap <C-r> <C-g>u<C-r>
 
 " Clipboard{{{
 
-" Using these plugins:
+" Using these plugins:board
 " - https://github.com/svermeulen/vim-cutlass
 " - https://github.com/svermeulen/vim-subversive
 " - https://github.com/svermeulen/vim-yoink
 
 " always use system clipboard as unnamed register
 set clipboard=unnamed,unnamedplus
+
+" Reselect just pasted text
+nnoremap gV v`[
 
 " Use '<leader>x' as cut operation instead
 " All other actions, like d, c, s will delete without storing in clipboard
@@ -1008,5 +1011,4 @@ augroup ft_vim
 augroup END
 
 " }}}
-
 
