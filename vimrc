@@ -317,9 +317,22 @@ call plug#begin('~/.vim/plugged')
   Plug 'svermeulen/vim-subversive'
   Plug 'svermeulen/vim-yoink'
   Plug 'farmergreg/vim-lastplace'
+
+  " Text objects
+  Plug 'kana/vim-textobj-user'
+  Plug 'kana/vim-textobj-entire'
+  Plug 'kana/vim-textobj-indent'
+  Plug 'kana/vim-textobj-line'
+  Plug 'kana/vim-textobj-function'
+  Plug 'kana/vim-textobj-fold'
+  Plug 'beloglazov/vim-textobj-quotes'
+  Plug 'kana/vim-textobj-syntax'
+  Plug 'jceb/vim-textobj-uri'
+  Plug 'Julian/vim-textobj-variable-segment'
+  Plug 'Julian/vim-textobj-brace'
+  Plug 'adriaanzon/vim-textobj-matchit'
 call plug#end()
 syntax off
-
 " NERDTree plugin
 
 " Automatically close tree after file is opened from it
@@ -990,3 +1003,9 @@ let g:airline#extensions#tabline#fnamemod = ':p:~:.'
 let g:airline#extensions#tabline#fnamecollapse = 1
 
 " }}}
+
+" Text objects
+" let g:textobj_indent_no_default_key_mappings=0
+" xmap ie <Plug>(textobj-entire-i)
+" omap ie <Plug>(textobj-entire-i)
+
