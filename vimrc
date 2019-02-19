@@ -1,4 +1,4 @@
-" General options
+" General options{{{
 
 " Should be first, use vim settings rather than vi settings
 set nocompatible
@@ -76,6 +76,28 @@ set complete-=i
 " Add @@@ marks on the last column of last line if there is more text below
 set display=lastline
 
+" Timeout of user inactivity. Used to save swap file, and by vim-gitgutter plugin
+set updatetime=1000
+
+" Experimental. Allow cursor to move one character after the end of line
+" In visual block mode, allow cursor to be positioned
+" where there's no actual character
+set virtualedit+=onemore,block
+
+" Auto indentation
+set autoindent
+set smartindent
+set pastetoggle=<F2>
+
+" Experimental
+set shiftround
+
+" Additional <ESC> mappings:
+" jk, in INSERT mode
+" <C-c>, I'm so used to it after shell environment
+inoremap jk <ESC>
+noremap <C-C> <ESC>
+nnoremap <silent> <C-C> :noh<CR><ESC>
 
 " key bindings - How to map Alt key? - Vi and Vim Stack Exchange - https://vi.stackexchange.com/questions/2350/how-to-map-alt-key
 if &term =~ 'xterm' && !has("gui_running")
@@ -86,43 +108,24 @@ if &term =~ 'xterm' && !has("gui_running")
   execute "set <A-k>=\ek"
   execute "set <A-j>=\ej"
 endif
+" }}}
 
-
-
-" Automatically source vimrc on change
-augroup auto_source_vimrc
-  au!
-
-  autocmd BufWritePost vimrc source $MYVIMRC
-augroup END
-
-" Map <ESC> key in insert mode to use 'jk' shortcut
-" Remap <Ctrl-C> to <ESC> because I'm so used to it after shell environment
-inoremap jk <ESC>
-noremap <C-C> <ESC>
-nnoremap <silent> <C-C> :noh<CR><ESC>
+" Misc{{{
+" Check if files are changed outside and prompt to reload
+noremap <F5> :checktime<cr>
+inoremap <F5> <esc>:checktime<cr>
 
 " Expand '%%' for directory of current file in command line mode
 cnoremap %% <C-R>=fnameescape(expand('%:h')).'/'<cr>
 
-" Drop into insert mode
-nnoremap <BS> i<BS>
+" Apply '.' repeat command for selected each line in visual mode
+vnoremap . :normal .<CR>
 
-" Can't live without it
-nnoremap <CR> o<ESC>
-
-
-
-
-
-" Auto indentation
-set autoindent
-set smartindent
-set pastetoggle=<F2>
-
-" Experimental
-set shiftround
-
+" Output the current syntax group
+nnoremap <f10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<'
+      \ . synIDattr(synID(line("."),col("."),0),"name") . "> lo<"
+      \ . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<cr>
+" }}}
 
 " Wrapping{{{
 
@@ -212,29 +215,50 @@ endfunction
 
 xnoremap * :<C-u>call <SID>VSetSearch('/')<CR>/<C-R>=@/<CR><CR>
 xnoremap # :<C-u>call <SID>VSetSearch('?')<CR>?<C-R>=@/<CR><CR>
+
+" Shortcuts for substitute as ex command
+nnoremap <C-s> :%s/
+vnoremap <C-s> :s/
+
 " }}}
+
+" Insert mode{{{
+
+" Drop into insert mode on Backspace
+nnoremap <BS> i<BS>
 
 " In Insert mode, treat pasting form a buffer as a separate undoable operation
 " Which can be undone with '<C-o>u'
 inoremap <C-r> <C-g>u<C-r>
+" }}}
 
+" Navigation{{{
 
-" Automatically open quickfix window
-"augroup autoquickfix
-"  autocmd!
-"  autocmd QuickFixCmdPost [^l]* cwindow
-"  autocmd QuickFixCmdPost    l* lwindow
-"augroup END
+" TODO: add shortcuts to navigate tags
+" TODO: add shortcuts to navigate conflict markers/diff hunks
 
-" TODO: toggle quickfix and location list
+" When navigating to the EOF, center the screen
+nnoremap G Gzz
 
+" Use 'H' and 'L' keys to move to start/end of the line
+noremap H g^
+noremap L g$
+
+" Recenter when jump back
+nnoremap <C-o> <C-o>zz
+
+" z+, moves next line below the window
+" z-, moves next line above the window
+nnoremap z- z^
+
+" Quickfix and location list navigation
 " Borrowed from tpope/vim-unimpaired
+" Pitfall: In order to use <C-q>, <C-s> shortcuts to navigate quick list
+" make sure to sisable XON/XOFF flow control with 'stty -ixon'
 nnoremap <silent> ]q :cnext<CR>
 nnoremap <silent> [q :cprev<CR>
 nnoremap <silent> ]Q :clast<CR>
 nnoremap <silent> [Q :cfirst<CR>
-" In order to use <C-q>, <C-s> shortcuts to navigate quick list
-" make sure to sisable XON/XOFF flow control with 'stty -ixon'
 nnoremap <silent> ]<C-q> :cnfile<CR>
 nnoremap <silent> [<C-q> :cpfile<CR>
 
@@ -245,24 +269,14 @@ nnoremap <silent> [L :lfirst<CR>
 nnoremap <silent> ]<C-l> :lnfile<CR>
 nnoremap <silent> [<C-l> :lpfile<CR>
 
-
-" When navigating to the EOF, center the screen
-" Don't bend your neck
-nnoremap G Gzz
-
-" Use 'H' and 'L' keys to move to start/end of the line
-noremap H g^
-noremap L g$
-
-" TODO: add shortcuts to navigate tags
-" TODO: add shortcuts to navigate conflict markers/diff hunks
-
-" =====================
-"     Misc
-" ====================
-" Apply '.' repeat command for selected each line in visual mode
-vnoremap . :normal .<CR>
-
+" TODO: toggle quickfix and location list
+" Automatically open quickfix window
+"augroup autoquickfix
+"  autocmd!
+"  autocmd QuickFixCmdPost [^l]* cwindow
+"  autocmd QuickFixCmdPost    l* lwindow
+"augroup END
+" }}}
 
 " Plugins{{{
 " Minimalist Vim Plugin Manager - https://github.com/junegunn/vim-plug
@@ -308,7 +322,6 @@ syntax off
 " Load the version of matchit.vim that ships with Vim
 runtime macros/matchit.vim
 " }}}
-
 
 " PLUGIN: NERDTree {{{
 
@@ -424,10 +437,11 @@ endif
 
 " }}}
 
-
-" Color scheme
+" Color scheme{{{
 set background=dark
+colorscheme dracula
 
+" Enable true color support
 if &t_Co >= 256 || has("gui_running")
   "let g:dracula_italic=0
   let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
@@ -436,27 +450,21 @@ if &t_Co >= 256 || has("gui_running")
   if (has("termguicolors"))
     set termguicolors
   endif
-
-  colorscheme dracula
-
 endif
 
 if &t_Co > 2 || has("gui_running")
   syntax on
 endif
+" }}}
 
 
-" Highlight VCS conflict markers
-match ErrorMsg '^\(<\|=\|>\)\{7\}\([^=].\+\)\?$'
+" PLUGIN: fzf.vim{{{
 
-" FZF. Fuzzy Find
 let g:fzf_layout = { 'down': '~40%' }
 let g:fzf_action = {
   \ 'ctrl-t': 'tab split',
   \ 'ctrl-s': 'split',
   \ 'ctrl-v': 'vsplit' }
-
-" fzf.vim plugin
 
 " Add namespace for fzf.vim exported commands
 let g:fzf_command_prefix = 'Fzf'
@@ -490,14 +498,13 @@ xnoremap <silent> <leader>F y:FzfRg <C-R>"<CR>
 " previous-history instead of down and up. If you don't like the change,
 " explicitly bind the keys to down and up in your $FZF_DEFAULT_OPTS.
 let g:fzf_history_dir = '~/.local/share/fzf-history'
+" }}}
 
-
-
-" vim-figutive
+" PLUGIN: vim-figutive{{{
 augroup vim_figutive
   au!
 
-  " Move one level up when browsing tree or blob
+  " Move one level up with '..' when browsing tree or blob
   autocmd User fugitive
     \ if get(b:, 'fugitive_type', '') =~# '^\%(tree\|blob\)$' |
     \   nnoremap <buffer> .. :edit %:h<CR> |
@@ -510,7 +517,7 @@ augroup END
 nnoremap <silent> <leader>gs :G<CR>
 nnoremap <silent> <leader>ge :Gedit<CR>
 nnoremap <silent> <leader>gu :Git checkout HEAD -- %:p<CR>
-nnoremap <silent> <leader>gc :Gcommit -v<CR>
+nnoremap <silent> <leader>gc :Gcommit -a -v<CR>
 nnoremap <silent> <leader>gd :Gdiff<CR>
 nnoremap <silent> <leader>gD :Gdiff HEAD<CR>
 nnoremap <silent> <leader>gla :FzfCommits<CR>
@@ -520,15 +527,15 @@ nnoremap <silent> <leader>gls :silent! Glog<CR><C-l>
 nnoremap <silent> <leader>go :Git checkout<Space>
 nnoremap <silent> <leader>gb :Gblame<CR>
 cnoreabbrev gd Gdiff
-cnoreabbrev gc Gcommit -v
+cnoreabbrev gc Gcommit -v -a
 cnoreabbrev ge Gedit
 cnoreabbrev gl Glog
 cnoreabbrev gr Ggrep
 cnoreabbrev go Git<Space>checkout
 
+" }}}
 
-" vim-gitgutter
-set updatetime=1000
+" PLUGIN: vim-gitgutter{{{
 
 let g:gitgutter_terminal_reports_focus=0
 let g:gitgutter_enabled = 1
@@ -549,8 +556,9 @@ noremap <silent> <c-u> :call smooth_scroll#up(&scroll, 20, 2)<CR>
 noremap <silent> <c-d> :call smooth_scroll#down(&scroll, 20, 2)<CR>
 noremap <silent> <c-b> :call smooth_scroll#up(&scroll*2, 20, 4)<CR>
 noremap <silent> <c-f> :call smooth_scroll#down(&scroll*2, 20, 4)<CR>
+" }}}
 
-" vim-commentary
+" PLUGIN: vim-commentary{{{
 augroup commentary
   au!
   au FileType vim setlocal commentstring=\"\ %s
@@ -560,12 +568,12 @@ cnoreabbrev cm Commetary
 
 nmap <silent> <leader>c <Plug>CommentaryLine :normal j<CR>
 xmap <leader>c <Plug>Commentary
+" }}}
 
+" PLUGIN: vim-trailing-whitespace{{{
 
-
-
-" Trailing whitespaces
 let g:extra_whitespace_ignored_filetypes=['fugitive']
+
 " In addition to https://github.com/bronson/vim-trailing-whitespace
 " Highlight space characters that appear before or in-between tabs
 " Use 'autocmd' because ExtraWhitespace highlight group doesn't exist yet
@@ -574,8 +582,9 @@ let g:extra_whitespace_ignored_filetypes=['fugitive']
 
 "   autocmd BufRead,BufNew * 2match ExtraWhitespace / \+\ze\t/
 " augroup END
+" }}}
 
-" jiangmiao/auto-pairs: Vim plugin, insert or delete brackets, parens, quotes in pair - https://github.com/jiangmiao/auto-pairs
+" PLUGIN: jiangmiao/auto-pairs{{{
 let g:AutoPairsShortcutToggle = '<F7>'
 
 " Disable most bells and whistles
@@ -592,6 +601,7 @@ augroup auto_pairs
 
   au FileType vim let b:AutoPairs=copy(g:AutoPairs) | unlet b:AutoPairs['"']
 augroup END
+" }}}
 
 " Clipboard{{{
 
@@ -649,8 +659,8 @@ nmap <C-n> <plug>(YoinkPostPasteSwapForward)
 
 nmap p <plug>(YoinkPaste_p)
 nmap P <plug>(YoinkPaste_P)
-" }}}
 
+" }}}
 
 " Folding ---------------------------------------------------------{{{
 
@@ -693,8 +703,6 @@ augroup ft_vim
 augroup END
 
 " }}}
-
-
 
 " Windows,buffers,tabs  {{{
 
@@ -800,32 +808,12 @@ set synmaxcol=200
 set diffopt+=vertical
 
 " Toggle diff mode
-nnoremap <F8> :diffoff!<cr>" }}}
+nnoremap <F8> :diffoff!<cr>
 
+" Highlight VCS conflict markers
+match ErrorMsg '^\(<\|=\|>\)\{7\}\([^=].\+\)\?$'
 
-" Check if files are changed outside and prompt to reload
-noremap <F5> :checktime<cr>
-inoremap <F5> <esc>:checktime<cr>
-
-" In addition to substitute commands
-nnoremap <C-s> :%s/
-vnoremap <C-s> :s/
-
-" Split line (experimental)
-nnoremap S i<cr><esc>^mwgk:silent! s/\v +$//<cr>:noh<cr>`w
-
-" Experimental. Allow cursor to move one character after the end of line
-" In visual block mode, allow cursor to be positioned
-" where there's no actual character
-set virtualedit+=onemore,block
-
-" Recenter when jump back
-nnoremap <C-o> <C-o>zz
-
-" z+, moves next line below the window
-" z-, moves next line above the window
-nnoremap z- z^
-
+" }}}
 
 " Session management{{{
 set sessionoptions-=folds
@@ -885,10 +873,6 @@ command! -nargs=? SessionCreate call <SID>SessionCreate(<f-args>)
 command! -nargs=? SessionLoad call <SID>SessionLoad(<f-args>)
 command! -nargs=? SessionUnload call <SID>SessionUnload(<f-args>)" }}}
 
-" Output the current syntax group
-nnoremap <f10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<'
-      \ . synIDattr(synID(line("."),col("."),0),"name") . "> lo<"
-      \ . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<cr>
 
 " File types{{{
 augroup ft_gitcommit
@@ -898,6 +882,14 @@ augroup ft_gitcommit
   au FileType gitcommit syn clear gitcommitSummary
   au FileType gitcommit syn match gitcommitSummary "^.\{0,72\}" contained containedin=gitcommitFirstLine nextgroup=gitcommitOverflow contains=@Spell
 augroup END
+
+augroup ft_vim
+  au!
+
+  " Automatically source vimrc on change
+  autocmd BufWritePost vimrc source $MYVIMRC
+augroup END
+
 " }}}
 
 " Plugin: Airline {{{
@@ -969,9 +961,9 @@ endfunction
 
 nnoremap <silent> <Plug>blankUp   :<C-U>call <SID>BlankUp(v:count1)<CR>
 nnoremap <silent> <Plug>blankDown :<C-U>call <SID>BlankDown(v:count1)<CR>
-nmap [<Space> <Plug>blankUp
-nmap ]<Space> <Plug>blankDown
-
+" Not used in favor of <leader><CR> and <CR>
+" nmap [<Space> <Plug>blankUp
+" nmap ]<Space> <Plug>blankDown
 
 " Move lines up/down
 " http://vim.wikia.com/wiki/Moving_lines_up_or_down
@@ -1000,7 +992,16 @@ nnoremap <silent> <leader>D :<C-u>execute "normal! yy" . v:count1 . "p"<CR>
 " Join lines and keep the cursor in place
 nnoremap J mzJ`z
 
+" Split line (experimental)
+nnoremap S i<cr><esc>^mwgk:silent! s/\v +$//<cr>:noh<cr>`w
+
 " Delete whole line without storing in clipboard
 nnoremap <silent> <S-k> :d _<CR>
+
+" Add blank line above and below
+" When adding line below, move cursor to the just added line (most likely you're going to edit next)
+" When adding line above, don't move cursor at all
+nnoremap <CR> o<ESC>
+nmap <leader><CR> <Plug>blankUp
 
 " }}}
