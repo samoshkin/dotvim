@@ -6,6 +6,9 @@ filetype plugin indent on
 
 set nospell
 
+" Ask before unsafe actions
+set confirm
+
 set shell=/bin/bash
 set encoding=utf-8
 set number
@@ -110,21 +113,113 @@ if &term =~ 'xterm' && !has("gui_running")
 endif
 " }}}
 
-" Misc{{{
-" Check if files are changed outside and prompt to reload
-noremap <F5> :checktime<cr>
-inoremap <F5> <esc>:checktime<cr>
 
-" Expand '%%' for directory of current file in command line mode
-cnoremap %% <C-R>=fnameescape(expand('%:h')).'/'<cr>
+" Plugins{{{
+" Minimalist Vim Plugin Manager - https://github.com/junegunn/vim-plug
+call plug#begin('~/.vim/plugged')
+  Plug 'scrooloose/nerdtree'
+  Plug '907th/vim-auto-save'
+  Plug 'dracula/vim', { 'as': 'dracula' }
+  Plug 'tpope/vim-obsession'
+  Plug 'vim-airline/vim-airline'
+  Plug 'vim-airline/vim-airline-themes'
+  Plug 'junegunn/fzf', { 'do': './install --bin' }
+  Plug 'junegunn/fzf.vim'
+  Plug 'tpope/vim-fugitive'
+  Plug 'tpope/vim-repeat'
+  Plug 'airblade/vim-gitgutter'
+  Plug 'tpope/vim-surround'
+  Plug 'terryma/vim-smooth-scroll'
+  Plug 'tpope/vim-commentary'
+  Plug 'bronson/vim-trailing-whitespace'
+  Plug 'godlygeek/tabular'
+  Plug 'jiangmiao/auto-pairs'
+  Plug 'svermeulen/vim-cutlass'
+  Plug 'svermeulen/vim-subversive'
+  Plug 'svermeulen/vim-yoink'
+  Plug 'farmergreg/vim-lastplace'
 
-" Apply '.' repeat command for selected each line in visual mode
-vnoremap . :normal .<CR>
+  " Text objects
+  Plug 'kana/vim-textobj-user'
+  Plug 'kana/vim-textobj-entire'
+  Plug 'kana/vim-textobj-indent'
+  Plug 'kana/vim-textobj-line'
+  Plug 'kana/vim-textobj-function'
+  Plug 'kana/vim-textobj-fold'
+  Plug 'beloglazov/vim-textobj-quotes'
+  Plug 'kana/vim-textobj-syntax'
+  Plug 'jceb/vim-textobj-uri'
+  Plug 'Julian/vim-textobj-variable-segment'
+  Plug 'Julian/vim-textobj-brace'
+  Plug 'adriaanzon/vim-textobj-matchit'
+call plug#end()
+syntax off
 
-" Output the current syntax group
-nnoremap <f10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<'
-      \ . synIDattr(synID(line("."),col("."),0),"name") . "> lo<"
-      \ . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<cr>
+" Load the version of matchit.vim that ships with Vim
+runtime macros/matchit.vim
+" }}}
+
+" Line manipulation{{{
+
+" Insert blank line below and above without changing cursor
+function! s:BlankUp(count) abort
+  put!=repeat(nr2char(10), a:count)
+  ']+1
+  silent! call repeat#set("\<Plug>blankUp", a:count)
+endfunction
+
+function! s:BlankDown(count) abort
+  put =repeat(nr2char(10), a:count)
+  '[-1
+  silent! call repeat#set("\<Plug>blankDown", a:count)
+endfunction
+
+nnoremap <silent> <Plug>blankUp   :<C-U>call <SID>BlankUp(v:count1)<CR>
+nnoremap <silent> <Plug>blankDown :<C-U>call <SID>BlankDown(v:count1)<CR>
+" Not used in favor of <leader><CR> and <CR>
+" nmap [<Space> <Plug>blankUp
+" nmap ]<Space> <Plug>blankDown
+
+
+" Move lines up/down
+" http://vim.wikia.com/wiki/Moving_lines_up_or_down
+function! s:MoveBlockDown() range
+  execute a:firstline "," a:lastline "move '>+1"
+  normal! gv=gv
+endfunction
+
+function! s:MoveBlockUp() range
+  execute a:firstline "," a:lastline "move '<-2"
+  normal! gv=gv
+endfunction
+
+nnoremap <silent> <A-j> :m .+1<CR>==
+nnoremap <silent> <A-k> :m .-2<CR>==
+inoremap <silent> <A-j> <Esc>:m .+1<CR>==gi
+inoremap <silent> <A-k> <Esc>:m .-2<CR>==gi
+vnoremap <silent> <A-j> :call <SID>MoveBlockDown()<CR>
+vnoremap <silent> <A-k> :call <SID>MoveBlockUp()<CR>
+
+
+" Duplicate lines
+vnoremap <silent> <leader>D :copy '><CR>gv
+nnoremap <silent> <leader>D :<C-u>execute "normal! yy" . v:count1 . "p"<CR>
+
+" Join lines and keep the cursor in place
+nnoremap J mzJ`z
+
+" Split line (experimental)
+nnoremap S i<cr><esc>^mwgk:silent! s/\v +$//<cr>:noh<cr>`w
+
+" Delete whole line without storing in clipboard
+nnoremap <silent> <S-k> :d _<CR>
+
+" Add blank line above and below
+" When adding line below, move cursor to the just added line (most likely you're going to edit next)
+" When adding line above, don't move cursor at all
+nnoremap <CR> o<ESC>
+nmap <leader><CR> <Plug>blankUp
+
 " }}}
 
 " Wrapping{{{
@@ -222,16 +317,6 @@ vnoremap <C-s> :s/
 
 " }}}
 
-" Insert mode{{{
-
-" Drop into insert mode on Backspace
-nnoremap <BS> i<BS>
-
-" In Insert mode, treat pasting form a buffer as a separate undoable operation
-" Which can be undone with '<C-o>u'
-inoremap <C-r> <C-g>u<C-r>
-" }}}
-
 " Navigation{{{
 
 " TODO: add shortcuts to navigate tags
@@ -278,329 +363,14 @@ nnoremap <silent> [<C-l> :lpfile<CR>
 "augroup END
 " }}}
 
-" Plugins{{{
-" Minimalist Vim Plugin Manager - https://github.com/junegunn/vim-plug
-call plug#begin('~/.vim/plugged')
-  Plug 'scrooloose/nerdtree'
-  Plug '907th/vim-auto-save'
-  Plug 'dracula/vim', { 'as': 'dracula' }
-  Plug 'tpope/vim-obsession'
-  Plug 'vim-airline/vim-airline'
-  Plug 'vim-airline/vim-airline-themes'
-  Plug 'junegunn/fzf', { 'do': './install --bin' }
-  Plug 'junegunn/fzf.vim'
-  Plug 'tpope/vim-fugitive'
-  Plug 'tpope/vim-repeat'
-  Plug 'airblade/vim-gitgutter'
-  Plug 'tpope/vim-surround'
-  Plug 'terryma/vim-smooth-scroll'
-  Plug 'tpope/vim-commentary'
-  Plug 'bronson/vim-trailing-whitespace'
-  Plug 'godlygeek/tabular'
-  Plug 'jiangmiao/auto-pairs'
-  Plug 'svermeulen/vim-cutlass'
-  Plug 'svermeulen/vim-subversive'
-  Plug 'svermeulen/vim-yoink'
-  Plug 'farmergreg/vim-lastplace'
+" Insert mode{{{
 
-  " Text objects
-  Plug 'kana/vim-textobj-user'
-  Plug 'kana/vim-textobj-entire'
-  Plug 'kana/vim-textobj-indent'
-  Plug 'kana/vim-textobj-line'
-  Plug 'kana/vim-textobj-function'
-  Plug 'kana/vim-textobj-fold'
-  Plug 'beloglazov/vim-textobj-quotes'
-  Plug 'kana/vim-textobj-syntax'
-  Plug 'jceb/vim-textobj-uri'
-  Plug 'Julian/vim-textobj-variable-segment'
-  Plug 'Julian/vim-textobj-brace'
-  Plug 'adriaanzon/vim-textobj-matchit'
-call plug#end()
-syntax off
+" Drop into insert mode on Backspace
+nnoremap <BS> i<BS>
 
-" Load the version of matchit.vim that ships with Vim
-runtime macros/matchit.vim
-" }}}
-
-" PLUGIN: NERDTree {{{
-
-" Automatically close tree after file is opened from it
-let NERDTreeQuitOnOpen=1
-"autocmd BufReadPre,FileReadPre * :NERDTreeClose
-
-" Sort files with numbers naturally
-let NERDTreeNaturalSort=1
-
-" Show hidden files by default
-let NERDTreeShowHidden=1
-
-" Minimal UI, do not show bookmarks and help blocks
-let NERDTreeMinimalUI=1
-
-" Increase tree explorer split a bit (default is 31)
-let NERDTreeWinSize=35
-
-" Automatically delete buffer when file is deleted from the tree explorer
-let NERDTreeAutoDeleteBuffer=1
-
-" Toggle tree visibility
-noremap <F2> :NERDTreeToggle<CR>
-
-" Locate current file in a tree
-noremap  <S-F2> :NERDTreeFind<CR>
-inoremap <S-F2> <esc>:NERDTreeFind<CR>
-
-augroup nerd_tree
-  au!
-
-  " Auto launch tree when vim is run with directory as argument
-  autocmd StdinReadPre * let s:std_in=1
-  autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") | exe 'NERDTree' argv()[0] | wincmd p | ene | endif
-
-  " Exit vim when the only buffer remaining is NerdTree
-  autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
-
-  " Use arrow keys to navigate
-  autocmd FileType nerdtree nmap <buffer> l o
-  autocmd FileType nerdtree nmap <buffer> L O
-  autocmd FileType nerdtree nmap <buffer> h p
-  autocmd FileType nerdtree nmap <buffer> H P
-augroup END
-
-" Preview in splits without 'g...' prefix
-let g:NERDTreeMapPreviewSplit="I"
-let g:NERDTreeMapPreviewVSplit="S"
-let g:NERDTreeMapToggleHidden="D"
-
-let g:NERDTreeMapPreview="O"
-
-" Do not show '.git' and 'node_modules' directories
-let NERDTreeIgnore=['\~$', '^\.git$[[dir]]', '^node_modules$[[dir]]']
-
-" Tweak status line, so it shortens path if it's under HOME directory
-let g:NERDTreeStatusline="%{exists('b:NERDTree')? fnamemodify(b:NERDTree.root.path.str(), ':p:~') :''}"
-" }}}
-
-" Save and backup{{{
-
-" Features defaults:
-" - autosave: off
-" - backup: off
-" - undofile: on
-" - swapfile: on
-
-" Regarding autosaving:
-" - "autowrite" saves file on buffer change and quit
-" - '907th/vim-auto-save' saves filter when cursor is inactive for few seconds
-
-" Let buffer be switched to another one without requiring to save it first
-set hidden
-
-" Disable autosave by default
-set noautowrite
-let g:auto_save=0
-let g:auto_save_events=["CursorHold"]
-let g:auto_save_silent = 1
-
-" You can toggle to turn auto save off
-nnoremap <F3> :call ToggleAutoSave()<CR>
-function ToggleAutoSave()
-  AutoSaveToggle
-  set autowrite!
-  set hidden!
-endfunction
-
-" Automatically read files which are changed outside vim
-set autoread
-
-" In addition to autosaving, enable swap file and disable backup
-set swapfile
-set nobackup
-set undofile
-
-" Directories for backup, undo and swap files
-set undodir=~/.vim/tmp/undo//
-set backupdir=~/.vim/tmp/backup//
-set directory=~/.vim/tmp/swap//
-
-" Make those folders automatically if they don't already exist.
-if !isdirectory(expand(&undodir))
-  call mkdir(expand(&undodir), "p")
-endif
-if !isdirectory(expand(&backupdir))
-  call mkdir(expand(&backupdir), "p")
-endif
-if !isdirectory(expand(&directory))
-  call mkdir(expand(&directory), "p")
-endif
-
-" }}}
-
-" Color scheme{{{
-set background=dark
-colorscheme dracula
-
-" Enable true color support
-if &t_Co >= 256 || has("gui_running")
-  "let g:dracula_italic=0
-  let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
-  let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
-
-  if (has("termguicolors"))
-    set termguicolors
-  endif
-endif
-
-if &t_Co > 2 || has("gui_running")
-  syntax on
-endif
-" }}}
-
-
-" PLUGIN: fzf.vim{{{
-
-let g:fzf_layout = { 'down': '~40%' }
-let g:fzf_action = {
-  \ 'ctrl-t': 'tab split',
-  \ 'ctrl-s': 'split',
-  \ 'ctrl-v': 'vsplit' }
-
-" Add namespace for fzf.vim exported commands
-let g:fzf_command_prefix = 'Fzf'
-
-" [Buffers] Jump to the existing window if possible
-let g:fzf_buffers_jump = 1
-
-" File path completion in Insert mode using fzf
-imap <c-x><c-k> <plug>(fzf-complete-word)
-imap <c-x><c-f> <plug>(fzf-complete-path)
-imap <c-x><c-l> <plug>(fzf-complete-line)
-" imap <c-x><c-j> <plug>(fzf-complete-file-ag)
-
-" Open directory explorer at cwd
-nmap <silent> <leader>O :edit .<CR>
-
-nnoremap <silent> <expr> <leader>o (expand('%') =~ 'NERD_tree' ? "\<C-w>\<C-w>" : '').":FzfFiles\<CR>"
-cnoremap <silent> <C-p>  :FzfHistory:<CR>
-nnoremap <silent> <leader>p  :FzfBuffers<CR>
-nnoremap <silent> <leader>`  :FzfMarks<CR>
-nnoremap <silent> <F1>  :FzfHelptags<CR>
-noremap <silent> <leader>; :FzfCommands<CR>
-nnoremap <silent> <C-_> :FzfHistory/<CR>
-
-" Search files containing word under the cursor or selection using 'rg'
-nnoremap <silent> <leader>F :FzfRg <C-r><C-w><CR>
-xnoremap <silent> <leader>F y:FzfRg <C-R>"<CR>
-
-" Enable per-command history.
-" CTRL-N and CTRL-P will be automatically bound to next-history and
-" previous-history instead of down and up. If you don't like the change,
-" explicitly bind the keys to down and up in your $FZF_DEFAULT_OPTS.
-let g:fzf_history_dir = '~/.local/share/fzf-history'
-" }}}
-
-" PLUGIN: vim-figutive{{{
-augroup vim_figutive
-  au!
-
-  " Move one level up with '..' when browsing tree or blob
-  autocmd User fugitive
-    \ if get(b:, 'fugitive_type', '') =~# '^\%(tree\|blob\)$' |
-    \   nnoremap <buffer> .. :edit %:h<CR> |
-    \ endif
-
-  " Delete fugitive buffers automatically on leave
-  autocmd BufReadPost fugitive://* set bufhidden=delete
-augroup END
-
-nnoremap <silent> <leader>gs :G<CR>
-nnoremap <silent> <leader>ge :Gedit<CR>
-nnoremap <silent> <leader>gu :Git checkout HEAD -- %:p<CR>
-nnoremap <silent> <leader>gc :Gcommit -a -v<CR>
-nnoremap <silent> <leader>gd :Gdiff<CR>
-nnoremap <silent> <leader>gD :Gdiff HEAD<CR>
-nnoremap <silent> <leader>gla :FzfCommits<CR>
-nnoremap <silent> <leader>glf :FzfBCommits<CR>
-nnoremap <silent> <leader>glF :silent! Glog -- %<CR><C-l>
-nnoremap <silent> <leader>gls :silent! Glog<CR><C-l>
-nnoremap <silent> <leader>go :Git checkout<Space>
-nnoremap <silent> <leader>gb :Gblame<CR>
-cnoreabbrev gd Gdiff
-cnoreabbrev gc Gcommit -v -a
-cnoreabbrev ge Gedit
-cnoreabbrev gl Glog
-cnoreabbrev gr Ggrep
-cnoreabbrev go Git<Space>checkout
-
-" }}}
-
-" PLUGIN: vim-gitgutter{{{
-
-let g:gitgutter_terminal_reports_focus=0
-let g:gitgutter_enabled = 1
-
-nnoremap <silent> <F4> :GitGutterToggle<CR>
-nnoremap <silent> <leader><F4> :GitGutterFold<CR>
-
-" Use 'h' as a motion for hunks, instead of default 'c'
-nmap ]h <Plug>GitGutterNextHunk
-nmap [h <Plug>GitGutterPrevHunk
-omap ih <Plug>GitGutterTextObjectInnerPending
-omap ah <Plug>GitGutterTextObjectOuterPending
-xmap ih <Plug>GitGutterTextObjectInnerVisual
-xmap ah <Plug>GitGutterTextObjectOuterVisual
-
-" vim-smooth-scroll
-noremap <silent> <c-u> :call smooth_scroll#up(&scroll, 20, 2)<CR>
-noremap <silent> <c-d> :call smooth_scroll#down(&scroll, 20, 2)<CR>
-noremap <silent> <c-b> :call smooth_scroll#up(&scroll*2, 20, 4)<CR>
-noremap <silent> <c-f> :call smooth_scroll#down(&scroll*2, 20, 4)<CR>
-" }}}
-
-" PLUGIN: vim-commentary{{{
-augroup commentary
-  au!
-  au FileType vim setlocal commentstring=\"\ %s
-augroup end
-
-cnoreabbrev cm Commetary
-
-nmap <silent> <leader>c <Plug>CommentaryLine :normal j<CR>
-xmap <leader>c <Plug>Commentary
-" }}}
-
-" PLUGIN: vim-trailing-whitespace{{{
-
-let g:extra_whitespace_ignored_filetypes=['fugitive']
-
-" In addition to https://github.com/bronson/vim-trailing-whitespace
-" Highlight space characters that appear before or in-between tabs
-" Use 'autocmd' because ExtraWhitespace highlight group doesn't exist yet
-" augroup trailing_whitespace
-"   au!
-
-"   autocmd BufRead,BufNew * 2match ExtraWhitespace / \+\ze\t/
-" augroup END
-" }}}
-
-" PLUGIN: jiangmiao/auto-pairs{{{
-let g:AutoPairsShortcutToggle = '<F7>'
-
-" Disable most bells and whistles
-let g:AutoPairsShortcutJump=''
-let g:AutoPairsShortcutBackInsert=''
-let g:AutoPairsMoveCharacter=''
-
-" I'm using only core closing behavior + fast wrap(maybe?)
-let g:AutoPairsShortcutFastWrap='<A-w>'
-
-" Do not autoclose double quote in vimrc.
-augroup auto_pairs
-  au!
-
-  au FileType vim let b:AutoPairs=copy(g:AutoPairs) | unlet b:AutoPairs['"']
-augroup END
+" In Insert mode, treat pasting form a buffer as a separate undoable operation
+" Which can be undone with '<C-o>u'
+inoremap <C-r> <C-g>u<C-r>
 " }}}
 
 " Clipboard{{{
@@ -705,9 +475,6 @@ augroup END
 " }}}
 
 " Windows,buffers,tabs  {{{
-
-" Ask before unsafe actions
-set confirm
 
 " Navigate buffers
 nnoremap <silent> ]b :bnext<CR>
@@ -864,8 +631,8 @@ augroup load_session_on_startup
 
   autocmd StdinReadPre * let g:__is_stdin = 1
   autocmd VimEnter * nested if argc() == 0 && !exists("g:__is_stdin")
-    \ | call <SID>SessionLoad()
-    \ | endif
+        \ | call <SID>SessionLoad()
+        \ | endif
 augroup END
 
 " Expose set of commands to manage sessions
@@ -873,26 +640,101 @@ command! -nargs=? SessionCreate call <SID>SessionCreate(<f-args>)
 command! -nargs=? SessionLoad call <SID>SessionLoad(<f-args>)
 command! -nargs=? SessionUnload call <SID>SessionUnload(<f-args>)" }}}
 
+" Save and backup{{{
 
-" File types{{{
-augroup ft_gitcommit
-  au!
+" Features defaults:
+" - autosave: off
+" - backup: off
+" - undofile: on
+" - swapfile: on
 
-  " Highlight summary line when exceeds 72 columns, not 50 as a default
-  au FileType gitcommit syn clear gitcommitSummary
-  au FileType gitcommit syn match gitcommitSummary "^.\{0,72\}" contained containedin=gitcommitFirstLine nextgroup=gitcommitOverflow contains=@Spell
-augroup END
+" Regarding autosaving:
+" - "autowrite" saves file on buffer change and quit
+" - '907th/vim-auto-save' saves filter when cursor is inactive for few seconds
 
-augroup ft_vim
-  au!
+" Let buffer be switched to another one without requiring to save it first
+set hidden
 
-  " Automatically source vimrc on change
-  autocmd BufWritePost vimrc source $MYVIMRC
-augroup END
+" Disable autosave by default
+set noautowrite
+let g:auto_save=0
+let g:auto_save_events=["CursorHold"]
+let g:auto_save_silent = 1
+
+" You can toggle to turn auto save off
+nnoremap <F3> :call ToggleAutoSave()<CR>
+function ToggleAutoSave()
+  AutoSaveToggle
+  set autowrite!
+  set hidden!
+endfunction
+
+" Automatically read files which are changed outside vim
+set autoread
+
+" In addition to autosaving, enable swap file and disable backup
+set swapfile
+set nobackup
+set undofile
+
+" Directories for backup, undo and swap files
+set undodir=~/.vim/tmp/undo//
+set backupdir=~/.vim/tmp/backup//
+set directory=~/.vim/tmp/swap//
+
+" Make those folders automatically if they don't already exist.
+if !isdirectory(expand(&undodir))
+  call mkdir(expand(&undodir), "p")
+endif
+if !isdirectory(expand(&backupdir))
+  call mkdir(expand(&backupdir), "p")
+endif
+if !isdirectory(expand(&directory))
+  call mkdir(expand(&directory), "p")
+endif
 
 " }}}
 
-" Plugin: Airline {{{
+" Color scheme{{{
+set background=dark
+colorscheme dracula
+
+" Enable true color support
+if &t_Co >= 256 || has("gui_running")
+  "let g:dracula_italic=0
+  let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
+  let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
+
+  if (has("termguicolors"))
+    set termguicolors
+  endif
+endif
+
+if &t_Co > 2 || has("gui_running")
+  syntax on
+endif
+" }}}
+
+" Misc{{{
+
+" Check if files are changed outside and prompt to reload
+noremap <F5> :checktime<cr>
+inoremap <F5> <esc>:checktime<cr>
+
+" Expand '%%' for directory of current file in command line mode
+cnoremap %% <C-R>=fnameescape(expand('%:h')).'/'<cr>
+
+" Apply '.' repeat command for selected each line in visual mode
+vnoremap . :normal .<CR>
+
+" Output the current syntax group
+nnoremap <f10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<'
+      \ . synIDattr(synID(line("."),col("."),0),"name") . "> lo<"
+      \ . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<cr>
+" }}}
+
+
+" PLUGIN: Airline {{{
 
 let g:airline_theme='jellybeans'
 
@@ -944,64 +786,227 @@ let g:airline#extensions#tabline#fnamecollapse = 1
 
 " }}}
 
-" Line manipulation{{{
+" PLUGIN: NERDTree {{{
 
-" Insert blank line below and above without changing cursor
-function! s:BlankUp(count) abort
-  put!=repeat(nr2char(10), a:count)
-  ']+1
-  silent! call repeat#set("\<Plug>blankUp", a:count)
-endfunction
+" Automatically close tree after file is opened from it
+let NERDTreeQuitOnOpen=1
+"autocmd BufReadPre,FileReadPre * :NERDTreeClose
 
-function! s:BlankDown(count) abort
-  put =repeat(nr2char(10), a:count)
-  '[-1
-  silent! call repeat#set("\<Plug>blankDown", a:count)
-endfunction
+" Sort files with numbers naturally
+let NERDTreeNaturalSort=1
 
-nnoremap <silent> <Plug>blankUp   :<C-U>call <SID>BlankUp(v:count1)<CR>
-nnoremap <silent> <Plug>blankDown :<C-U>call <SID>BlankDown(v:count1)<CR>
-" Not used in favor of <leader><CR> and <CR>
-" nmap [<Space> <Plug>blankUp
-" nmap ]<Space> <Plug>blankDown
+" Show hidden files by default
+let NERDTreeShowHidden=1
 
-" Move lines up/down
-" http://vim.wikia.com/wiki/Moving_lines_up_or_down
-function! s:MoveBlockDown() range
-  execute a:firstline "," a:lastline "move '>+1"
-  normal! gv=gv
-endfunction
+" Minimal UI, do not show bookmarks and help blocks
+let NERDTreeMinimalUI=1
 
-function! s:MoveBlockUp() range
-  execute a:firstline "," a:lastline "move '<-2"
-  normal! gv=gv
-endfunction
+" Increase tree explorer split a bit (default is 31)
+let NERDTreeWinSize=35
 
-nnoremap <silent> <A-j> :m .+1<CR>==
-nnoremap <silent> <A-k> :m .-2<CR>==
-inoremap <silent> <A-j> <Esc>:m .+1<CR>==gi
-inoremap <silent> <A-k> <Esc>:m .-2<CR>==gi
-vnoremap <silent> <A-j> :call <SID>MoveBlockDown()<CR>
-vnoremap <silent> <A-k> :call <SID>MoveBlockUp()<CR>
+" Automatically delete buffer when file is deleted from the tree explorer
+let NERDTreeAutoDeleteBuffer=1
 
+" Toggle tree visibility
+noremap <F2> :NERDTreeToggle<CR>
 
-" Duplicate lines
-vnoremap <silent> <leader>D :copy '><CR>gv
-nnoremap <silent> <leader>D :<C-u>execute "normal! yy" . v:count1 . "p"<CR>
+" Locate current file in a tree
+noremap  <S-F2> :NERDTreeFind<CR>
+inoremap <S-F2> <esc>:NERDTreeFind<CR>
 
-" Join lines and keep the cursor in place
-nnoremap J mzJ`z
+augroup nerd_tree
+  au!
 
-" Split line (experimental)
-nnoremap S i<cr><esc>^mwgk:silent! s/\v +$//<cr>:noh<cr>`w
+  " Auto launch tree when vim is run with directory as argument
+  autocmd StdinReadPre * let s:std_in=1
+  autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") | exe 'NERDTree' argv()[0] | wincmd p | ene | endif
 
-" Delete whole line without storing in clipboard
-nnoremap <silent> <S-k> :d _<CR>
+  " Exit vim when the only buffer remaining is NerdTree
+  autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
-" Add blank line above and below
-" When adding line below, move cursor to the just added line (most likely you're going to edit next)
-" When adding line above, don't move cursor at all
-nnoremap <CR> o<ESC>
-nmap <leader><CR> <Plug>blankUp
+  " Use arrow keys to navigate
+  autocmd FileType nerdtree nmap <buffer> l o
+  autocmd FileType nerdtree nmap <buffer> L O
+  autocmd FileType nerdtree nmap <buffer> h p
+  autocmd FileType nerdtree nmap <buffer> H P
+augroup END
+
+" Preview in splits without 'g...' prefix
+let g:NERDTreeMapPreviewSplit="I"
+let g:NERDTreeMapPreviewVSplit="S"
+let g:NERDTreeMapToggleHidden="D"
+
+let g:NERDTreeMapPreview="O"
+
+" Do not show '.git' and 'node_modules' directories
+let NERDTreeIgnore=['\~$', '^\.git$[[dir]]', '^node_modules$[[dir]]']
+
+" Tweak status line, so it shortens path if it's under HOME directory
+let g:NERDTreeStatusline="%{exists('b:NERDTree')? fnamemodify(b:NERDTree.root.path.str(), ':p:~') :''}"
+" }}}
+
+" PLUGIN: fzf.vim{{{
+
+let g:fzf_layout = { 'down': '~40%' }
+let g:fzf_action = {
+  \ 'ctrl-t': 'tab split',
+  \ 'ctrl-s': 'split',
+  \ 'ctrl-v': 'vsplit' }
+
+" Add namespace for fzf.vim exported commands
+let g:fzf_command_prefix = 'Fzf'
+
+" [Buffers] Jump to the existing window if possible
+let g:fzf_buffers_jump = 1
+
+" File path completion in Insert mode using fzf
+imap <c-x><c-k> <plug>(fzf-complete-word)
+imap <c-x><c-f> <plug>(fzf-complete-path)
+imap <c-x><c-l> <plug>(fzf-complete-line)
+" imap <c-x><c-j> <plug>(fzf-complete-file-ag)
+
+" Open directory explorer at cwd
+nmap <silent> <leader>O :edit .<CR>
+
+nnoremap <silent> <expr> <leader>o (expand('%') =~ 'NERD_tree' ? "\<C-w>\<C-w>" : '').":FzfFiles\<CR>"
+cnoremap <silent> <C-p>  :FzfHistory:<CR>
+nnoremap <silent> <leader>p  :FzfBuffers<CR>
+nnoremap <silent> <leader>`  :FzfMarks<CR>
+nnoremap <silent> <F1>  :FzfHelptags<CR>
+noremap <silent> <leader>; :FzfCommands<CR>
+nnoremap <silent> <C-_> :FzfHistory/<CR>
+
+" Search files containing word under the cursor or selection using 'rg'
+nnoremap <silent> <leader>F :FzfRg <C-r><C-w><CR>
+xnoremap <silent> <leader>F y:FzfRg <C-R>"<CR>
+
+" Enable per-command history.
+" CTRL-N and CTRL-P will be automatically bound to next-history and
+" previous-history instead of down and up. If you don't like the change,
+" explicitly bind the keys to down and up in your $FZF_DEFAULT_OPTS.
+let g:fzf_history_dir = '~/.local/share/fzf-history'
+" }}}
+
+" PLUGIN: vim-figutive{{{
+augroup vim_figutive
+  au!
+
+  " Move one level up with '..' when browsing tree or blob
+  autocmd User fugitive
+    \ if get(b:, 'fugitive_type', '') =~# '^\%(tree\|blob\)$' |
+    \   nnoremap <buffer> .. :edit %:h<CR> |
+    \ endif
+
+  " Delete fugitive buffers automatically on leave
+  autocmd BufReadPost fugitive://* set bufhidden=delete
+augroup END
+
+nnoremap <silent> <leader>gs :G<CR>
+nnoremap <silent> <leader>ge :Gedit<CR>
+nnoremap <silent> <leader>gu :Git checkout HEAD -- %:p<CR>
+nnoremap <silent> <leader>gc :Gcommit -a -v<CR>
+nnoremap <silent> <leader>gd :Gdiff<CR>
+nnoremap <silent> <leader>gD :Gdiff HEAD<CR>
+nnoremap <silent> <leader>gla :FzfCommits<CR>
+nnoremap <silent> <leader>glf :FzfBCommits<CR>
+nnoremap <silent> <leader>glF :silent! Glog -- %<CR><C-l>
+nnoremap <silent> <leader>gls :silent! Glog<CR><C-l>
+nnoremap <silent> <leader>go :Git checkout<Space>
+nnoremap <silent> <leader>gb :Gblame<CR>
+cnoreabbrev gd Gdiff
+cnoreabbrev gc Gcommit -v -a
+cnoreabbrev ge Gedit
+cnoreabbrev gl Glog
+cnoreabbrev gr Ggrep
+cnoreabbrev go Git<Space>checkout
 
 " }}}
+
+" PLUGIN: vim-gitgutter{{{
+
+let g:gitgutter_terminal_reports_focus=0
+let g:gitgutter_enabled = 1
+
+nnoremap <silent> <F4> :GitGutterToggle<CR>
+nnoremap <silent> <leader><F4> :GitGutterFold<CR>
+
+" Use 'h' as a motion for hunks, instead of default 'c'
+nmap ]h <Plug>GitGutterNextHunk
+nmap [h <Plug>GitGutterPrevHunk
+omap ih <Plug>GitGutterTextObjectInnerPending
+omap ah <Plug>GitGutterTextObjectOuterPending
+xmap ih <Plug>GitGutterTextObjectInnerVisual
+xmap ah <Plug>GitGutterTextObjectOuterVisual
+
+" vim-smooth-scroll
+noremap <silent> <c-u> :call smooth_scroll#up(&scroll, 20, 2)<CR>
+noremap <silent> <c-d> :call smooth_scroll#down(&scroll, 20, 2)<CR>
+noremap <silent> <c-b> :call smooth_scroll#up(&scroll*2, 20, 4)<CR>
+noremap <silent> <c-f> :call smooth_scroll#down(&scroll*2, 20, 4)<CR>
+" }}}
+
+" PLUGIN: vim-commentary{{{
+augroup commentary
+  au!
+  au FileType vim setlocal commentstring=\"\ %s
+augroup end
+
+cnoreabbrev cm Commetary
+
+nmap <silent> <leader>c <Plug>CommentaryLine :normal j<CR>
+xmap <leader>c <Plug>Commentary
+" }}}
+
+" PLUGIN: vim-trailing-whitespace{{{
+
+let g:extra_whitespace_ignored_filetypes=['fugitive']
+
+" In addition to https://github.com/bronson/vim-trailing-whitespace
+" Highlight space characters that appear before or in-between tabs
+" Use 'autocmd' because ExtraWhitespace highlight group doesn't exist yet
+" augroup trailing_whitespace
+"   au!
+
+"   autocmd BufRead,BufNew * 2match ExtraWhitespace / \+\ze\t/
+" augroup END
+" }}}
+
+" PLUGIN: jiangmiao/auto-pairs{{{
+let g:AutoPairsShortcutToggle = '<F7>'
+
+" Disable most bells and whistles
+let g:AutoPairsShortcutJump=''
+let g:AutoPairsShortcutBackInsert=''
+let g:AutoPairsMoveCharacter=''
+
+" I'm using only core closing behavior + fast wrap(maybe?)
+let g:AutoPairsShortcutFastWrap='<A-w>'
+
+" Do not autoclose double quote in vimrc.
+augroup auto_pairs
+  au!
+
+  au FileType vim let b:AutoPairs=copy(g:AutoPairs) | unlet b:AutoPairs['"']
+augroup END
+" }}}
+
+
+" File types{{{
+augroup ft_gitcommit
+  au!
+
+  " Highlight summary line when exceeds 72 columns, not 50 as a default
+  au FileType gitcommit syn clear gitcommitSummary
+  au FileType gitcommit syn match gitcommitSummary "^.\{0,72\}" contained containedin=gitcommitFirstLine nextgroup=gitcommitOverflow contains=@Spell
+augroup END
+
+augroup ft_vim
+  au!
+
+  " Automatically source vimrc on change
+  autocmd BufWritePost vimrc source $MYVIMRC
+augroup END
+
+" }}}
+
+
