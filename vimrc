@@ -53,35 +53,16 @@ set ttimeout
 set timeoutlen=2000
 set ttimeoutlen=30
 
-" Duplicate lines (experimental)
-nnoremap <silent> D :copy .<CR>
-vnoremap <silent> D :copy '><CR>gv
-
 " Drop into insert mode
 nnoremap <BS> i<BS>
+
+" Can't live without it
+nnoremap <CR> o<ESC>
+
 
 " Always use system clipboard as unnamed register
 set clipboard=unnamed,unnamedplus
 
-
-" Move lines up/down
-" http://vim.wikia.com/wiki/Moving_lines_up_or_down
-function! s:MoveBlockDown() range
-  execute a:firstline "," a:lastline "move '>+1"
-  normal! gv=gv
-endfunction
-
-function! s:MoveBlockUp() range
-  execute a:firstline "," a:lastline "move '<-2"
-  normal! gv=gv
-endfunction
-
-nnoremap <silent> <A-j> :m .+1<CR>==
-nnoremap <silent> <A-k> :m .-2<CR>==
-inoremap <silent> <A-j> <Esc>:m .+1<CR>==gi
-inoremap <silent> <A-k> <Esc>:m .-2<CR>==gi
-vnoremap <silent> <A-j> :call <SID>MoveBlockDown()<CR>
-vnoremap <silent> <A-k> :call <SID>MoveBlockUp()<CR>
 
 " Zsh like <Tab> completion in Command mode
 set wildmenu
@@ -124,42 +105,6 @@ set shiftround
 
 " Soft wrap
 
-function! s:ToggleWrap()
-  if &wrap
-    echo "Wrap OFF"
-
-    setlocal nowrap
-
-    silent! unmap k
-    silent! unmap j
-    silent! unmap 0
-    silent! unmap $
-    silent! unmap <Home>
-    silent! unmap <End>
-
-    silent! iunmap <Up>
-    silent! iunmap <Down>
-    silent! iunmap <Home>
-    silent! iunmap <End>
-  else
-    echo "Wrap ON"
-
-    setlocal wrap
-
-    noremap  <silent> <expr> k v:count ? 'k' : 'gk'
-    noremap  <silent> <expr> j v:count ? 'j' : 'gj'
-    noremap  <silent> 0 g0
-    noremap  <silent> $ g$
-    noremap  <silent> <Home> g<Home>
-    noremap  <silent> <End>  g<End>
-
-    "inoremap <silent> <Up>   <C-o>gk
-    "inoremap <silent> <Down> <C-o>gj
-    "inoremap <silent> <Home> <C-o>g<Home>
-    "inoremap <silent> <End>  <C-o>g<End>
-  endif
-endfunction
-
 " Keep some characters visible during horizontal scroll
 " Recenter cursor during horizontal scroll
 set sidescroll=0
@@ -171,10 +116,14 @@ set textwidth=0
 " Soft wraps by default
 set wrap
 set breakindent
-" silent! call <SID>ToggleWrap()
+
+noremap  <silent> <expr> k v:count ? 'k' : 'gk'
+noremap  <silent> <expr> j v:count ? 'j' : 'gj'
+noremap  <silent> 0 g0
+noremap  <silent> $ g$
 
 " Toggle between 'nowrap' and 'soft wrap'
-noremap <silent> <F6> :call <SID>ToggleWrap()<CR>
+noremap <silent> <F6> :set wrap!<CR>
 
 " Format options
 " Remove most related to hard wrapping
@@ -203,12 +152,8 @@ xnoremap # :<C-u>call <SID>VSetSearch('?')<CR>?<C-R>=@/<CR><CR>
 set laststatus=2
 
 " Use 'H' and 'L' keys to move to start/end of the line
-noremap H ^
-noremap L $
-
-" Column 80 marker
-"highlight OverLength ctermbg=darkred ctermfg=white guibg=#660000
-"match OverLength /\%81v.\+/
+noremap H g^
+noremap L g$
 
 
 " In Insert mode, treat pasting form a buffer as a separate undoable operation
@@ -289,11 +234,7 @@ set complete-=i
 set display=lastline
 
 
-"==================================================
-"===           Plugins                        =====
-"==================================================
-
-" Install plugins
+" Plugins{{{
 " Minimalist Vim Plugin Manager - https://github.com/junegunn/vim-plug
 call plug#begin('~/.vim/plugged')
   Plug 'scrooloose/nerdtree'
@@ -333,6 +274,12 @@ call plug#begin('~/.vim/plugged')
   Plug 'adriaanzon/vim-textobj-matchit'
 call plug#end()
 syntax off
+
+" Load the version of matchit.vim that ships with Vim
+runtime macros/matchit.vim
+" }}}
+
+
 " NERDTree plugin
 
 " Automatically close tree after file is opened from it
@@ -432,8 +379,6 @@ function ToggleAutoSave()
 endfunction
 
 
-" Load the version of matchit.vim that ships with Vim
-runtime macros/matchit.vim
 
 " Color scheme
 set background=dark
@@ -501,27 +446,6 @@ xnoremap <silent> <leader>F y:FzfRg <C-R>"<CR>
 " explicitly bind the keys to down and up in your $FZF_DEFAULT_OPTS.
 let g:fzf_history_dir = '~/.local/share/fzf-history'
 
-
-" Insert blank line below and above
-function! s:BlankUp(count) abort
-  put!=repeat(nr2char(10), a:count)
-  ']+1
-  silent! call repeat#set("\<Plug>blankUp", a:count)
-endfunction
-
-function! s:BlankDown(count) abort
-  put =repeat(nr2char(10), a:count)
-  '[-1
-  silent! call repeat#set("\<Plug>blankDown", a:count)
-endfunction
-
-nnoremap <silent> <Plug>blankUp   :<C-U>call <SID>BlankUp(v:count1)<CR>
-nnoremap <silent> <Plug>blankDown :<C-U>call <SID>BlankDown(v:count1)<CR>
-nmap [<Space> <Plug>blankUp
-nmap ]<Space> <Plug>blankDown
-
-" Can't live without it
-nnoremap <CR> o<ESC>
 
 
 " vim-figutive
@@ -656,12 +580,12 @@ augroup END
 " Clipboard
 
 " https://github.com/svermeulen/vim-cutlass
-" Use 'X' as cut operation instead
+" Use '<leader>Y' as cut operation instead
 " All other actions, like d, c, s will delete without storing in clipboard
-nnoremap x d
-nnoremap xx dd
-nnoremap X D
-xnoremap x d
+nnoremap <leader>x d
+nnoremap <leader>xx dd
+nnoremap <leader>X D
+xnoremap <leader>x d
 
 " " Delete whole line without storing in clipboard
 nnoremap <silent> <S-k> :d _<CR>
@@ -861,9 +785,6 @@ nnoremap <F8> :diffoff!<cr>" }}}
 noremap <F5> :checktime<cr>
 inoremap <F5> <esc>:checktime<cr>
 
-" Keep the cursor in place while joining lines
-nnoremap J mzJ`z
-
 " In addition to substitute commands
 nnoremap <C-s> :%s/
 vnoremap <C-s> :s/
@@ -1006,5 +927,55 @@ let g:airline#extensions#tabline#buffers_label = 'bufs'
 let g:airline#extensions#tabline#formatter = 'unique_tail'
 let g:airline#extensions#tabline#fnamemod = ':p:~:.'
 let g:airline#extensions#tabline#fnamecollapse = 1
+
+" }}}
+
+" Line manipulation{{{
+
+" Insert blank line below and above without changing cursor
+function! s:BlankUp(count) abort
+  put!=repeat(nr2char(10), a:count)
+  ']+1
+  silent! call repeat#set("\<Plug>blankUp", a:count)
+endfunction
+
+function! s:BlankDown(count) abort
+  put =repeat(nr2char(10), a:count)
+  '[-1
+  silent! call repeat#set("\<Plug>blankDown", a:count)
+endfunction
+
+nnoremap <silent> <Plug>blankUp   :<C-U>call <SID>BlankUp(v:count1)<CR>
+nnoremap <silent> <Plug>blankDown :<C-U>call <SID>BlankDown(v:count1)<CR>
+nmap [<Space> <Plug>blankUp
+nmap ]<Space> <Plug>blankDown
+
+
+" Move lines up/down
+" http://vim.wikia.com/wiki/Moving_lines_up_or_down
+function! s:MoveBlockDown() range
+  execute a:firstline "," a:lastline "move '>+1"
+  normal! gv=gv
+endfunction
+
+function! s:MoveBlockUp() range
+  execute a:firstline "," a:lastline "move '<-2"
+  normal! gv=gv
+endfunction
+
+nnoremap <silent> <A-j> :m .+1<CR>==
+nnoremap <silent> <A-k> :m .-2<CR>==
+inoremap <silent> <A-j> <Esc>:m .+1<CR>==gi
+inoremap <silent> <A-k> <Esc>:m .-2<CR>==gi
+vnoremap <silent> <A-j> :call <SID>MoveBlockDown()<CR>
+vnoremap <silent> <A-k> :call <SID>MoveBlockUp()<CR>
+
+
+" Duplicate lines
+vnoremap <silent> <leader>D :copy '><CR>gv
+nnoremap <silent> <leader>D :<C-u>execute "normal! yy" . v:count1 . "p"<CR>
+
+" Join lines and keep the cursor in place
+nnoremap J mzJ`z
 
 " }}}
