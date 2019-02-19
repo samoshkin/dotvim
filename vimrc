@@ -566,9 +566,14 @@ let g:gitgutter_enabled = 1
 
 nnoremap <silent> <F4> :GitGutterToggle<CR>
 nnoremap <silent> <leader><F4> :GitGutterFold<CR>
-nmap <leader>hp <Plug>GitGutterPreviewHunk
-nmap <leader>hs <Plug>GitGutterStageHunk
-nmap <leader>hu <Plug>GitGutterUndoHunk
+
+" Use 'h' as a motion for hunks, instead of default 'c'
+nmap ]h <Plug>GitGutterNextHunk
+nmap [h <Plug>GitGutterPrevHunk
+omap ih <Plug>GitGutterTextObjectInnerPending
+omap ah <Plug>GitGutterTextObjectOuterPending
+xmap ih <Plug>GitGutterTextObjectInnerVisual
+xmap ah <Plug>GitGutterTextObjectOuterVisual
 
 " vim-smooth-scroll
 noremap <silent> <c-u> :call smooth_scroll#up(&scroll, 20, 2)<CR>
@@ -1003,9 +1008,3 @@ let g:airline#extensions#tabline#fnamemod = ':p:~:.'
 let g:airline#extensions#tabline#fnamecollapse = 1
 
 " }}}
-
-" Text objects
-" let g:textobj_indent_no_default_key_mappings=0
-" xmap ie <Plug>(textobj-entire-i)
-" omap ie <Plug>(textobj-entire-i)
-
