@@ -95,6 +95,9 @@ set pastetoggle=<F2>
 " Experimental
 set shiftround
 
+" Disable startup message
+set shortmess+=I
+
 " Additional <ESC> mappings:
 " jk, in INSERT mode
 " <C-c>, I'm so used to it after shell environment
