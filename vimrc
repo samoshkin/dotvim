@@ -299,6 +299,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'scrooloose/nerdtree'
   Plug '907th/vim-auto-save'
   Plug 'dracula/vim', { 'as': 'dracula' }
+  Plug 'tpope/vim-obsession'
   Plug 'vim-airline/vim-airline'
   Plug 'vim-airline/vim-airline-themes'
   Plug 'junegunn/fzf', { 'do': './install --bin' }
@@ -316,7 +317,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'svermeulen/vim-subversive'
   Plug 'svermeulen/vim-yoink'
   Plug 'farmergreg/vim-lastplace'
-  Plug 'tpope/vim-obsession'
 call plug#end()
 syntax off
 
@@ -487,54 +487,6 @@ xnoremap <silent> <leader>F y:FzfRg <C-R>"<CR>
 " previous-history instead of down and up. If you don't like the change,
 " explicitly bind the keys to down and up in your $FZF_DEFAULT_OPTS.
 let g:fzf_history_dir = '~/.local/share/fzf-history'
-
-" Airline status line
-
-let g:airline_theme='jellybeans'
-
-" Do not use powerline arrows, it looks not serious
-let g:airline_powerline_fonts = 0
-
-" Do not use default status line
-set noshowmode
-
-let g:airline_skip_empty_sections = 1
-
-" Disable some icons in lune number section to reduce length
-if !exists('g:airline_symbols')
-  let g:airline_symbols = {}
-endif
-let g:airline_symbols.linenr=''
-let g:airline_symbols.maxlinenr=''
-
-" Custom line number section. Do not show total number of lines
-let g:airline_section_z = airline#section#create(['windowswap', '%3p%% ', 'linenr', ':%3v'])
-
-" Do not show default encoding. Show only when does not match given string
-"let g:airline#parts#ffenc#skip_expected_string='utf-8[unix]'
-
-"Tabline
-let g:airline#extensions#tabline#enabled = 1
-let g:airline#extensions#tabline#show_splits = 0
-let g:airline#extensions#tabline#show_close_button = 0
-let g:airline#extensions#tabline#tab_nr_type = 1
-let g:airline#extensions#tabline#show_tab_nr = 1
-let g:airline#extensions#tabline#tab_min_count = 2
-
-
-" Disable fancy powerline arrows
-let g:airline#extensions#tabline#left_sep = ''
-let g:airline#extensions#tabline#left_alt_sep = '|'
-let g:airline#extensions#tabline#right_sep = ''
-let g:airline#extensions#tabline#right_alt_sep = '|'
-
-" Buffers (for now disable, Tabline makes sense only for tabs IMO)
-let g:airline#extensions#tabline#show_buffers = 0
-let g:airline#extensions#tabline#buffer_min_count = 2
-let g:airline#extensions#tabline#buffers_label = 'bufs'
-let g:airline#extensions#tabline#formatter = 'unique_tail'
-let g:airline#extensions#tabline#fnamemod = ':p:~:.'
-let g:airline#extensions#tabline#fnamecollapse = 1
 
 
 " Insert blank line below and above
@@ -985,4 +937,56 @@ augroup ft_gitcommit
   au FileType gitcommit syn clear gitcommitSummary
   au FileType gitcommit syn match gitcommitSummary "^.\{0,72\}" contained containedin=gitcommitFirstLine nextgroup=gitcommitOverflow contains=@Spell
 augroup END
+" }}}
+
+" Plugin: Airline {{{
+
+let g:airline_theme='jellybeans'
+
+" Do not use powerline arrows, it looks not serious
+let g:airline_powerline_fonts = 0
+
+" Do not use default status line
+set noshowmode
+
+let g:airline_skip_empty_sections = 1
+
+" Disable some icons in lune number section to reduce length
+if !exists('g:airline_symbols')
+  let g:airline_symbols = {}
+endif
+let g:airline_symbols.linenr=''
+let g:airline_symbols.maxlinenr=''
+
+" airline 'obsession' extension does not work for some reason
+" Add indicator manually as described in wiki
+" https://github.com/vim-airline/vim-airline/wiki/Configuration-Examples-and-Snippets#integration-with-vim-obsession
+let g:airline#extensions#obsession#enabled=0
+let g:airline_section_z = airline#section#create(['%{ObsessionStatus(''$'', '''')}', 'windowswap', '%3p%% ', 'linenr', ':%3v'])
+
+" Do not show default encoding. Show only when does not match given string
+let g:airline#parts#ffenc#skip_expected_string='utf-8[unix]'
+
+"Tabline
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#show_splits = 0
+let g:airline#extensions#tabline#show_close_button = 0
+let g:airline#extensions#tabline#tab_nr_type = 1
+let g:airline#extensions#tabline#show_tab_nr = 1
+let g:airline#extensions#tabline#tab_min_count = 2
+
+" Disable fancy powerline arrows
+let g:airline#extensions#tabline#left_sep = ''
+let g:airline#extensions#tabline#left_alt_sep = '|'
+let g:airline#extensions#tabline#right_sep = ''
+let g:airline#extensions#tabline#right_alt_sep = '|'
+
+" Buffers (for now disable, Tabline makes sense only for tabs IMO)
+let g:airline#extensions#tabline#show_buffers = 0
+let g:airline#extensions#tabline#buffer_min_count = 2
+let g:airline#extensions#tabline#buffers_label = 'bufs'
+let g:airline#extensions#tabline#formatter = 'unique_tail'
+let g:airline#extensions#tabline#fnamemod = ':p:~:.'
+let g:airline#extensions#tabline#fnamecollapse = 1
+
 " }}}
