@@ -291,7 +291,7 @@ set smartcase
 " Stop when reaching last match, don't start over
 set nohlsearch
 set incsearch
-set nowrapscan
+set wrapscan
 
 " Turn on hlsearch to highlight all matches during incremental search
 " Use <C-j> and <C-k> to navigate through matches instead of <C-d>,<C-t>
