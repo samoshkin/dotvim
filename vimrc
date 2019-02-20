@@ -162,6 +162,26 @@ syntax off
 runtime macros/matchit.vim
 " }}}
 
+" Color scheme{{{
+set background=dark
+colorscheme dracula
+
+" Enable true color support
+if &t_Co >= 256 || has("gui_running")
+  "let g:dracula_italic=0
+  let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
+  let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
+
+  if (has("termguicolors"))
+    set termguicolors
+  endif
+endif
+
+if &t_Co > 2 || has("gui_running")
+  syntax on
+endif
+" }}}
+
 " Line manipulation{{{
 
 " Insert blank line below and above without changing cursor
@@ -702,26 +722,6 @@ if !isdirectory(expand(&directory))
   call mkdir(expand(&directory), "p")
 endif
 
-" }}}
-
-" Color scheme{{{
-set background=dark
-colorscheme dracula
-
-" Enable true color support
-if &t_Co >= 256 || has("gui_running")
-  "let g:dracula_italic=0
-  let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
-  let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
-
-  if (has("termguicolors"))
-    set termguicolors
-  endif
-endif
-
-if &t_Co > 2 || has("gui_running")
-  syntax on
-endif
 " }}}
 
 " Misc{{{
