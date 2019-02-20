@@ -316,8 +316,8 @@ nnoremap <silent> <leader>n :set hlsearch!<cr>
 hi! link Search IncSearch
 
 " Center search results
-nnoremap n nzz
-nnoremap N Nzz
+nnoremap n nzvzz
+nnoremap N Nzvzz
 nnoremap * *zz
 nnoremap # #zz
 
@@ -465,6 +465,7 @@ set foldmethod=marker
 set foldlevelstart=0
 set foldcolumn=1
 set foldopen-=block
+set foldopen+=jump
 
 " Use [z and ]z to navigate to start/end of the fold
 " Use zj and zk to navigate to neighbooring folds
