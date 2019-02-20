@@ -57,8 +57,8 @@ set cursorline
 " Show cursorline in current window and not in insert mode
 augroup cursor_line
   au!
-  au WinLeave,InsertEnter * set nocursorline
-  au WinEnter,InsertLeave * set cursorline
+  au InsertEnter * setlocal nocursorline
+  au InsertLeave * setlocal cursorline
 augroup END
 
 " Disable reading vim variables & options from special comments within file header or footer
@@ -141,6 +141,9 @@ call plug#begin('~/.vim/plugged')
   Plug 'svermeulen/vim-yoink'
   Plug 'farmergreg/vim-lastplace'
   Plug 'rhysd/clever-f.vim'
+  Plug 'ryanoasis/vim-devicons'
+  " Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
+  Plug 'vim-scripts/CursorLineCurrentWindow'
 
   " Text objects
   Plug 'kana/vim-textobj-user'
@@ -179,7 +182,17 @@ endif
 
 if &t_Co > 2 || has("gui_running")
   syntax on
+  set guifont=DroidSansMono\ Nerd\ Font\ Mono:h14
 endif
+
+" Show NERDTree directory nodes in green
+hi! __DirectoryNode cterm=bold ctermfg=106 gui=bold guifg=#9AC83A
+hi! link NerdTreeDir __DirectoryNode
+hi! link NERDTreeFlags __DirectoryNode
+
+" Show NERDTree toggle icons as white
+hi! link NERDTreeOpenable Normal
+hi! link NERDTreeClosable Normal
 " }}}
 
 " Line manipulation{{{
@@ -812,7 +825,7 @@ let NERDTreeShowHidden=1
 let NERDTreeMinimalUI=1
 
 " Increase tree explorer split a bit (default is 31)
-let NERDTreeWinSize=35
+let NERDTreeWinSize=40
 
 " Automatically delete buffer when file is deleted from the tree explorer
 let NERDTreeAutoDeleteBuffer=1
@@ -832,13 +845,16 @@ augroup nerd_tree
   autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") | exe 'NERDTree' argv()[0] | wincmd p | ene | endif
 
   " Exit vim when the only buffer remaining is NerdTree
-  autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+  autocmd BufEnter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
   " Use arrow keys to navigate
   autocmd FileType nerdtree nmap <buffer> l o
   autocmd FileType nerdtree nmap <buffer> L O
   autocmd FileType nerdtree nmap <buffer> h p
   autocmd FileType nerdtree nmap <buffer> H P
+
+  " Disable cursorline in NERDtree to avoid lags
+  autocmd FileType nerdtree setlocal nocursorline
 augroup END
 
 " Preview in splits without 'g...' prefix
@@ -853,6 +869,32 @@ let NERDTreeIgnore=['\~$', '^\.git$[[dir]]', '^node_modules$[[dir]]']
 
 " Tweak status line, so it shortens path if it's under HOME directory
 let g:NERDTreeStatusline="%{exists('b:NERDTree')? fnamemodify(b:NERDTree.root.path.str(), ':p:~') :''}"
+
+
+" Plugin: ryanoasis/vim-devicons
+" Do not show brackets around icons in NERDTree
+let g:webdevicons_conceal_nerdtree_brackets = 1
+
+" Show icons for directories
+let g:WebDevIconsUnicodeDecorateFolderNodes = 1
+let g:WebDevIconsUnicodeGlyphDoubleWidth = 0
+
+" Use different icons for opened and closed folder
+let g:DevIconsEnableFoldersOpenClose = 1
+
+" Do not put extra whitespace before icon
+let g:WebDevIconsNerdTreeBeforeGlyphPadding=''
+
+
+" Plugin 'tiagofumo/vim-nerdtree-syntax-highlight'
+" Adds syntax highlighting for common filie extensions
+" Works with devicons to highlight only icons
+
+" We can highlight folders
+" let g:NERDTreeHighlightFolders = 0 " enables folder icon highlighting using exact match
+" let g:NERDTreeHighlightFoldersFullName = 0 " highlights the folder name
+" let g:NERDTreeExactMatchHighlightColor = {} " this line is needed to avoid error
+" let g:NERDTreeExactMatchHighlightColor['tmp'] = "689FB6"
 " }}}
 
 " PLUGIN: fzf.vim{{{
@@ -1028,5 +1070,4 @@ augroup ft_vim
 augroup END
 
 " }}}
-
 
