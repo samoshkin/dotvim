@@ -144,6 +144,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'ryanoasis/vim-devicons'
   " Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
   Plug 'vim-scripts/CursorLineCurrentWindow'
+  Plug 'majutsushi/tagbar'
 
   " Text objects
   Plug 'kana/vim-textobj-user'
@@ -1051,6 +1052,17 @@ let g:clever_f_smart_case = 1
 
 " Use same highlighting group as a normal search
 let g:clever_f_mark_char_color = 'IncSearch'
+" }}}
+
+" PLUGIN: majutsushi/tagbar{{{
+nnoremap <silent> <F9> :TagbarOpenAutoClose<CR>
+let g:tagbar_autoclose = 0
+let g:tagbar_autofocus = 1
+let g:tagbar_compact = 1
+let g:tagbar_foldlevel = 1
+let g:tagbar_indent = 1
+let g:tagbar_iconchars = ['▸', '▾']
+let g:tagbar_silent = 1
 " }}}
 
 " File types{{{
