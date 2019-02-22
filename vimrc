@@ -937,8 +937,7 @@ let g:fzf_buffers_jump = 1
 " File path completion in Insert mode using fzf
 imap <c-x><c-k> <plug>(fzf-complete-word)
 imap <c-x><c-f> <plug>(fzf-complete-path)
-imap <c-x><c-l> <plug>(fzf-complete-line)
-" imap <c-x><c-j> <plug>(fzf-complete-file-ag)
+imap <c-x><c-l> <plug>(fzf-complete-buffer-line)
 
 " Open directory explorer at cwd
 nmap <silent> <leader>O :edit .<CR>
@@ -950,6 +949,7 @@ nnoremap <silent> <leader>`  :FzfMarks<CR>
 nnoremap <silent> <F1>  :FzfHelptags<CR>
 noremap <silent> <leader>; :FzfCommands<CR>
 nnoremap <silent> <C-_> :FzfHistory/<CR>
+nnoremap <silent> <leader>l :FzfBLines<CR>
 
 " fzf.Tags uses existing 'tags' file or generates it otherwise
 nnoremap <silent> <leader>t :FzfTags<CR>
