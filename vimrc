@@ -356,7 +356,6 @@ vnoremap <C-s> :s/
 
 " Navigation{{{
 
-" TODO: add shortcuts to navigate tags
 " TODO: add shortcuts to navigate conflict markers/diff hunks
 
 " When navigating to the EOF, center the screen
@@ -373,10 +372,10 @@ nnoremap <C-o> <C-o>zz
 " z-, moves next line above the window
 nnoremap z- z^
 
-" Quickfix and location list navigation
 " Borrowed from tpope/vim-unimpaired
 " Pitfall: In order to use <C-q>, <C-s> shortcuts to navigate quick list
 " make sure to sisable XON/XOFF flow control with 'stty -ixon'
+" Quickfix list
 nnoremap <silent> ]q :cnext<CR>
 nnoremap <silent> [q :cprev<CR>
 nnoremap <silent> ]Q :clast<CR>
@@ -384,12 +383,25 @@ nnoremap <silent> [Q :cfirst<CR>
 nnoremap <silent> ]<C-q> :cnfile<CR>
 nnoremap <silent> [<C-q> :cpfile<CR>
 
+" Location list
 nnoremap <silent> ]l :lnext<CR>
 nnoremap <silent> [l :lprev<CR>
 nnoremap <silent> ]L :llast<CR>
 nnoremap <silent> [L :lfirst<CR>
 nnoremap <silent> ]<C-l> :lnfile<CR>
 nnoremap <silent> [<C-l> :lpfile<CR>
+
+" Tag matching list
+nnoremap <silent> ]t :tnext<CR>
+nnoremap <silent> [t :tprev<CR>
+nnoremap <silent> ]T :tlast<CR>
+nnoremap <silent> [T :tfirst<CR>
+
+" Tags in preview window
+nnoremap <silent> ]p :ptnext<CR>
+nnoremap <silent> [p :ptprev<CR>
+nnoremap <silent> ]P :ptlast<CR>
+nnoremap <silent> [P :ptfirst<CR>
 
 " TODO: toggle quickfix and location list
 " Automatically open quickfix window
@@ -899,7 +911,7 @@ let g:WebDevIconsNerdTreeBeforeGlyphPadding=''
 " }}}
 
 " PLUGIN: fzf.vim{{{
-
+" TODO: Search among lines in buffer
 let g:fzf_layout = { 'down': '~40%' }
 let g:fzf_action = {
   \ 'ctrl-t': 'tab split',
@@ -923,15 +935,51 @@ nmap <silent> <leader>O :edit .<CR>
 
 nnoremap <silent> <expr> <leader>o (expand('%') =~ 'NERD_tree' ? "\<C-w>\<C-w>" : '').":FzfFiles\<CR>"
 cnoremap <silent> <C-p>  :FzfHistory:<CR>
-nnoremap <silent> <leader>p  :FzfBuffers<CR>
+nnoremap <silent> <leader>b  :FzfBuffers<CR>
 nnoremap <silent> <leader>`  :FzfMarks<CR>
 nnoremap <silent> <F1>  :FzfHelptags<CR>
 noremap <silent> <leader>; :FzfCommands<CR>
 nnoremap <silent> <C-_> :FzfHistory/<CR>
 
+" fzf.Tags uses existing 'tags' file or generates it otherwise
+nnoremap <silent> <leader>t :FzfTags<CR>
+xnoremap <silent> <leader>t "zy:FzfTags <C-r>z<CR>
+
+" fzf.BTags generate tags on-fly for current file
+nnoremap <silent> <leader>T :FzfBTags<CR>
+xnoremap <silent> <leader>T "zy:FzfBTags <C-r>z<CR>
+
 " Search files containing word under the cursor or selection using 'rg'
-nnoremap <silent> <leader>F :FzfRg <C-r><C-w><CR>
-xnoremap <silent> <leader>F y:FzfRg <C-R>"<CR>
+" nnoremap  <expr> <leader>fg ':FzfRg '. expand("<cword>") . '<cr>'
+" xnoremap <silent> <leader>fg y:FzfRg <C-R>"<CR>
+cnoreabbrev rg FzfRg
+
+" Show list of change in fzf
+" Some code is borrowed from ctrlp.vim and tweaked to work with fzf
+function! s:fzf_changelist()
+  redir => result
+  silent! changes
+  redir END
+
+  return map(split(result, "\n")[1:], 'tr(v:val, "	", " ")')
+endf
+
+function! s:fzf_changeaccept(line)
+  let info = matchlist(a:line, '\s\+\(\d\+\)\s\+\(\d\+\)\s\+\(\d\+\).\+$')
+  call cursor(get(info, 2), get(info, 3))
+  silent! norm! zvzz
+endfunction
+
+function! s:fzf_changes()
+  return fzf#run(fzf#wrap({
+        \ 'source':  reverse(s:fzf_changelist()),
+        \ 'sink': function('s:fzf_changeaccept'),
+        \ 'options': '+m +s --nth=3..'
+        \ }))
+endfunction
+
+command FzfChanges call s:fzf_changes()
+nnoremap <silent> <leader>f; :FzfChanges<CR>
 
 " Enable per-command history.
 " CTRL-N and CTRL-P will be automatically bound to next-history and
@@ -1011,7 +1059,6 @@ xmap <leader>c <Plug>Commentary
 " }}}
 
 " PLUGIN: vim-trailing-whitespace{{{
-
 let g:extra_whitespace_ignored_filetypes=['fugitive']
 
 " In addition to https://github.com/bronson/vim-trailing-whitespace
@@ -1055,7 +1102,7 @@ let g:clever_f_mark_char_color = 'IncSearch'
 " }}}
 
 " PLUGIN: majutsushi/tagbar{{{
-nnoremap <silent> <F9> :TagbarOpenAutoClose<CR>
+nnoremap <silent> <F9> :TagbarToggle<CR>
 let g:tagbar_autoclose = 0
 let g:tagbar_autofocus = 1
 let g:tagbar_compact = 1
@@ -1064,6 +1111,7 @@ let g:tagbar_indent = 1
 let g:tagbar_iconchars = ['▸', '▾']
 let g:tagbar_silent = 1
 " }}}
+
 
 " File types{{{
 augroup ft_gitcommit
@@ -1082,4 +1130,6 @@ augroup ft_vim
 augroup END
 
 " }}}
+
+
 
