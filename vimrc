@@ -1012,6 +1012,9 @@ augroup vim_figutive
 
   " Delete fugitive buffers automatically on leave
   autocmd BufReadPost fugitive://* set bufhidden=delete
+
+  " Automatically start insert mode for commit messages
+  autocmd BufEnter COMMIT_EDITMSG startinsert
 augroup END
 
 nnoremap <silent> <leader>gs :G<CR>
