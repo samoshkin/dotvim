@@ -1,0 +1,4 @@
+--langmap=Vim:+(vimrc)
+
+--exclude=autoload
+--exclude=plugged

@@ -775,31 +775,122 @@ nnoremap <f10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> 
 
 " PLUGIN: Airline {{{
 
-let g:airline_theme='jellybeans'
+" Do not use default status line
+set noshowmode
 
 " Do not use powerline arrows, it looks not serious
 let g:airline_powerline_fonts = 0
 
-" Do not use default status line
-set noshowmode
-
 let g:airline_skip_empty_sections = 1
 
-" Disable some icons in lune number section to reduce length
+" Disable some icons in lune number section_z to reduce length
 if !exists('g:airline_symbols')
   let g:airline_symbols = {}
 endif
 let g:airline_symbols.linenr=''
 let g:airline_symbols.maxlinenr=''
 
-" airline 'obsession' extension does not work for some reason
-" Add indicator manually as described in wiki
-" https://github.com/vim-airline/vim-airline/wiki/Configuration-Examples-and-Snippets#integration-with-vim-obsession
-let g:airline#extensions#obsession#enabled=0
-let g:airline_section_z = airline#section#create(['%{ObsessionStatus(''$'', '''')}', 'windowswap', '%3p%% ', 'linenr', ':%3v'])
 
+" Extensions
+"
+" Disable airline default extension, as we want to customize output:
+" - obsession (btw, it does not work for some reason)
+" - gutentags
+" - tagbar
+let g:airline#extensions#obsession#enabled=0
+let g:airline#extensions#gutentags#enabled = 0
+let airline#extensions#tagbar#enabled = 0
+
+" 'obsession' extension
+function! GetObsessionStatus()
+  return ObsessionStatus('ⓢ', '')
+endfunction
+
+call airline#parts#define_function('_obsession', 'GetObsessionStatus')
+call airline#parts#define_accent('_obsession', 'bold')
+
+" 'gutentags' extensions
+function! GetGutentagStatusText(mods) abort
+  let l:msg = ''
+
+  " Show indicator when tags are enabled
+  if g:gutentags_enabled
+    let l:msg .= 'ⓣ'
+  endif
+
+  " Show indicator when tag generation is in progress
+  if index(a:mods, 'ctags') >= 0
+    let l:msg = '~' . l:msg
+  endif
+
+  return l:msg
+endfunction
+
+function! AirlineGutentagsPart()
+  return gutentags#statusline_cb(function('GetGutentagStatusText'), 1)
+endfunction
+
+call airline#parts#define_function('_gutentags', 'AirlineGutentagsPart')
+call airline#parts#define_accent('_gutentags', 'bold')
+
+" Modified indicator
+" Show only modified [+] indicator colored, not the whole file name
+call airline#parts#define_raw('modified', '%m')
+call airline#parts#define_accent('modified', 'orange')
+
+" 'ffenc' extension
 " Do not show default encoding. Show only when does not match given string
 let g:airline#parts#ffenc#skip_expected_string='utf-8[unix]'
+
+" hunks' extension
+let g:airline#extensions#hunks#non_zero_only = 1
+
+" Airline sections customization
+let g:airline_section_z = airline#section#create_right(['_gutentags', '_obsession', '%2p%% ', 'linenr', ':%3v'])
+let g:airline_section_c = airline#section#create(['%<', '%f', 'modified', ' ', 'readonly'])
+
+" Tell at which window width sections are shrinked
+let g:airline#extensions#default#section_truncate_width = get(g:, 'airline#extensions#default#section_truncate_width', {
+      \ 'b': 80,
+      \ 'x': 60,
+      \ 'y': 80,
+      \ 'z': 45,
+      \ 'warning': 80,
+      \ 'error': 80,
+      \ })
+
+
+" Patch airline theme
+
+" Default theme
+let g:airline_theme='jellybeans'
+
+let g:airline_theme_patch_func = 'AirlineThemePatch'
+
+" Do not change coloring of section 'c' and 'x' in visual, replace, insert modes
+" Add additional accent colors for status line icons
+function! AirlineThemePatch(palette)
+  let a:palette.insert.airline_x = a:palette.normal.airline_x
+  let a:palette.insert.airline_c = a:palette.normal.airline_c
+
+  let a:palette.replace.airline_x = a:palette.normal.airline_x
+  let a:palette.replace.airline_c = a:palette.normal.airline_c
+
+  let a:palette.visual.airline_x = a:palette.normal.airline_x
+  let a:palette.visual.airline_c = a:palette.normal.airline_c
+
+  " Reminder on palette values: [ guifg, guibg, ctermfg, ctermbg, opts ].
+  " let a:palette.accents = get(a:palette, 'accents', {})
+
+  " Do not highlight whole modified file. I want to hihglight only [+] modified indicator
+  silent! unlet a:palette.normal_modified
+  silent! unlet a:palette.replace_modified
+  silent! unlet a:palette.visual_modified
+  silent! unlet a:palette.insert_modified
+  silent! unlet a:palette.inactive_modified
+
+endfunction
+
 
 "Tabline
 let g:airline#extensions#tabline#enabled = 1
@@ -901,6 +992,9 @@ let g:DevIconsEnableFoldersOpenClose = 1
 " Do not put extra whitespace before icon
 let g:WebDevIconsNerdTreeBeforeGlyphPadding=''
 
+" Do not overwrite airline.section_y with custom fileformat indicator
+" BUG: unfortunately, vim-devicons overrites section instead of appending
+let g:webdevicons_enable_airline_statusline_fileformat_symbols = 0
 
 " Plugin 'tiagofumo/vim-nerdtree-syntax-highlight'
 " Adds syntax highlighting for common filie extensions
@@ -1134,15 +1228,36 @@ let g:lt_location_list_toggle_map = ',l'
 let g:lt_quickfix_list_toggle_map = ',q'
 " }}}
 
+" PLUGIN: ludovicchabant/vim-gutentags{{{
+
+let g:gutentags_define_advanced_commands = 1
+
+" Enable only when tags file already exists
+let g:gutentags_enabled = 0
+if filereadable('./tags')
+  let g:gutentags_enabled = 1
+endif
+
+" When enabled, force update tags file for all project
+" When disabled, removed tags file
+function s:GutentagsToggle()
+  GutentagsToggleEnabled
+
+  if g:gutentags_enabled
+    GutentagsUpdate!
+  else
+    call system('rm -f ./tags')
+  endif
+endfunction
+
+command! GutentagsToggle :call <SID>GutentagsToggle()
+nnoremap <silent> <F11> :GutentagsToggle<CR>
+
+" Let user decide when to generate tags file for the project
+" Don't do it automatically for any VCS repo
 let g:gutentags_generate_on_missing = 0
 let g:gutentags_generate_on_new = 0
-
-" Generate tags only for files which Git is aware instead of 'ctags -R .'
-" let g:gutentags_file_list_command = {
-"       \   'markers': {
-"       \     '.git': 'git ls-files --cached --others --exclude-standard',
-"       \   },
-"       \ }
+" }}}
 
 " Customize ctags for different project types
 " g:gutentags_ctags_executable_{type}
