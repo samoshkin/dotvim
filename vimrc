@@ -146,6 +146,8 @@ call plug#begin('~/.vim/plugged')
   Plug 'vim-scripts/CursorLineCurrentWindow'
   Plug 'majutsushi/tagbar'
   Plug 'Valloric/ListToggle'
+  Plug 'ludovicchabant/vim-gutentags'
+
 
   " Text objects
   Plug 'kana/vim-textobj-user'
@@ -1131,6 +1133,20 @@ let g:tagbar_silent = 1
 let g:lt_location_list_toggle_map = ',l'
 let g:lt_quickfix_list_toggle_map = ',q'
 " }}}
+
+let g:gutentags_generate_on_missing = 0
+let g:gutentags_generate_on_new = 0
+
+" Generate tags only for files which Git is aware instead of 'ctags -R .'
+" let g:gutentags_file_list_command = {
+"       \   'markers': {
+"       \     '.git': 'git ls-files --cached --others --exclude-standard',
+"       \   },
+"       \ }
+
+" Customize ctags for different project types
+" g:gutentags_ctags_executable_{type}
+
 
 " File types{{{
 augroup ft_gitcommit

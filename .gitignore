@@ -1,4 +1,6 @@
 /plugged/
 /sessions/
 /tmp/
+/cache/
 *.swp
+/tags
