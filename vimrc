@@ -768,6 +768,10 @@ cnoremap %% <C-R>=fnameescape(expand('%:h')).'/'<cr>
 " Apply '.' repeat command for selected each line in visual mode
 vnoremap . :normal .<CR>
 
+" Shortcut command to 'vim-scripts/SyntaxAttr.vim'
+command ViewSyntaxAttr call SyntaxAttr()
+
+"}}}
 
 " PLUGIN: Airline {{{
 
