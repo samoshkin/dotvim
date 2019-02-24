@@ -859,7 +859,6 @@ let g:airline#extensions#default#section_truncate_width = get(g:, 'airline#exten
       \ 'error': 80,
       \ })
 
-
 " Patch airline theme
 
 " Default theme
@@ -891,6 +890,12 @@ function! AirlineThemePatch(palette)
 
 endfunction
 
+" Hide sections on the right for inactive window, same as we do for left sections
+function! PatchInactiveStatusLine(...)
+  call setwinvar(a:2.winnr, 'airline_section_z', '')
+  call setwinvar(a:2.winnr, 'airline_section_y', '')
+endfunction
+call airline#add_inactive_statusline_func('PatchInactiveStatusLine')
 
 "Tabline
 let g:airline#extensions#tabline#enabled = 1
