@@ -135,7 +135,6 @@ call plug#begin('~/.vim/plugged')
   Plug 'tpope/vim-commentary'
   Plug 'bronson/vim-trailing-whitespace'
   Plug 'godlygeek/tabular'
-  Plug 'jiangmiao/auto-pairs'
   Plug 'svermeulen/vim-cutlass'
   Plug 'svermeulen/vim-subversive'
   Plug 'svermeulen/vim-yoink'
@@ -147,7 +146,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'majutsushi/tagbar'
   Plug 'Valloric/ListToggle'
   Plug 'ludovicchabant/vim-gutentags'
-
+  Plug 'Raimondi/delimitMate'
 
   " Text objects
   Plug 'kana/vim-textobj-user'
@@ -1187,25 +1186,6 @@ let g:extra_whitespace_ignored_filetypes=['fugitive']
 " augroup END
 " }}}
 
-" PLUGIN: jiangmiao/auto-pairs{{{
-let g:AutoPairsShortcutToggle = '<F7>'
-
-" Disable most bells and whistles
-let g:AutoPairsShortcutJump=''
-let g:AutoPairsShortcutBackInsert=''
-let g:AutoPairsMoveCharacter=''
-
-" I'm using only core closing behavior + fast wrap(maybe?)
-let g:AutoPairsShortcutFastWrap='<A-w>'
-
-" Do not autoclose double quote in vimrc.
-augroup auto_pairs
-  au!
-
-  au FileType vim let b:AutoPairs=copy(g:AutoPairs) | unlet b:AutoPairs['"']
-augroup END
-" }}}
-
 " PLUGIN: rhysd/clever-f.vim{{{
 
 " Add highlighting for f/t searches
@@ -1264,8 +1244,24 @@ let g:gutentags_generate_on_missing = 0
 let g:gutentags_generate_on_new = 0
 " }}}
 
-" Customize ctags for different project types
-" g:gutentags_ctags_executable_{type}
+" PLUGIN: Raimondi/delimitMate{{{
+
+" Characters that form pairs. '%' would jumpt between those characters
+" Also used by delimitMate plugin to autoclose such pairs
+set matchpairs+=<:>
+
+let delimitMate_autoclose = 1
+let g:delimitMate_expand_cr = 2
+let g:delimitMate_expand_space = 1
+let g:delimitMate_jump_expansion = 1
+let g:delimitMate_balance_matchpairs = 1
+" Indeed we are going to exclude Comment and String syntax group names
+" But turns out this plugin relies upon highlight groups rather than syntax group names
+" So we have to use linked Dracula highlight groups instead
+" NOTE: If you change current theme, this code should be updated as well
+" https://github.com/Raimondi/delimitMate/issues/277#issuecomment-466780034
+let g:delimitMate_excluded_regions = "DraculaYellow,DraculaComment"
+" }}}
 
 
 " File types{{{
