@@ -148,6 +148,8 @@ call plug#begin('~/.vim/plugged')
   Plug 'ludovicchabant/vim-gutentags'
   Plug 'Raimondi/delimitMate'
   Plug 'vim-scripts/SyntaxAttr.vim'
+  Plug 'SirVer/ultisnips'
+  Plug 'honza/vim-snippets'
 
   " Text objects
   Plug 'kana/vim-textobj-user'
@@ -1258,6 +1260,14 @@ let g:delimitMate_balance_matchpairs = 1
 let g:delimitMate_excluded_regions = "DraculaYellow,DraculaComment"
 " }}}
 
+" PLUGIN: SirVer/ultisnips{{{
+" SirVer/ultisnips is only the snippet engine
+" For snippet definitions, see 'honza/vim-snippets'
+let g:UltiSnipsExpandTrigger="<Tab>"
+let g:UltiSnipsJumpForwardTrigger="<Tab>"
+let g:UltiSnipsJumpBackwardTrigger="<S-Tab>"
+let g:UltiSnipsEditSplit = 'context'
+" }}}
 
 " File types{{{
 augroup ft_gitcommit
