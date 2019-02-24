@@ -147,6 +147,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'Valloric/ListToggle'
   Plug 'ludovicchabant/vim-gutentags'
   Plug 'Raimondi/delimitMate'
+  Plug 'vim-scripts/SyntaxAttr.vim'
 
   " Text objects
   Plug 'kana/vim-textobj-user'
@@ -764,12 +765,6 @@ cnoremap %% <C-R>=fnameescape(expand('%:h')).'/'<cr>
 
 " Apply '.' repeat command for selected each line in visual mode
 vnoremap . :normal .<CR>
-
-" Output the current syntax group
-nnoremap <f10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<'
-      \ . synIDattr(synID(line("."),col("."),0),"name") . "> lo<"
-      \ . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<cr>
-" }}}
 
 
 " PLUGIN: Airline {{{
