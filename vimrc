@@ -1046,12 +1046,13 @@ nmap <silent> <leader>O :edit .<CR>
 
 nnoremap <silent> <expr> <leader>o (expand('%') =~ 'NERD_tree' ? "\<C-w>\<C-w>" : '').":FzfFiles\<CR>"
 cnoremap <silent> <C-p>  :FzfHistory:<CR>
+cnoremap <silent> <C-_> <ESC>:FzfHistory/<CR>
 nnoremap <silent> <leader>b  :FzfBuffers<CR>
 nnoremap <silent> <leader>`  :FzfMarks<CR>
-nnoremap <silent> <F1>  :FzfHelptags<CR>
+nnoremap <silent> <F1> :FzfHelptags<CR>
 noremap <silent> <leader>; :FzfCommands<CR>
-nnoremap <silent> <C-_> :FzfHistory/<CR>
 nnoremap <silent> <leader>l :FzfBLines<CR>
+inoremap <silent> <F3> <ESC>:FzfSnippets<CR>
 
 " fzf.Tags uses existing 'tags' file or generates it otherwise
 nnoremap <silent> <leader>t :FzfTags<CR>
