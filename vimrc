@@ -1050,6 +1050,7 @@ cnoremap <silent> <C-_> <ESC>:FzfHistory/<CR>
 nnoremap <silent> <leader>b  :FzfBuffers<CR>
 nnoremap <silent> <leader>`  :FzfMarks<CR>
 nnoremap <silent> <F1> :FzfHelptags<CR>
+inoremap <silent> <F1> <ESC>:FzfHelptags<CR>
 noremap <silent> <leader>; :FzfCommands<CR>
 nnoremap <silent> <leader>l :FzfBLines<CR>
 inoremap <silent> <F3> <ESC>:FzfSnippets<CR>
