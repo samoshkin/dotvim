@@ -1398,10 +1398,7 @@ augroup ft_vim
   au!
 
   " Automatically source vimrc on change
-  autocmd BufWritePost vimrc source $MYVIMRC
+  autocmd BufWritePost $MYVIMRC source $MYVIMRC
 augroup END
 
 " }}}
-
-
-
