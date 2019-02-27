@@ -152,6 +152,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'SirVer/ultisnips'
   Plug 'honza/vim-snippets'
   Plug 'mattn/emmet-vim'
+  Plug 'editorconfig/editorconfig-vim'
 
   " Text objects
   Plug 'kana/vim-textobj-user'
@@ -1364,6 +1365,11 @@ augroup plugin_emmet
 augroup END
 " }}}
 
+" PLUGIN: editorconfig/editorconfig-vim{{{
+let g:EditorConfig_exclude_patterns = ['fugitive://.*']
+let g:EditorConfig_max_line_indicator = 'exceeding'
+let g:EditorConfig_preserve_formatoptions = 1
+" }}}
 
 " File types{{{
 augroup ft_gitcommit
