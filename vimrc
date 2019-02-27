@@ -112,6 +112,7 @@ if &term =~ 'xterm' && !has("gui_running")
   execute "set <S-F2>=\e[1;2Q"
   execute "set <A-k>=\ek"
   execute "set <A-j>=\ej"
+  execute "set <A-,>=\e,"
 endif
 " }}}
 
@@ -150,6 +151,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'vim-scripts/SyntaxAttr.vim'
   Plug 'SirVer/ultisnips'
   Plug 'honza/vim-snippets'
+  Plug 'mattn/emmet-vim'
 
   " Text objects
   Plug 'kana/vim-textobj-user'
@@ -756,6 +758,75 @@ endif
 
 " }}}
 
+" Context-aware Tab behavior{{{
+function s:ExpandTab()
+  if pumvisible()
+    return "\<C-n>"
+  endif
+
+  let l:snippet = UltiSnips#ExpandSnippetOrJump()
+  if g:ulti_expand_or_jump_res > 0
+    return ""
+  endif
+
+  if s:IsEmmetInstalled()
+    if s:IsInsideEmmetExpansion()
+      call feedkeys("\<A-,>n")
+      return ""
+    endif
+
+    if emmet#isExpandable()
+      call feedkeys("\<A-,>,")
+      return ""
+    endif
+  endif
+
+  return "\<Tab>"
+endfunction
+
+
+function s:ExpandShiftTab()
+  if pumvisible()
+    return "\<C-p>"
+  endif
+
+  let l:snippet = UltiSnips#JumpBackwards()
+  if g:ulti_jump_backwards_res > 0
+    return ""
+  endif
+
+  if s:IsEmmetInstalled() && s:IsInsideEmmetExpansion()
+    call feedkeys("\<A-,>N")
+    return ""
+  endif
+
+  return "\<S-Tab>"
+endfunction
+
+function s:IsInsideEmmetExpansion()
+  let line = getline('.')
+
+  " Check if we're inside quotes or angle brackets
+  if col('.') < len(line)
+    let line = matchstr(line, '[">][^<"]*\%'.col('.').'c[^>"]*[<"]')
+    return len(line) >= 2
+  endif
+
+  return 0
+endfunction
+
+function s:IsEmmetInstalled()
+  return hasmapto('<plug>(emmet-move-next)', 'i') &&
+        \ hasmapto('<plug>(emmet-move-prev)', 'i') &&
+        \ hasmapto('<plug>(emmet-expand-abbr)', 'i')
+endfunction
+
+inoremap <Tab> <C-R>=<SID>ExpandTab()<CR>
+inoremap <S-Tab> <C-R>=<SID>ExpandShiftTab()<CR>
+snoremap <Tab> <ESC>:call UltiSnips#JumpForwards()<CR>
+snoremap <S-Tab> <ESC>:call UltiSnips#JumpBackwards()<CR>
+" }}}
+
 " Misc{{{
 
 " Check if files are changed outside and prompt to reload
@@ -772,6 +843,7 @@ vnoremap . :normal .<CR>
 command ViewSyntaxAttr call SyntaxAttr()
 
 "}}}
+
 
 " PLUGIN: Airline {{{
 
@@ -1269,11 +1341,29 @@ let g:delimitMate_excluded_regions = "DraculaYellow,DraculaComment"
 " PLUGIN: SirVer/ultisnips{{{
 " SirVer/ultisnips is only the snippet engine
 " For snippet definitions, see 'honza/vim-snippets'
-let g:UltiSnipsExpandTrigger="<Tab>"
-let g:UltiSnipsJumpForwardTrigger="<Tab>"
-let g:UltiSnipsJumpBackwardTrigger="<S-Tab>"
+
+" Do not let UltiSnips set <Tab> mapping, as we're going to provide own implementation
+" Also we don't need snippet listing, as we're using fzf for this purpose
+let g:UltiSnipsExpandTrigger="<NUL>"
+let g:UltiSnipsListSnippets="<NUL>"
 let g:UltiSnipsEditSplit = 'context'
 " }}}
+
+" PLUGIN" mattn/emmet-vim{{{
+let g:user_emmet_leader_key = "<A-,>"
+let g:user_emmet_mode = 'iv'
+
+" Enable only for some file types
+let g:user_emmet_install_global = 0
+augroup plugin_emmet
+  au!
+
+  autocmd FileType html,css EmmetInstall
+  autocmd FileType html,css imap <C-j> <plug>(emmet-move-next)
+  autocmd FileType html,css imap <C-k> <plug>(emmet-move-prev)
+augroup END
+" }}}
+
 
 " File types{{{
 augroup ft_gitcommit
