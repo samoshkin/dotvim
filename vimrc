@@ -175,8 +175,6 @@ runtime macros/matchit.vim
 " }}}
 
 " Color scheme{{{
-set background=dark
-colorscheme dracula
 
 " Enable true color support
 if &t_Co >= 256 || has("gui_running")
@@ -194,14 +192,30 @@ if &t_Co > 2 || has("gui_running")
   set guifont=DroidSansMono\ Nerd\ Font\ Mono:h14
 endif
 
-" Show NERDTree directory nodes in green
-hi! __DirectoryNode cterm=bold ctermfg=106 gui=bold guifg=#9AC83A
-hi! link NerdTreeDir __DirectoryNode
-hi! link NERDTreeFlags __DirectoryNode
+fun s:PatchColorScheme()
+  hi! ColorColumn ctermfg=255 ctermbg=203 guifg=#F8F8F2 guibg=#FF5555
 
-" Show NERDTree toggle icons as white
-hi! link NERDTreeOpenable Normal
-hi! link NERDTreeClosable Normal
+  " Show NERDTree directory nodes in green
+  hi! __DirectoryNode cterm=bold ctermfg=106 gui=bold guifg=#9AC83A
+  hi! link NerdTreeDir __DirectoryNode
+  hi! link NERDTreeFlags __DirectoryNode
+
+  " Show NERDTree toggle icons as white
+  hi! link NERDTreeOpenable Normal
+  hi! link NERDTreeClosable Normal
+endf
+
+" Customize color scheme after it was loaded
+augroup color_scheme
+  au!
+
+  autocmd ColorScheme * call s:PatchColorScheme()
+augroup END
+
+" Apply a particular color scheme
+" NOTE: Should go after 'autocmd ColorScheme' customization
+set background=dark
+colorscheme dracula
 " }}}
 
 " Line manipulation{{{
