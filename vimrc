@@ -115,6 +115,13 @@ if &term =~ 'xterm' && !has("gui_running")
   execute "set <A-j>=\ej"
   execute "set <A-,>=\e,"
 endif
+
+" Disable arrows keys
+noremap <Up> <NOP>
+noremap <Down> <NOP>
+noremap <Left> <NOP>
+noremap <Right> <NOP>
+
 " }}}
 
 
