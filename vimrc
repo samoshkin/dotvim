@@ -469,6 +469,9 @@ xnoremap x d
 " Normalize Y behavior to yank till the end of line
 nnoremap Y y$
 
+" Move cursor to the end on yank in visual mode
+vmap y y`]
+
 " 'Use 's' as 'substitute' action, not as a shortcut to 'change' action
 nmap s <plug>(SubversiveSubstitute)
 nmap ss <plug>(SubversiveSubstituteLine)
