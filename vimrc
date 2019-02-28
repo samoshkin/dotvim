@@ -32,6 +32,7 @@ set wildmode=full
 " Set <leader> key to <Space>
 nnoremap <Space> <Nop>
 let mapleader=" "
+let maplocalleader=","
 
 " <Backspace> in Insert mode
 set backspace=indent,eol,start
@@ -504,6 +505,13 @@ nmap <C-n> <plug>(YoinkPostPasteSwapForward)
 
 nmap p <plug>(YoinkPaste_p)
 nmap P <plug>(YoinkPaste_P)
+
+" Copy file basename only
+" Copy full file path
+" Copy file's dirname
+nnoremap <localleader>fn :let @+ = expand("%:t") \| echo 'Copied to clipboard: ' . @+<CR>
+nnoremap <localleader>fp :let @+ = expand("%:p:~") \| echo 'Copied to clipboard: ' . @+<CR>
+nnoremap <localleader>fd :let @+ = expand("%:p:~:h") \| echo 'Copied to clipboard: ' . @+<CR>
 
 " }}}
 
@@ -1071,7 +1079,9 @@ let NERDTreeIgnore=['\~$', '^\.git$[[dir]]', '^node_modules$[[dir]]']
 let g:NERDTreeStatusline="%{exists('b:NERDTree')? fnamemodify(b:NERDTree.root.path.str(), ':p:~') :''}"
 
 
-" Plugin: ryanoasis/vim-devicons
+" }}}
+
+" Plugin: ryanoasis/vim-devicons {{{
 " Do not show brackets around icons in NERDTree
 let g:webdevicons_conceal_nerdtree_brackets = 1
 
