@@ -116,12 +116,6 @@ if &term =~ 'xterm' && !has("gui_running")
   execute "set <A-,>=\e,"
 endif
 
-" Disable arrows keys
-noremap <Up> <NOP>
-noremap <Down> <NOP>
-noremap <Left> <NOP>
-noremap <Right> <NOP>
-
 " }}}
 
 
@@ -585,6 +579,13 @@ noremap <silent> <C-k> :wincmd k<CR>
 noremap <silent> <C-j> :wincmd j<CR>
 noremap <silent> <C-h> :wincmd h<CR>
 noremap <silent> <C-l> :wincmd l<CR>
+
+" Use arrows for the same purpose
+" Can't decide what is better: arrows or <C-j|h|k|l>
+noremap <silent> <Up>    :wincmd k<CR>
+noremap <silent> <Down>  :wincmd j<CR>
+noremap <silent> <Left>  :wincmd h<CR>
+noremap <silent> <Right> :wincmd l<CR>
 
 " Tab navigation
 nnoremap <silent> <leader>1 :tabnext 1<CR>
