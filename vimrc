@@ -153,6 +153,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'honza/vim-snippets'
   Plug 'mattn/emmet-vim'
   Plug 'editorconfig/editorconfig-vim'
+  Plug 'alvan/vim-closetag'
 
   " Text objects
   Plug 'kana/vim-textobj-user'
@@ -1336,15 +1337,12 @@ let g:gutentags_generate_on_new = 0
 
 " PLUGIN: Raimondi/delimitMate{{{
 
-" Characters that form pairs. '%' would jumpt between those characters
-" Also used by delimitMate plugin to autoclose such pairs
-set matchpairs+=<:>
-
 let delimitMate_autoclose = 1
 let g:delimitMate_expand_cr = 2
 let g:delimitMate_expand_space = 1
 let g:delimitMate_jump_expansion = 1
 let g:delimitMate_balance_matchpairs = 1
+let g:delimitMate_matchpairs = "(:),[:],{:}"
 " Indeed we are going to exclude Comment and String syntax group names
 " But turns out this plugin relies upon highlight groups rather than syntax group names
 " So we have to use linked Dracula highlight groups instead
@@ -1383,6 +1381,11 @@ augroup END
 let g:EditorConfig_exclude_patterns = ['fugitive://.*']
 let g:EditorConfig_max_line_indicator = 'exceeding'
 let g:EditorConfig_preserve_formatoptions = 1
+" }}}
+
+" PLUGIN: alvan/vim-closetag{{{
+let g:closetag_xhtml_filenames = "*.xhtml,*.jsx"
+let g:closetag_xhtml_filetypes = "xhtml,jsx"
 " }}}
 
 " File types{{{
