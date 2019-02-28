@@ -269,9 +269,9 @@ vnoremap <silent> <A-j> :call <SID>MoveBlockDown()<CR>
 vnoremap <silent> <A-k> :call <SID>MoveBlockUp()<CR>
 
 
-" Duplicate lines
-vnoremap <silent> <leader>D :copy '><CR>gv
-nnoremap <silent> <leader>D :<C-u>execute 'normal! "zyy' . v:count1 . '"zp'<CR>
+" Duplicate lines or selection
+vnoremap <silent> <localleader>d "zy`>"zp
+nnoremap <silent> <localleader>d :<C-u>execute 'normal! "zyy' . v:count1 . '"zp'<CR>
 
 " Join lines and keep the cursor in place
 nnoremap J mzJ`z
