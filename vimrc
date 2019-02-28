@@ -1414,4 +1414,11 @@ augroup ft_vim
   autocmd BufWritePost $MYVIMRC source $MYVIMRC
 augroup END
 
+augroup ft_help
+  au!
+
+  " Close Help window using just 'q' keystroke
+  autocmd FileType help nnoremap <silent> q :quit<CR>
+augroup END
+
 " }}}
