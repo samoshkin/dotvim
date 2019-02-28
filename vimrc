@@ -586,13 +586,6 @@ noremap <silent> <C-j> :wincmd j<CR>
 noremap <silent> <C-h> :wincmd h<CR>
 noremap <silent> <C-l> :wincmd l<CR>
 
-" Resize windows
-" TODO: fix terminal escape sequences
-" nnoremap <silent> <M-right> :vertical resize +3<CR>
-" nnoremap <silent> <M-left> :vertical resize -3<CR>
-" nnoremap <silent> <M-up> :resize +3<CR>
-" nnoremap <silent> <M-down> :resize -3<CR>
-
 " Tab navigation
 nnoremap <silent> <leader>1 :tabnext 1<CR>
 nnoremap <silent> <leader>2 :tabnext 2<CR>
@@ -600,22 +593,17 @@ nnoremap <silent> <leader>3 :tabnext 3<CR>
 nnoremap <silent> <leader>4 :tabnext 4<CR>
 nnoremap <silent> <leader>5 :tabnext 5<CR>
 nnoremap <silent> <leader>9 :tablast<CR>
+nnoremap <silent> ]<Tab> :tabnext<CR>
+nnoremap <silent> [<Tab> :tabprev<CR>
 
-nnoremap <silent> <bslash>+ :tabnew<CR>:edit .<CR>
-nnoremap <silent> <bslash>0 :tabonly<CR>
-nnoremap <silent> <bslash>- :tabclose<CR>
-nnoremap <silent> <bslash>] :tabnext<CR>
-nnoremap <silent> <bslash>[ :tabprev<CR>
-
-" Maximize window size
-nnoremap <silent> <leader>+ <C-w>_<C-w>\|
-nnoremap <silent> <leader>= <C-w>=
+" Tab management
+nnoremap <silent> <leader>+ :tabnew<CR>:edit .<CR>
+nnoremap <silent> <leader>_ :tabonly<CR>
+nnoremap <silent> <leader>- :tabclose<CR>
 nnoremap <silent> <leader>0 :only<CR>
 
 " Open splits right and below
 " Try these mappings, if | and _ are not OK
-" nnoremap <silent> <leader>s :split<CR>
-" nnoremap <silent> <leader>v :vsplit<CR>
 set splitbelow
 set splitright
 nnoremap <silent> _ :split<CR>
@@ -631,11 +619,21 @@ nnoremap <silent> <leader>W :wall<CR>
 nnoremap <silent> <leader>Q :confirm qall<CR>
 nnoremap <silent> ZX :confirm xall<CR>
 
-" Cycle between main and alternate file
-nnoremap <leader><Tab> <C-^>zz
+" Use <Bslash> instead of <C-w>, which is tough to type
+nnoremap <Bslash> <C-w>
 
-" Cycle through current and previous splits
-nnoremap <S-Tab> <C-w>p
+" Maximize window
+" Use '\=' to make window sizes equal
+nnoremap <Bslash><Bslash> <C-w>_<C-w>\|
+
+" Set default step for window resize actions
+nnoremap <Bslash>> <C-w>5>
+nnoremap <Bslash>< <C-w>5<
+nnoremap <Bslash>+ <C-w>5+
+nnoremap <Bslash>- <C-w>5-
+
+" Cycle between main and alternate file
+nnoremap <Bslash><Tab> <C-^>zz
 
 " }}}
 
