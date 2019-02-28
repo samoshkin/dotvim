@@ -513,6 +513,8 @@ nnoremap <localleader>fn :let @+ = expand("%:t") \| echo 'Copied to clipboard: '
 nnoremap <localleader>fp :let @+ = expand("%:p:~") \| echo 'Copied to clipboard: ' . @+<CR>
 nnoremap <localleader>fd :let @+ = expand("%:p:~:h") \| echo 'Copied to clipboard: ' . @+<CR>
 
+" Reselect text that was just yanked
+nnoremap <expr> g<C-v> '`[' . getregtype()[0] . '`]'
 " }}}
 
 " Folding ---------------------------------------------------------{{{
