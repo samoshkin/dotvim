@@ -633,7 +633,7 @@ set regexpengine=1
 
 " After given time, Vim will stop hihglighting further matches
 " Syntax highlighting vs performance trade-off
-set redrawtime=200
+set redrawtime=500
 
 " Delay screen redraw for macros, uncompleted commands
 " Redraw as fewer as possible
