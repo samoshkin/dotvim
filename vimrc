@@ -1451,6 +1451,9 @@ augroup ft_help
 
   " Close Help window using just 'q' keystroke
   autocmd FileType help nnoremap <silent> q :quit<CR>
+
+  " If current tab has the only window, open help of the rightmost side
+  autocmd BufEnter *.txt if winnr('$') == 2 && &buftype == 'help' | wincmd L | endif
 augroup END
 
 " }}}
