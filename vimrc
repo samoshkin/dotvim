@@ -445,6 +445,26 @@ nnoremap <BS> i<BS>
 " In Insert mode, treat pasting form a buffer as a separate undoable operation
 " Which can be undone with '<C-o>u'
 inoremap <C-r> <C-g>u<C-r>
+
+" Use <C-v> instead of <C-r>
+" Yes we're overriding <C-v> normal behavior, and unable to use some registers
+" In these rare cases, resort back to <C-r>
+imap <C-v> <C-r>
+
+" p/P, paste with formatting, due to 'g:yoinkAutoFormatPaste=1'
+imap <C-v>p <ESC>pi
+imap <C-v>P <ESC>Pi
+
+" <C-v>v, paste verbatim, by entering Paste mode
+imap <C-v>v <F2><C-r>+<F2>
+
+" Retain original <C-v> behavior, insert character by code
+" 'c' for character
+inoremap <C-v>c <C-v>
+
+" Insert digraph, 'd' for digraph
+inoremap <C-v>d <C-k>
+
 " }}}
 
 " Clipboard{{{
@@ -457,8 +477,8 @@ inoremap <C-r> <C-g>u<C-r>
 " always use system clipboard as unnamed register
 set clipboard=unnamed,unnamedplus
 
-" Reselect just pasted text
-nnoremap gV v`[
+" Reselect text that was just pasted
+nnoremap <expr> g<C-v> '`[' . getregtype()[0] . '`]'
 
 " Use '<leader>x' as cut operation instead
 " All other actions, like d, c, s will delete without storing in clipboard
@@ -470,8 +490,9 @@ xnoremap x d
 " Normalize Y behavior to yank till the end of line
 nnoremap Y y$
 
-" Move cursor to the end on yank in visual mode
-vmap y y`]
+" Preserve cursor position after yank operation
+nmap y <plug>(YoinkYankPreserveCursorPosition)
+xmap y <plug>(YoinkYankPreserveCursorPosition)
 
 " 'Use 's' as 'substitute' action, not as a shortcut to 'change' action
 nmap s <plug>(SubversiveSubstitute)
@@ -497,8 +518,10 @@ let g:subversiveCurrentTextRegister='r'
 " Move it to the end, so it's easy to start editing
 let g:yoinkMoveCursorToEndOfPaste=1
 
-" Replace the need for 'vim-pasta' plugin
+" Auto formatting on paste, and be able to toggle formatting on/off
+" Replaces the need for 'vim-pasta' plugin
 let g:yoinkAutoFormatPaste=1
+nmap <leader>= <plug>(YoinkPostPasteToggleFormat)
 
 " For integration with 'svermeulen/cutclass'
 let g:yoinkIncludeDeleteOperations=1
@@ -517,8 +540,6 @@ nnoremap <localleader>fn :let @+ = expand("%:t") \| echo 'Copied to clipboard: '
 nnoremap <localleader>fp :let @+ = expand("%:p:~") \| echo 'Copied to clipboard: ' . @+<CR>
 nnoremap <localleader>fd :let @+ = expand("%:p:~:h") \| echo 'Copied to clipboard: ' . @+<CR>
 
-" Reselect text that was just yanked
-nnoremap <expr> g<C-v> '`[' . getregtype()[0] . '`]'
 " }}}
 
 " Folding ---------------------------------------------------------{{{
