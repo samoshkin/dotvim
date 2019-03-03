@@ -15,6 +15,8 @@ set number
 
 " Whitespaces and tabs
 set tabstop=2 softtabstop=2 shiftwidth=2 expandtab
+" Use shiftwidth for tab with at the BOL, and tabstop in other places
+" Otherwise, tabstop is used always. Shiftwidth is only used for >>
 set smarttab
 
 " Timeout settings
@@ -74,8 +76,18 @@ set ruler
 " Use /g flag for substitute command by default
 set gdefault
 
-" Tweak autocompletion behavior
+" Tweak autocompletion behavior for <C-n>/<C-p> in insert mode
+" Default is ".,w,b,u,t,i" without "i", where:
+" . - scan current buffer. Same to invoking <C-x><C-n> individually
+" w - buffers in other windows
+" b - loaded buffers in buffer list
+" u - unloaded buffers in buffer list
+" t - tags. Same to invoking <C-x><C-]> individually
+" i - included files. We don't need this.
 set complete-=i
+
+" Do not insert first sugggestion
+set completeopt=menu,preview,noinsert
 
 " Add @@@ marks on the last column of last line if there is more text below
 set display=lastline
