@@ -809,6 +809,9 @@ function EnsureSyntaxOffForDiffWindows(timer)
     call setbufvar(winbufnr(_win), '&syntax', (getwinvar(_win, '&diff') ? 'off' : 'on'))
   endfor
 endfunction
+
+" Change :diffsplit command to open diff in new tab
+cnoreabbrev <expr> diffsplit getcmdtype() == ":" && getcmdline() == 'diffsplit' ? 'tab split \| diffsplit' : 'diffsplit'
 " }}}
 
 " Session management{{{
