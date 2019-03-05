@@ -712,7 +712,7 @@ function s:QuitWindow()
   let l:diff_windows = s:GetDiffWindows()
 
   " When running as 'vimdiff' or 'vim -d', close both files and exit Vim
-  if get(s:, 'is_vim_diff', 0)
+  if get(s:, 'is_started_as_vim_diff', 0)
     qall
     return
   endif
@@ -731,8 +731,6 @@ function s:QuitWindow()
 
     diffoff!
     diffoff!
-
-    windo setlocal syntax=on
 
     exe "norm zvzz"
 
@@ -775,23 +773,41 @@ set synmaxcol=200
 " }}}
 
 " Diffs{{{
+
 " Open diffs in vertical splits
-set diffopt=internal,filler,vertical,context:3,foldcolumn:1,indent-heuristic,algorithm:patience
+" Use 'xdiff' library options: patience algorithm with indent-heuristics (same to Git options)
+" NOTE: vim uses the external diff utility which doesn't do word diffs nor can it find moved-and-modified lines.
+" See: https://stackoverflow.com/questions/36519864/the-way-to-improve-vimdiff-similarity-searching-mechanism
+set diffopt=internal,filler,vertical,context:5,foldcolumn:1,indent-heuristic,algorithm:patience
 
 " Highlight VCS conflict markers
 match ErrorMsg '^\(<\|=\|>\)\{7\}\([^=].\+\)\?$'
 
 " Detect if vim is started as a diff tool (vim -d, vimdiff)
-" Does not work when you start Vim as usual and enter diff mode using :diffthis
+" NOTE: Does not work when you start Vim as usual and enter diff mode using :diffthis
 if &diff
-  let s:is_vim_diff = 1
-  syntax off
+  let s:is_started_as_vim_diff = 1
 endif
 
+augroup diffs
+  au!
+
+  " Keep syntax settings in sync with diff and normal windows
+  " Run asynchronously, to ensure 'w:&diff' option is properly set by Vim
+  au WinEnter,BufEnter * call timer_start(33, 'EnsureSyntaxOffForDiffWindows')
+augroup END
+
+" Get list of all windows running in diff mode
 function s:GetDiffWindows()
   return filter(range(1, winnr('$')), { idx, val -> getwinvar(val, '&diff') })
 endfunction
 
+" Set syntax=off for diff windows, and vice versa
+function EnsureSyntaxOffForDiffWindows(timer)
+  for _win in range(1, winnr('$'))
+    call setbufvar(winbufnr(_win), '&syntax', (getwinvar(_win, '&diff') ? 'off' : 'on'))
+  endfor
+endfunction
 " }}}
 
 " Session management{{{
@@ -1344,8 +1360,8 @@ augroup vim_figutive
     \ endif
 
   " Collapse status window when viewing diff or editing commit message
-  autocmd BufLeave */.git/index call s:OnFugitiveStatusBufferEnterOrLeave(0)
-  autocmd BufEnter */.git/index call s:OnFugitiveStatusBufferEnterOrLeave(1)
+  " autocmd BufLeave */.git/index call s:OnFugitiveStatusBufferEnterOrLeave(0)
+  " autocmd BufEnter */.git/index call s:OnFugitiveStatusBufferEnterOrLeave(1)
 
   " Delete fugitive buffers automatically on leave
   autocmd BufReadPost fugitive://* set bufhidden=delete
