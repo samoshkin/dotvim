@@ -709,6 +709,7 @@ endfunction
 
 " Context-aware quit window logic
 function s:QuitWindow()
+  " TODO: maybe use buffers instead of windows
   let l:diff_windows = s:GetDiffWindows()
 
   " When running as 'vimdiff' or 'vim -d', close both files and exit Vim
@@ -1353,15 +1354,15 @@ augroup vim_figutive
     \ endif
 
   " Show Fugitive status window in separate tab
-  " Don't break layout in the current tab
-  autocmd User fugitive
-    \ if get(b:, 'fugitive_type', '') == 'index' |
-    \    wincmd T |
+  autocmd BufEnter */.git/index
+    \ if !exists('b:created') && get(b:, 'fugitive_type', '') == 'index' |
+    \   let b:created = 1 |
+    \   wincmd T |
     \ endif
 
   " Collapse status window when viewing diff or editing commit message
-  " autocmd BufLeave */.git/index call s:OnFugitiveStatusBufferEnterOrLeave(0)
-  " autocmd BufEnter */.git/index call s:OnFugitiveStatusBufferEnterOrLeave(1)
+  autocmd BufLeave */.git/index call s:OnFugitiveStatusBufferEnterOrLeave(0)
+  autocmd BufEnter */.git/index call s:OnFugitiveStatusBufferEnterOrLeave(1)
 
   " Delete fugitive buffers automatically on leave
   autocmd BufReadPost fugitive://* set bufhidden=delete
@@ -1406,7 +1407,7 @@ function s:OnFugitiveStatusBufferEnterOrLeave(isEnter)
       " When entering, resize status window to equal widht and height
       exe l:fug_status_window . " wincmd w"
       exe "wincmd ="
-    else
+    elseif !a:isEnter && winnr('$') > 1
       " When leaving, collapse status window
       exe l:fug_status_window . " wincmd w"
       exe "resize 0"
