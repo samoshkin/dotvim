@@ -662,21 +662,28 @@ nnoremap <silent> <leader>W :wall<CR>
 nnoremap <silent> <leader>Q :confirm qall<CR>
 nnoremap <silent> ZX :confirm xall<CR>
 
-" Use <Bslash> instead of <C-w>, which is tough to type
-nnoremap <Bslash> <C-w>
+" Additional <C-w> mappings
+" <C-w>T, moves window to a new tab
+" <C-w>t, copies window to a new tab
+" NOTE: Hides original <C-w>t behavior to move to the topmost window
+nnoremap <C-w>t :tab split<CR>
 
 " Maximize window
 " Use '\=' to make window sizes equal
-nnoremap <Bslash><Bslash> <C-w>_<C-w>\|
+nnoremap <C-w><Bslash> <C-w>_<C-w>\|
 
-" Set default step for window resize actions
-nnoremap <Bslash>> <C-w>5>
-nnoremap <Bslash>< <C-w>5<
-nnoremap <Bslash>+ <C-w>5+
-nnoremap <Bslash>- <C-w>5-
+" Resize windows in steps greather than just 1 column at a time
+let _resize_factor = 1.2
+nnoremap <C-w>> :exe "vert resize " . float2nr(round(winwidth(0) * _resize_factor))<CR>
+nnoremap <C-w>< :exe "vert resize " . float2nr(round(winwidth(0) * 1/_resize_factor))<CR>
+nnoremap <C-w>+ :exe "resize " . float2nr(round(winheight(0) * _resize_factor))<CR>
+nnoremap <C-w>- :exe "resize " . float2nr(round(winheight(0) * 1/_resize_factor))<CR>
 
 " Cycle between main and alternate file
-nnoremap <Bslash><Tab> <C-^>zz
+nnoremap <C-w><Tab> <C-^>zz
+
+" Use <Bslash> instead of <C-w>, which is tough to type
+nmap <Bslash> <C-w>
 
 augroup window_management
   au!
@@ -1588,6 +1595,7 @@ let g:closetag_xhtml_filetypes = "xhtml,jsx"
 augroup ft_gitcommit
   au!
 
+  " TODO: change syntax match whenever syntax is applied
   " Highlight summary line when exceeds 72 columns, not 50 as a default
   au FileType gitcommit syn clear gitcommitSummary
   au FileType gitcommit syn match gitcommitSummary "^.\{0,72\}" contained containedin=gitcommitFirstLine nextgroup=gitcommitOverflow contains=@Spell
