@@ -729,13 +729,20 @@ set synmaxcol=200
 
 " Diffs{{{
 " Open diffs in vertical splits
-set diffopt+=vertical
+set diffopt=internal,filler,vertical,context:3,foldcolumn:1,indent-heuristic,algorithm:patience
 
 " Toggle diff mode
 nnoremap <F8> :diffoff!<cr>
 
 " Highlight VCS conflict markers
 match ErrorMsg '^\(<\|=\|>\)\{7\}\([^=].\+\)\?$'
+
+" Turn off syntax highlighting in diff mode
+" Works when vimdiff is invoked, or via git difftool
+" Does not work when you start Vim as usual and enter diff mode using :diffthis
+if &diff
+  syntax off
+endif
 
 " }}}
 
