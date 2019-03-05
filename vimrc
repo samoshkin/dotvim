@@ -128,6 +128,8 @@ if &term =~ 'xterm' && !has("gui_running")
   execute "set <A-,>=\e,"
 endif
 
+function s:Noop()
+endfunction
 " }}}
 
 
@@ -649,9 +651,11 @@ nnoremap <silent> _ :split<CR>
 nnoremap <silent> \| :vsplit<CR>
 
 " Save and quit for single buffer
+command QuitWindow call s:QuitWindow()
 nnoremap <silent> <leader>w :update!<CR>
-nnoremap <silent> <leader>q :confirm q<CR>
-" Use ZZ to save file and quit (aka :x)
+nnoremap <silent> <leader>q :QuitWindow<CR>
+nnoremap ZZ :update! \| QuitWindow<CR>
+cnoreabbrev q QuitWindow
 
 " Save and quit for multiple buffers
 nnoremap <silent> <leader>W :wall<CR>
@@ -674,6 +678,13 @@ nnoremap <Bslash>- <C-w>5-
 " Cycle between main and alternate file
 nnoremap <Bslash><Tab> <C-^>zz
 
+augroup window_management
+  au!
+  au BufWinEnter,WinEnter,BufDelete * call s:CheckIfWindowWasClosed()
+  au User OnWinClose call s:Noop()
+augroup END
+
+
 " Detect when window in a tab was closed
 " Vim does not have WinClose event, so try to emulate it
 " NOTE: does not work when non-current window gets closed
@@ -688,12 +699,48 @@ function! s:CheckIfWindowWasClosed()
   let t:prevWinCount = winnr('$')
 endfunction
 
-augroup window_management
-  au!
-  au BufWinEnter,WinEnter,BufDelete * call s:CheckIfWindowWasClosed()
-  " au User OnWinClose call s:OnWinClosed()
-augroup END
+function s:CloseEachWindow(windows)
+  " Reverse sort window numbers, start closing from the highest window number: 3,2,1
+  " This is to ensure window numbers are not shifted while closing
+  for _win in sort(copy(a:windows), {a, b -> b - a})
+    exe _win . "wincmd c"
+  endfor
+endfunction
 
+" Context-aware quit window logic
+function s:QuitWindow()
+  let l:diff_windows = s:GetDiffWindows()
+
+  " When running as 'vimdiff' or 'vim -d', close both files and exit Vim
+  if get(s:, 'is_vim_diff', 0)
+    qall
+    return
+  endif
+
+  " If current window is in diff mode, and we have two or more diff windows
+  if &diff && len(l:diff_windows) >= 2
+    let l:fug_diff_windows = filter(l:diff_windows[:], { idx, val -> s:IsFugitiveDiffWindow(val) })
+
+    if s:GetFugitiveStatusWindow() != -1
+      call s:CloseEachWindow(l:diff_windows)
+    elseif !empty(l:fug_diff_windows)
+      call s:CloseEachWindow(l:fug_diff_windows)
+    else
+      quit
+    endif
+
+    diffoff!
+    diffoff!
+
+    windo setlocal syntax=on
+
+    exe "norm zvzz"
+
+    return
+  endif
+
+  quit
+endfunction
 
 " }}}
 
@@ -731,18 +778,19 @@ set synmaxcol=200
 " Open diffs in vertical splits
 set diffopt=internal,filler,vertical,context:3,foldcolumn:1,indent-heuristic,algorithm:patience
 
-" Toggle diff mode
-nnoremap <F8> :diffoff!<cr>
-
 " Highlight VCS conflict markers
 match ErrorMsg '^\(<\|=\|>\)\{7\}\([^=].\+\)\?$'
 
-" Turn off syntax highlighting in diff mode
-" Works when vimdiff is invoked, or via git difftool
+" Detect if vim is started as a diff tool (vim -d, vimdiff)
 " Does not work when you start Vim as usual and enter diff mode using :diffthis
 if &diff
+  let s:is_vim_diff = 1
   syntax off
 endif
+
+function s:GetDiffWindows()
+  return filter(range(1, winnr('$')), { idx, val -> getwinvar(val, '&diff') })
+endfunction
 
 " }}}
 
@@ -1349,6 +1397,10 @@ function s:OnFugitiveStatusBufferEnterOrLeave(isEnter)
       exe "wincmd p"
     endif
   endif
+endfunction
+
+function s:IsFugitiveDiffWindow(winnr)
+  return bufname(winbufnr(a:winnr)) =~ '^fugitive:' && getwinvar(a:winnr, '&diff')
 endfunction
 
 " }}}
