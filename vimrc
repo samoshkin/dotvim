@@ -674,6 +674,27 @@ nnoremap <Bslash>- <C-w>5-
 " Cycle between main and alternate file
 nnoremap <Bslash><Tab> <C-^>zz
 
+" Detect when window in a tab was closed
+" Vim does not have WinClose event, so try to emulate it
+" NOTE: does not work when non-current window gets closed
+" See: https://github.com/vim/vim/issues/742
+function! s:CheckIfWindowWasClosed()
+  " Check if previous window count per tab is greather than current window count
+  " It indicates that window was closed
+  if get(t:, 'prevWinCount', 0) > winnr('$')
+    doautocmd User OnWinClose
+  endif
+
+  let t:prevWinCount = winnr('$')
+endfunction
+
+augroup window_management
+  au!
+  au BufWinEnter,WinEnter,BufDelete * call s:CheckIfWindowWasClosed()
+  " au User OnWinClose call s:OnWinClosed()
+augroup END
+
+
 " }}}
 
 " Performance optimizations{{{
