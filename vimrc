@@ -218,9 +218,14 @@ fun s:PatchColorScheme()
   " Show NERDTree toggle icons as white
   hi! link NERDTreeOpenable Normal
   hi! link NERDTreeClosable Normal
+
+  " Do not highlight changed line, highlight only changed text within a line
+  hi! DiffText term=NONE ctermfg=215 ctermbg=233 cterm=NONE guifg=#FFB86C guibg=#14141a gui=NONE
+  hi! link DiffChange NONE
+  hi! clear DiffChange
 endf
 
-" Customize color scheme after it was loaded
+" Customime color scheme after it was loaded
 augroup color_scheme
   au!
 
