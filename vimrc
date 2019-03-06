@@ -801,7 +801,7 @@ augroup diffs
 
   " Keep syntax settings in sync with diff and normal windows
   " Run asynchronously, to ensure 'w:&diff' option is properly set by Vim
-  au WinEnter,BufEnter * call timer_start(33, 'EnsureSyntaxOffForDiffWindows')
+  au WinEnter,BufEnter * call timer_start(50, 'EnsureSyntaxOffForDiffWindows')
 augroup END
 
 " Get list of all windows running in diff mode
@@ -812,7 +812,14 @@ endfunction
 " Set syntax=off for diff windows, and vice versa
 function EnsureSyntaxOffForDiffWindows(timer)
   for _win in range(1, winnr('$'))
-    call setbufvar(winbufnr(_win), '&syntax', (getwinvar(_win, '&diff') ? 'off' : 'on'))
+    let l:syntax = getbufvar(winbufnr(_win), '&syntax')
+    let l:diffmode = getwinvar(_win, '&diff') ? 'off' : 'on'
+
+    " Set syntax only when is out of sync with diff mode
+    " Do it conditionally to avoid reapplying syntax rules on each BufEnter,WinEnter
+    if (l:diffmode == 'off' && l:syntax != 'off') || (l:diffmode == 'on' && l:syntax == 'off')
+      call setbufvar(winbufnr(_win), '&syntax', l:diffmode)
+    endif
   endfor
 endfunction
 
