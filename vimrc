@@ -609,7 +609,6 @@ augroup END
 " Navigate buffers
 nnoremap <silent> ]b :bnext<CR>
 nnoremap <silent> [b :bprev<CR>
-nnoremap gb :ls<CR>:b<Space>
 
 " Kill buffer
 nnoremap <silent> <leader>k :bd!<CR>
@@ -1093,9 +1092,18 @@ let g:airline#parts#ffenc#skip_expected_string='utf-8[unix]'
 " hunks' extension
 let g:airline#extensions#hunks#non_zero_only = 1
 
+" buffer number, show only for diff windows
+" NOTE: use define_function() instead of define_raw() because raw does not work with condition
+function! AirlineBufnrPart()
+  return bufnr('') . ':'
+endfunction
+call airline#parts#define_function('bufnr', 'AirlineBufnrPart')
+call airline#parts#define_condition('bufnr', "&diff")
+
+
 " Airline sections customization
 let g:airline_section_z = airline#section#create_right(['_gutentags', '_obsession', '%2p%% ', 'linenr', ':%3v'])
-let g:airline_section_c = airline#section#create(['%<', '%f', 'modified', ' ', 'readonly'])
+let g:airline_section_c = airline#section#create(['bufnr', '%<', '%f', 'modified', ' ', 'readonly'])
 
 " Tell at which window width sections are shrinked
 let g:airline#extensions#default#section_truncate_width = get(g:, 'airline#extensions#default#section_truncate_width', {
