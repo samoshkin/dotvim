@@ -1443,18 +1443,21 @@ endfunction
 let g:gitgutter_terminal_reports_focus=0
 let g:gitgutter_enabled = 1
 
-nnoremap <silent> <F4> :GitGutterToggle<CR>
-nnoremap <silent> <leader><F4> :GitGutterFold<CR>
+nnoremap <silent> <F4> :GitGutterFold<CR>
 
-" Use 'h' as a motion for hunks, instead of default 'c'
-nmap ]h <Plug>GitGutterNextHunk
-nmap [h <Plug>GitGutterPrevHunk
-omap ih <Plug>GitGutterTextObjectInnerPending
-omap ah <Plug>GitGutterTextObjectOuterPending
-xmap ih <Plug>GitGutterTextObjectInnerVisual
-xmap ah <Plug>GitGutterTextObjectOuterVisual
+" Use 'd' as a motion for hunks, instead of default 'c'
+" Use '[d' and ']d' to move between hunks in regular files and in diff mode
+" It's easier to use 'do' and 'dp' when a finger is already on 'd' key
+nmap <expr> ]d &diff ? ']c' : '<Plug>GitGutterNextHunk'
+nmap <expr> [d &diff ? '[c' : '<Plug>GitGutterPrevHunk'
+omap id <Plug>GitGutterTextObjectInnerPending
+omap ad <Plug>GitGutterTextObjectOuterPending
+xmap id <Plug>GitGutterTextObjectInnerVisual
+xmap ad <Plug>GitGutterTextObjectOuterVisual
 
-" vim-smooth-scroll
+" }}}
+
+" PLUGIN: vim-smooth-scroll {{{
 noremap <silent> <c-u> :call smooth_scroll#up(&scroll, 20, 2)<CR>
 noremap <silent> <c-d> :call smooth_scroll#down(&scroll, 20, 2)<CR>
 noremap <silent> <c-b> :call smooth_scroll#up(&scroll*2, 20, 4)<CR>
