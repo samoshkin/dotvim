@@ -787,9 +787,6 @@ set synmaxcol=200
 " See: https://stackoverflow.com/questions/36519864/the-way-to-improve-vimdiff-similarity-searching-mechanism
 set diffopt=internal,filler,vertical,context:5,foldcolumn:1,indent-heuristic,algorithm:patience
 
-" Highlight VCS conflict markers
-match ErrorMsg '^\(<\|=\|>\)\{7\}\([^=].\+\)\?$'
-
 " Detect if vim is started as a diff tool (vim -d, vimdiff)
 " NOTE: Does not work when you start Vim as usual and enter diff mode using :diffthis
 if &diff
@@ -802,6 +799,11 @@ augroup diffs
   " Keep syntax settings in sync with diff and normal windows
   " Run asynchronously, to ensure 'w:&diff' option is properly set by Vim
   au WinEnter,BufEnter * call timer_start(50, 'EnsureSyntaxOffForDiffWindows')
+
+  " Highlight VCS conflict markers
+  au VimEnter,WinEnter * if !exists('w:_vsc_conflict_marker_match') |
+        \   let w:_vsc_conflict_marker_match = matchadd('ErrorMsg', '^\(<\|=\|>\)\{7\}\([^=].\+\)\?$') |
+        \ endif
 augroup END
 
 " Get list of all windows running in diff mode
