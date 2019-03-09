@@ -170,6 +170,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'mattn/emmet-vim'
   Plug 'editorconfig/editorconfig-vim'
   Plug 'alvan/vim-closetag'
+  Plug 'samoshkin/vim-mergetool'
 
   " Text objects
   Plug 'kana/vim-textobj-user'
@@ -715,6 +716,13 @@ endfunction
 
 " Context-aware quit window logic
 function s:QuitWindow()
+
+  " If we're in merge mode, exit it
+  if get(g:, 'mergetool_in_merge_mode', 0)
+    call mergetool#stop()
+    return
+  endif
+
   " TODO: maybe use buffers instead of windows
   let l:diff_windows = s:GetDiffWindows()
 
@@ -1607,6 +1615,16 @@ let g:EditorConfig_preserve_formatoptions = 1
 " PLUGIN: alvan/vim-closetag{{{
 let g:closetag_xhtml_filenames = "*.xhtml,*.jsx"
 let g:closetag_xhtml_filetypes = "xhtml,jsx"
+" }}}
+
+" PLUGIN: samoshkin/vim-mergetool{{{
+
+let g:mergetool_layout = 'wr'
+let g:mergetool_prefer_revision = 'local'
+
+nmap <leader>mt <plug>(MergetoolToggle)
+nnoremap <silent> <leader>mb :call mergetool#toggle_layout('bwr')<CR>
+
 " }}}
 
 " File types{{{
