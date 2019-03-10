@@ -1102,6 +1102,22 @@ endfunction
 call airline#parts#define_function('_gutentags', 'AirlineGutentagsPart')
 call airline#parts#define_accent('_gutentags', 'bold')
 
+" Diff or merge indicator
+function! AirlineDiffmergePart()
+  if get(g:, 'mergetool_in_merge_mode', 0)
+    return '↸'
+  endif
+
+  if &diff
+    return '↹'
+  endif
+
+  return ''
+endfunction
+
+call airline#parts#define_function('_diffmerge', 'AirlineDiffmergePart')
+call airline#parts#define_accent('_diffmerge', 'bold')
+
 " Modified indicator
 " Show only modified [+] indicator colored, not the whole file name
 call airline#parts#define_raw('modified', '%m')
@@ -1122,9 +1138,11 @@ endfunction
 call airline#parts#define_function('bufnr', 'AirlineBufnrPart')
 call airline#parts#define_condition('bufnr', "&diff")
 
+" Do not show live word count
+let g:airline#extensions#wordcount#enabled = 0
 
 " Airline sections customization
-let g:airline_section_z = airline#section#create_right(['_gutentags', '_obsession', '%2p%% ', 'linenr', ':%3v'])
+let g:airline_section_z = airline#section#create_right(['_diffmerge', '_gutentags', '_obsession', '%2p%% ', 'linenr', ':%3v'])
 let g:airline_section_c = airline#section#create(['bufnr', '%<', '%f', 'modified', ' ', 'readonly'])
 
 " Tell at which window width sections are shrinked
