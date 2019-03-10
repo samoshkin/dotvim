@@ -833,6 +833,11 @@ function EnsureSyntaxOffForDiffWindows(timer)
   endfor
 endfunction
 
+nmap <expr> <C-Left> &diff? '<Plug>(MergetoolDiffExchangeLeft)' : '<C-Left>'
+nmap <expr> <C-Right> &diff? '<Plug>(MergetoolDiffExchangeRight)' : '<C-Right>'
+nmap <expr> <C-Down> &diff ? ']c' : '<Plug>GitGutterNextHunk'
+nmap <expr> <C-Up> &diff ? '[c' : '<Plug>GitGutterPrevHunk'
+
 " Change :diffsplit command to open diff in new tab
 cnoreabbrev <expr> diffsplit getcmdtype() == ":" && getcmdline() == 'diffsplit' ? 'tab split \| diffsplit' : 'diffsplit'
 " }}}
