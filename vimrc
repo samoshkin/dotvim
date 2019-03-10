@@ -172,6 +172,8 @@ call plug#begin('~/.vim/plugged')
   Plug 'alvan/vim-closetag'
   Plug 'samoshkin/vim-mergetool'
 
+  Plug 'suan/vim-instant-markdown'
+
   " Text objects
   Plug 'kana/vim-textobj-user'
   Plug 'kana/vim-textobj-entire'
@@ -1647,6 +1649,14 @@ let g:mergetool_prefer_revision = 'local'
 
 nmap <leader>mt <plug>(MergetoolToggle)
 nnoremap <silent> <leader>mb :call mergetool#toggle_layout('bwr')<CR>
+
+" }}}
+
+" {{{ PLUGIN: suan/vim-instant-markdown
+
+" NOTE: Requires 'npm i -g instant-markdown-d'
+let g:instant_markdown_slow = 1
+let g:instant_markdown_autostart = 0
 
 " }}}
 
