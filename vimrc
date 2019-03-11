@@ -1122,7 +1122,9 @@ if !exists('g:airline_symbols')
 endif
 let g:airline_symbols.linenr=''
 let g:airline_symbols.maxlinenr=''
+let g:airline_symbols.space=' '
 
+let s:spc = g:airline_symbols.space
 
 " Extensions
 "
@@ -1136,7 +1138,7 @@ let airline#extensions#tagbar#enabled = 0
 
 " 'obsession' extension
 function! GetObsessionStatus()
-  return ObsessionStatus('ⓢ', '')
+  return ObsessionStatus('ⓢ' . s:spc, '')
 endfunction
 
 call airline#parts#define_function('_obsession', 'GetObsessionStatus')
@@ -1148,7 +1150,7 @@ function! GetGutentagStatusText(mods) abort
 
   " Show indicator when tags are enabled
   if g:gutentags_enabled
-    let l:msg .= 'ⓣ'
+    let l:msg .= 'ⓣ' . s:spc
   endif
 
   " Show indicator when tag generation is in progress
@@ -1169,11 +1171,11 @@ call airline#parts#define_accent('_gutentags', 'bold')
 " Diff or merge indicator
 function! AirlineDiffmergePart()
   if get(g:, 'mergetool_in_merge_mode', 0)
-    return '↸'
+    return '↸' . s:spc . s:spc
   endif
 
   if &diff
-    return '↹'
+    return '↹' . s:spc . s:spc
   endif
 
   return ''
@@ -1181,6 +1183,12 @@ endfunction
 
 call airline#parts#define_function('_diffmerge', 'AirlineDiffmergePart')
 call airline#parts#define_accent('_diffmerge', 'bold')
+
+function! AirlineAutosavePart()
+  return g:auto_save ? '' . s:spc : ''
+endfunction
+
+call airline#parts#define_function('_autosave', 'AirlineAutosavePart')
 
 " Modified indicator
 " Show only modified [+] indicator colored, not the whole file name
@@ -1206,7 +1214,7 @@ call airline#parts#define_condition('bufnr', "&diff")
 let g:airline#extensions#wordcount#enabled = 0
 
 " Airline sections customization
-let g:airline_section_z = airline#section#create_right(['_diffmerge', '_gutentags', '_obsession', '%2p%% ', 'linenr', ':%3v'])
+let g:airline_section_z = airline#section#create(['_autosave', '_diffmerge', '_gutentags', '_obsession', '%3p%% ', 'linenr', ':%3v'])
 let g:airline_section_c = airline#section#create(['bufnr', '%<', '%f', 'modified', ' ', 'readonly'])
 
 " Tell at which window width sections are shrinked
