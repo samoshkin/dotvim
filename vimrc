@@ -117,6 +117,12 @@ set shortmess+=I
 inoremap jk <ESC>
 noremap <C-C> <ESC>
 
+" Do not use arrows
+noremap <silent> <Up>    <Nop>
+noremap <silent> <Down>  <Nop>
+noremap <silent> <Left>  <Nop>
+noremap <silent> <Right> <Nop>
+
 " key bindings - How to map Alt key? - Vi and Vim Stack Exchange - https://vi.stackexchange.com/questions/2350/how-to-map-alt-key
 if &term =~ 'xterm' && !has("gui_running")
   " Tell vim what escape sequence to expect for various keychords
@@ -126,8 +132,18 @@ if &term =~ 'xterm' && !has("gui_running")
   execute "set <A-k>=\ek"
   execute "set <A-j>=\ej"
   execute "set <A-,>=\e,"
-endif
 
+  " I've failed to map <Home> and <End> keys when vim runs inside tmux
+  " Although <Home> and <End> move cursor, Vim does not recognize them as <Home>/<End> in mappings
+  " The root cause is that tmux reports itself as "xterm-256color", which is wrong,
+  " And Vim expects \EOH and \EOF sequences for Home and End keys, whereas \E[1~ and \E[4~ are actually send
+  " The right solution is make tmux to report itself as "screen-256color" or "tmux-256color"
+  " But it brokes truecolor highlighting
+  " TODO: fix tmux wrong $TERM type
+  " set t_kh=[1~
+  " set <Home>=[1~
+
+endif
 function s:Noop()
 endfunction
 " }}}
@@ -328,6 +344,17 @@ noremap  <silent> <expr> k v:count ? 'k' : 'gk'
 noremap  <silent> <expr> j v:count ? 'j' : 'gj'
 noremap  <silent> 0 g0
 noremap  <silent> $ g$
+" <Home> and <End> mapping don't work, until I find the solution with wrong tmux $TERM type
+nnoremap <Home> g<Home>
+noremap  <End>  g<End>
+
+" TODO: ensure keys are not overridden when pumvisible()
+" See https://vim.fandom.com/wiki/Move_cursor_by_display_lines_when_wrapping
+inoremap <silent> <Down> <C-o>gj
+inoremap <silent> <Up> <C-o>gk
+" <Home> and <End> mapping don't work, until I find the solution with wrong tmux $TERM type
+inoremap <silent> <Home> <C-o>g<Home>
+inoremap <silent> <End>  <C-o>g<End>
 
 " Toggle between 'nowrap' and 'soft wrap'
 noremap <silent> <F6> :set wrap!<CR>
@@ -624,12 +651,6 @@ noremap <silent> <C-j> :wincmd j<CR>
 noremap <silent> <C-h> :wincmd h<CR>
 noremap <silent> <C-l> :wincmd l<CR>
 
-" Use arrows for the same purpose
-" Can't decide what is better: arrows or <C-j|h|k|l>
-noremap <silent> <Up>    :wincmd k<CR>
-noremap <silent> <Down>  :wincmd j<CR>
-noremap <silent> <Left>  :wincmd h<CR>
-noremap <silent> <Right> :wincmd l<CR>
 
 " Tab navigation
 nnoremap <silent> <leader>1 :tabnext 1<CR>
@@ -1712,3 +1733,4 @@ augroup ft_help
 augroup END
 
 " }}}
+
