@@ -173,6 +173,8 @@ call plug#begin('~/.vim/plugged')
   Plug 'samoshkin/vim-mergetool'
 
   Plug 'suan/vim-instant-markdown'
+  Plug 'junegunn/goyo.vim'
+  Plug 'junegunn/limelight.vim'
 
   " Text objects
   Plug 'kana/vim-textobj-user'
@@ -1657,6 +1659,22 @@ nnoremap <silent> <leader>mb :call mergetool#toggle_layout('bwr')<CR>
 " NOTE: Requires 'npm i -g instant-markdown-d'
 let g:instant_markdown_slow = 1
 let g:instant_markdown_autostart = 0
+" }}}
+
+" {{{ Plugin junegunn/goyo.vim
+
+let g:goyo_width = 90
+nnoremap <silent> <F3> :Goyo<CR>
+
+augroup plug_goyo
+  au!
+
+  autocmd! User GoyoEnter Limelight
+  autocmd! User GoyoLeave Limelight!
+augroup END
+
+let g:limelight_default_coefficient = 0.7
+let g:limelight_priority = -1
 
 " }}}
 
