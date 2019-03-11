@@ -311,7 +311,7 @@ nnoremap <silent> <localleader>d :<C-u>execute 'normal! "zyy' . v:count1 . '"zp'
 nnoremap J mzJ`z
 
 " Split line (experimental)
-nnoremap S i<cr><esc>^mwgk:silent! s/\v +$//<cr>:noh<cr>`w
+" nnoremap S i<cr><esc>^mwgk:silent! s/\v +$//<cr>:noh<cr>`w
 
 " Delete whole line without storing in clipboard
 nnoremap <silent> <S-k> :d _<CR>
@@ -531,12 +531,17 @@ set clipboard=unnamed,unnamedplus
 " Reselect text that was just pasted
 nnoremap <expr> g<C-v> '`[' . getregtype()[0] . '`]'
 
-" Use '<leader>x' as cut operation instead
+" Use 'x' as cut operation instead
 " All other actions, like d, c, s will delete without storing in clipboard
-nnoremap <leader>x d
-nnoremap <leader>xx dd
-nnoremap <leader>X D
+nnoremap x d
+nnoremap xx dd
+nnoremap X D
 xnoremap x d
+
+" Retain original x and X behavior
+" when we want to remove single character without entering insert mode
+nnoremap <localleader>x "_x
+nnoremap <localleader>X "_X
 
 " Normalize Y behavior to yank till the end of line
 nnoremap Y y$
@@ -549,7 +554,7 @@ xmap y <plug>(YoinkYankPreserveCursorPosition)
 nmap s <plug>(SubversiveSubstitute)
 nmap ss <plug>(SubversiveSubstituteLine)
 " Don't remap S as exception, use it to split lines (counterpart to join lines)
-" nmap S <plug>(SubversiveSubstituteToEndOfLine)
+nmap S <plug>(SubversiveSubstituteToEndOfLine)
 xmap s <plug>(SubversiveSubstitute)
 
 " In visual mode, regular 'put' operation actually does a substitution
