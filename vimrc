@@ -4,8 +4,6 @@
 set nocompatible
 filetype plugin indent on
 
-set nospell
-
 " Ask before unsafe actions
 set confirm
 
@@ -87,7 +85,9 @@ set gdefault
 " u - unloaded buffers in buffer list
 " t - tags. Same to invoking <C-x><C-]> individually
 " i - included files. We don't need this.
+" kspell, when spell check is active, use words from spellfiles
 set complete-=i
+set complete+=kspell
 
 " Do not insert first sugggestion
 set completeopt=menu,preview,noinsert
@@ -1086,6 +1086,42 @@ inoremap <Tab> <C-R>=<SID>ExpandTab()<CR>
 inoremap <S-Tab> <C-R>=<SID>ExpandShiftTab()<CR>
 snoremap <Tab> <ESC>:call UltiSnips#JumpForwards()<CR>
 snoremap <S-Tab> <ESC>:call UltiSnips#JumpBackwards()<CR>
+" }}}
+
+" {{{ Spell checking
+
+" Use .vim dir for now. Later use dropbox dir to share spellfile between machines
+if !isdirectory(expand('~/.vim/spell'))
+  call mkdir(expand('~/.vim/spell'), 'p')
+endif
+
+" Used for <C-x><C-k> completion in insert mode
+" Not used for spellcheck purposes
+set dictionary=/usr/share/dict/words
+
+" Disable spell checking by default
+set nospell
+
+set spelllang=en
+
+" Dict with words marked as good/wrong
+set spellfile=~/.vim/spell/dict.utf-8.add
+
+" Automatically fix last misspelled word by picking first suggestion
+inoremap <C-S>f <C-G>u<Esc>[s1z=gi<C-G>u
+
+" Select previous misspelled word, and drop in Select mode
+" In insert mode, we usually don't care about next misspelled word
+inoremap <C-S>s <Esc>[sve<C-G>
+
+" In normal mode, select next/previous misspelled word, and drop in Select mode
+nnoremap <localleader>ss ]sve<C-G>
+nnoremap <localleader>sS [sve<C-G>
+
+" In normal mode, fix misspelled next/prev word by picking up first suggestion
+nnoremap <localleader>sf ]s1z=
+nnoremap <localleader>sF [s1z=
+
 " }}}
 
 " Misc{{{
