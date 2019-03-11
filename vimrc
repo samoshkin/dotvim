@@ -881,10 +881,13 @@ function EnsureSyntaxOffForDiffWindows(timer)
   endfor
 endfunction
 
+" Diff exchange and movement actions. Mappings come from 'samoshkin/vim-mergetool'
 nmap <expr> <C-Left> &diff? '<Plug>(MergetoolDiffExchangeLeft)' : '<C-Left>'
 nmap <expr> <C-Right> &diff? '<Plug>(MergetoolDiffExchangeRight)' : '<C-Right>'
-nmap <expr> <C-Down> &diff ? ']c' : '<Plug>GitGutterNextHunk'
-nmap <expr> <C-Up> &diff ? '[c' : '<Plug>GitGutterPrevHunk'
+nmap <expr> <C-Down> &diff? '<Plug>(MergetoolDiffExchangeDown)' : '<C-Down>'
+nmap <expr> <C-Up> &diff? '<Plug>(MergetoolDiffExchangeUp)' : '<C-Up>'
+nmap <expr> <Up> &diff ? '[c' : '<Up>'
+nmap <expr> <Down> &diff ? ']c' : '<Down>'
 
 " Change :diffsplit command to open diff in new tab
 cnoreabbrev <expr> diffsplit getcmdtype() == ":" && getcmdline() == 'diffsplit' ? 'tab split \| diffsplit' : 'diffsplit'
@@ -1750,11 +1753,11 @@ let g:closetag_xhtml_filetypes = "xhtml,jsx"
 
 " PLUGIN: samoshkin/vim-mergetool{{{
 
-let g:mergetool_layout = 'wr'
+let g:mergetool_layout = 'mr'
 let g:mergetool_prefer_revision = 'local'
 
 nmap <leader>mt <plug>(MergetoolToggle)
-nnoremap <silent> <leader>mb :call mergetool#toggle_layout('bwr')<CR>
+nnoremap <silent> <leader>mb :call mergetool#toggle_layout('mr,b')<CR>
 
 " }}}
 
