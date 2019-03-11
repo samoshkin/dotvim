@@ -1792,7 +1792,8 @@ augroup ft_gitcommit
   au FileType gitcommit syn match gitcommitSummary "^.\{0,72\}" contained containedin=gitcommitFirstLine nextgroup=gitcommitOverflow contains=@Spell
 
   " Do not use folds
-  au FileType gitcommit setlocal foldmethod=manual
+  " Use spell checking
+  au FileType gitcommit setlocal foldmethod=manual spell
 
   " Automatically start insert mode for commit messages
   au BufEnter COMMIT_EDITMSG startinsert
@@ -1818,7 +1819,9 @@ augroup END
 augroup ft_markdown
   au!
 
+  " Enable autosave and spellchecking for Markdown
   au FileType markdown let b:should_auto_save = 1
+  au FileType markdown setlocal spell
 augroup END
 
 " }}}
