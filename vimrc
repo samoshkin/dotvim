@@ -144,7 +144,22 @@ if &term =~ 'xterm' && !has("gui_running")
   " set <Home>=[1~
 
 endif
+
 function s:Noop()
+endfunction
+
+function s:get_var(...)
+  let varName = a:1
+
+  if exists('w:' . varName)
+    return w:{varName}
+  elseif exists('b:' . varName)
+    return b:{varName}
+  elseif exists('g:' . varName)
+    return g:{varName}
+  else
+    return exists('a:2') ? a:2 : ''
+  endif
 endfunction
 " }}}
 
