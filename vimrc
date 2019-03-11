@@ -1773,11 +1773,18 @@ augroup ft_help
   au!
 
   " Close Help window using just 'q' keystroke
-  autocmd FileType help nnoremap <silent> q :quit<CR>
+  autocmd FileType help nnoremap <buffer> <silent> q :quit<CR>
 
   " If current tab has the only window, open help of the rightmost side
-  autocmd BufEnter *.txt if winnr('$') == 2 && &buftype == 'help' | wincmd L | endif
+  autocmd BufWinEnter *.txt if winnr('$') == 2 && &buftype == 'help' | wincmd L | endif
+augroup END
+
+augroup ft_markdown
+  au!
+
+  au FileType markdown let b:should_auto_save = 1
 augroup END
 
 " }}}
+
 
