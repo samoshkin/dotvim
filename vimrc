@@ -19,6 +19,9 @@ set tabstop=2 softtabstop=2 shiftwidth=2 expandtab
 " Otherwise, tabstop is used always. Shiftwidth is only used for >>
 set smarttab
 
+" Let buffer be switched to another one without requiring to save it first
+set hidden
+
 " Timeout settings
 " Wait forever until I recall mapping
 " Don't wait to much for keycodes send by terminal, so there's no delay on <ESC>
@@ -945,7 +948,7 @@ command! -nargs=? SessionCreate call <SID>SessionCreate(<f-args>)
 command! -nargs=? SessionLoad call <SID>SessionLoad(<f-args>)
 command! -nargs=? SessionUnload call <SID>SessionUnload(<f-args>)" }}}
 
-" Save and backup{{{
+" Autosave and backup{{{
 
 " Features defaults:
 " - autosave: off
@@ -955,24 +958,40 @@ command! -nargs=? SessionUnload call <SID>SessionUnload(<f-args>)" }}}
 
 " Regarding autosaving:
 " - "autowrite" saves file on buffer change and quit
-" - '907th/vim-auto-save' saves filter when cursor is inactive for few seconds
+" - '907th/vim-auto-save' saves file on given events (TextChanged, InsertLeave, CursorHold)
 
-" Let buffer be switched to another one without requiring to save it first
-set hidden
+" Global preference, can be overridden per buffer or per window
+let g:should_auto_save = 0
+nnoremap <F10> :call <SID>ToggleGlobalAutoSave()<CR>
 
-" Disable autosave by default
-set noautowrite
+" '907th/vim-auto-save' settings
 let g:auto_save=0
-let g:auto_save_events=["CursorHold"]
+let g:auto_save_events = ["InsertLeave", "TextChanged"]
 let g:auto_save_silent = 1
 
-" You can toggle to turn auto save off
-nnoremap <F3> :call ToggleAutoSave()<CR>
-function ToggleAutoSave()
-  AutoSaveToggle
-  set autowrite!
-  set hidden!
+function s:CheckAutoSaveMode()
+  let autosave_expected = s:get_var('should_auto_save')
+
+  if (autosave_expected != g:auto_save)
+    execute printf("set %shidden", autosave_expected ? 'no' : '')
+    execute printf("set %sautowrite", autosave_expected ? '' : 'no')
+    " '907th/vim-auto-save' command
+    silent AutoSaveToggle
+  endif
 endfunction
+
+function s:ToggleGlobalAutoSave()
+  let g:should_auto_save = !g:should_auto_save
+  echo "AutoSave: " . (g:should_auto_save ? 'ON' : 'OFF')
+  call s:CheckAutoSaveMode()
+endfunction
+
+" Check autosave preference per buffer, and turn it on/off
+augroup _auto_save
+  au!
+  au VimEnter,BufEnter * call s:CheckAutoSaveMode()
+augroup END
+
 
 " Automatically read files which are changed outside vim
 set autoread
