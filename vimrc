@@ -114,6 +114,9 @@ set shiftround
 " Disable startup message
 set shortmess+=I
 
+" Conceal text and highlight with "Conceal" highlight group
+set conceallevel=2
+
 " Additional <ESC> mappings:
 " jk, in INSERT mode
 " <C-c>, I'm so used to it after shell environment
@@ -209,6 +212,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'suan/vim-instant-markdown'
   Plug 'junegunn/goyo.vim'
   Plug 'junegunn/limelight.vim'
+  Plug 'plasticboy/vim-markdown'
 
   " Text objects
   Plug 'kana/vim-textobj-user'
@@ -1801,6 +1805,18 @@ let g:limelight_priority = -1
 
 " }}}
 
+" Plugin: plasticboy/vim-markdown{{{
+
+let g:vim_markdown_folding_style_pythonic = 1
+let g:vim_markdown_toc_autofit = 1
+let g:vim_markdown_new_list_item_indent = 0
+let g:vim_markdown_no_extensions_in_markdown = 1
+" Disable auto write/save, since we have general non-markdown specific mechanism
+let g:vim_markdown_autowrite = 0
+
+" TODO: create key mapping for :Toc
+
+" }}}
 " File types{{{
 augroup ft_gitcommit
   au!
