@@ -1256,6 +1256,12 @@ call airline#parts#define_condition('bufnr', "&diff")
 " Do not show live word count
 let g:airline#extensions#wordcount#enabled = 0
 
+" Whitespace extension
+let g:airline#extensions#whitespace#checks = ['indent', 'trailing', 'mixed-indent-file']
+let g:airline#extensions#whitespace#trailing_format = 't[%s]'
+let g:airline#extensions#whitespace#mixed_indent_format = 'i[%s]'
+let g:airline#extensions#whitespace#mixed_indent_file_format = 'i[%s]'
+
 " Airline sections customization
 let g:airline_section_z = airline#section#create(['_autosave', '_diffmerge', '_gutentags', '_obsession', '%3p%% ', 'linenr', ':%3v'])
 let g:airline_section_c = airline#section#create(['bufnr', '%<', '%f', 'modified', ' ', 'readonly'])
@@ -1631,17 +1637,61 @@ nmap <silent> <leader>c <Plug>CommentaryLine :normal j<CR>
 xmap <leader>c <Plug>Commentary
 " }}}
 
-" PLUGIN: vim-trailing-whitespace{{{
-let g:extra_whitespace_ignored_filetypes=['fugitive']
+" PLUGIN: bronson/vim-trailing-whitespace{{{
 
-" In addition to https://github.com/bronson/vim-trailing-whitespace
-" Highlight space characters that appear before or in-between tabs
-" Use 'autocmd' because ExtraWhitespace highlight group doesn't exist yet
-" augroup trailing_whitespace
-"   au!
+" bronson/vim-trailing-whitespaces is used for highlighting
+" we use custom routines to strip whitespaces
+let g:extra_whitespace_ignored_filetypes = ['fugitive', 'markdown', 'diff', 'qf', 'help']
 
-"   autocmd BufRead,BufNew * 2match ExtraWhitespace / \+\ze\t/
-" augroup END
+" Strips trailing whitespace
+" Remoces extra newlines at EOF
+function! s:StripWhitespace(line1, line2)
+  let l:save_cursor = getpos(".")
+
+  " Strip trailing whitespaces
+  silent! execute ':' . a:line1 . ',' . a:line2 . 's/\\\@<!\s\+$//'
+
+  " Remote extra newlines at EOF
+  if a:line2 >= line('$')
+    let nl = &ff == 'dos' ? '\r\n' : '\n'
+    silent execute '%s/\('.nl.'\)\+\%$//e'
+  endif
+
+  call setpos('.', l:save_cursor)
+endfunction
+
+" Automatically strips whitespace on save after checks
+function! s:StripWhitespaceOnSave()
+  if index(g:extra_whitespace_ignored_filetypes, &ft) != -1
+        \ || &buftype == 'nofile'
+        \ || get(b:, '_disable_strip_whitespace_on_save', 0)
+    return
+  endif
+
+  call s:StripWhitespace(1, line('$'))
+endfunction
+
+augroup aug_trailing_whitespaces
+  au!
+
+  " Highlight space characters that appear before or in-between tabs
+  au BufRead,BufNew * 2match ExtraWhitespace / \+\ze\t/
+
+  " Strip whitespaces automatically on save
+  au BufWritePre * call <SID>StripWhitespaceOnSave()
+
+  " Disable Airline whitespace detection for ignored filetypes
+  for wifile in g:extra_whitespace_ignored_filetypes
+    execute "au FileType " . wifile . " let b:airline_whitespace_disabled = 1"
+  endfor
+augroup END
+
+" Commands and mappings
+command -range=% -nargs=0 StripWhitespace call <SID>StripWhitespace(<line1>,<line2>)
+
+nnoremap <localleader>w :StripWhitespace<CR>
+vnoremap <localleader>w :StripWhitespace<CR>
+
 " }}}
 
 " PLUGIN: rhysd/clever-f.vim{{{
@@ -1817,6 +1867,7 @@ let g:vim_markdown_autowrite = 0
 " TODO: create key mapping for :Toc
 
 " }}}
+
 " File types{{{
 augroup ft_gitcommit
   au!
@@ -1860,5 +1911,3 @@ augroup ft_markdown
 augroup END
 
 " }}}
-
-
