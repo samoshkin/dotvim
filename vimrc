@@ -1753,8 +1753,24 @@ let g:closetag_xhtml_filetypes = "xhtml,jsx"
 
 " PLUGIN: samoshkin/vim-mergetool{{{
 
+function s:on_mergetool_set_layout(split)
+  " Disable syntax and spell checking highlighting in merge mode
+  set syntax=off
+  set nospell
+
+  " When base is horizontal split at the bottom
+  " Turn off diff mode, and show syntax highlighting
+  " Also let it take less height
+  if a:split["layout"] ==# 'mr,b' && a:split["split"] ==# 'b'
+    set nodiff
+    set syntax=on
+    resize 15
+  endif
+endfunction
+
 let g:mergetool_layout = 'mr'
 let g:mergetool_prefer_revision = 'local'
+let g:MergetoolSetLayoutCallback = function('s:on_mergetool_set_layout')
 
 nmap <leader>mt <plug>(MergetoolToggle)
 nnoremap <silent> <leader>mb :call mergetool#toggle_layout('mr,b')<CR>
