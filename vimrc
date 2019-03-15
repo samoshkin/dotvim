@@ -1159,6 +1159,9 @@ let g:airline_powerline_fonts = 0
 
 let g:airline_skip_empty_sections = 1
 
+" Do not show spell language indicator, show only spell/nospell
+let g:airline_detect_spelllang=0
+
 " Disable some icons in lune number section_z to reduce length
 if !exists('g:airline_symbols')
   let g:airline_symbols = {}
