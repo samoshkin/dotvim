@@ -1641,7 +1641,7 @@ xmap <leader>c <Plug>Commentary
 
 " bronson/vim-trailing-whitespaces is used for highlighting
 " we use custom routines to strip whitespaces
-let g:extra_whitespace_ignored_filetypes = ['fugitive', 'markdown', 'diff', 'qf', 'help']
+let g:extra_whitespace_ignored_filetypes = ['fugitive', 'markdown', 'diff', 'qf', 'help', 'gitcommit']
 
 " Strips trailing whitespace
 " Remoces extra newlines at EOF
