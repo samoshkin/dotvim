@@ -1812,15 +1812,15 @@ let g:closetag_xhtml_filetypes = "xhtml,jsx"
 
 function s:on_mergetool_set_layout(split)
   " Disable syntax and spell checking highlighting in merge mode
-  set syntax=off
-  set nospell
+  setlocal syntax=off
+  setlocal nospell
 
   " When base is horizontal split at the bottom
   " Turn off diff mode, and show syntax highlighting
   " Also let it take less height
   if a:split["layout"] ==# 'mr,b' && a:split["split"] ==# 'b'
-    set nodiff
-    set syntax=on
+    setlocal nodiff
+    setlocal syntax=on
     resize 15
   endif
 endfunction
@@ -1908,9 +1908,9 @@ augroup END
 augroup ft_markdown
   au!
 
-  " Enable autosave and spellchecking for Markdown
-  au FileType markdown let b:should_auto_save = 1
-  au FileType markdown setlocal spell
+  au FileType markdown setlocal spell |
+        \ let b:should_auto_save = 1 |
+        \ setlocal synmaxcol=500
 augroup END
 
 " }}}
