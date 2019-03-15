@@ -1146,6 +1146,28 @@ vnoremap . :normal .<CR>
 " Shortcut command to 'vim-scripts/SyntaxAttr.vim'
 command ViewSyntaxAttr call SyntaxAttr()
 
+" Capture command's output and show it in a new buffer
+function! s:redirect_command_output_to_new_buffer(cmd)
+  " Capture command output
+  if a:cmd =~ '^!'
+    let output = system(matchstr(a:cmd, '^!\zs.*'))
+  else
+    redir => output
+    execute a:cmd
+    redir END
+  endif
+
+  " Show in new scratch buffer
+  " NOTE: or maybe show in vertical split
+  enew
+  let w:scratch = 1
+  setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile
+  call setline(1, split(output, "\n"))
+endfunction
+
+command! -nargs=1 -complete=command RedirectToBuffer silent call <SID>redirect_command_output_to_new_buffer(<q-args>)
+cnoreabbrev rdr RedirectToBuffer
+
 "}}}
 
 
