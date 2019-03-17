@@ -122,6 +122,7 @@ set conceallevel=2
 " <C-c>, I'm so used to it after shell environment
 inoremap jk <ESC>
 noremap <C-C> <ESC>
+xnoremap <C-C> <ESC>
 
 " Do not use arrows
 noremap <silent> <Up>    <Nop>
