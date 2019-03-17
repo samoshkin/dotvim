@@ -430,21 +430,88 @@ hi! link Search IncSearch
 " Center search results
 nnoremap n nzvzz
 nnoremap N Nzvzz
-nnoremap * *zz
-nnoremap # #zz
+nnoremap * *zvzz
+nnoremap # #zvzz
 
-" Make '*' and '#' search for a selection in visual mode
-" From https://github.com/nelstrom/vim-visual-star-search/blob/master/plugin/visual-star-search.vim
-" Got Ravings?: Vim pr0n: Visual search mappings - http://got-ravings.blogspot.com/2008/07/vim-pr0n-visual-search-mappings.html
-function! s:VSetSearch(cmdtype)
-  let temp = @s
-  norm! gv"sy
-  let @/ = '\V' . substitute(escape(@s, a:cmdtype.'\'), '\n', '\\n', 'g')
-  let @s = temp
+function! s:search_from_context(direction, context)
+  let text = a:context ==# 'word' ? expand("<cword>") : s:get_selected_text()
+  let text = substitute(escape(text, a:direction . '\'), '\n', '\\n', 'g')
+  let @/ = '\V' . text
+
+  call feedkeys(a:direction . "\<C-R>=@/\<CR>\<CR>")
 endfunction
 
-xnoremap * :<C-u>call <SID>VSetSearch('/')<CR>/<C-R>=@/<CR><CR>
-xnoremap # :<C-u>call <SID>VSetSearch('?')<CR>?<C-R>=@/<CR><CR>
+" Make '*' and '#' search for a selection in visual mode
+" Inspired by https://github.com/nelstrom/vim-visual-star-search
+" Plus center search results, same as we do in normal mode
+vnoremap * :<C-u>call <SID>search_from_context("/", "selection")<CR>zz
+vnoremap # :<C-u>call <SID>search_from_context("?", "selection")<CR>zz
+
+" Project-wide search. Use ripgrep instead of GNU grep
+if executable("rg")
+  set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case\ --hidden
+  set grepformat=%f:%l:%c:%m
+endif
+
+" Project wide search using 'grepprg'
+function s:project_wide_search(is_relative, text)
+  " Change cwd temporarily if should search relative to current file
+  if a:is_relative
+    let cwdb = getcwd()
+    exe "lcd " . expand("%:p:h")
+  endif
+
+  silent! exe "grep! " . a:text
+
+  " If matches are found, open quickfix list and focus first match
+  " Set mark to easily get back after traversing thru search results
+  if len(getqflist())
+    norm! mF
+    botright copen
+    cc
+    redraw!
+  else
+    cclose
+    redraw!
+
+    echohl WarningMsg
+    echom "No match found for: " . a:text
+    echohl None
+  endif
+
+  " Restore cwd back
+  if a:is_relative
+    exe "lcd " . cwdb
+  endif
+endfunction
+
+" Performa project wide search using predefined search text: current word or selection
+function! s:project_wide_search_from_context(context, command)
+  let text = a:context ==# 'word' ? expand("<cword>") : s:get_selected_text()
+  let text = escape(substitute(text, "\n", "", "g"), '"')
+
+  " Quote when using with Grep
+  if a:command ==# "Grep"
+    let text = empty(text) ? text : '"' . text . '"'
+  endif
+
+  call feedkeys(":" . a:command . " " . text)
+endfunction
+
+" Without bang, search is relative to cwd, otherwise relative to current file
+command -nargs=* -bang -complete=file Grep :call s:project_wide_search(<bang>0, <q-args>)
+
+" Project-wide search mappings
+
+" Using :Grep and grepprg
+nnoremap <F7> :Grep<Space>
+nnoremap <S-F7> :call <SID>project_wide_search_from_context("word", "Grep")<CR>
+vnoremap <F7> :call <SID>project_wide_search_from_context("selection", "Grep")<CR>
+
+" Using fzf-vim + Rg
+nnoremap <leader><F7> :FzfRg<Space>
+nnoremap <leader><S-F7> :call <SID>project_wide_search_from_context("word", "FzfRg")<CR>
+vnoremap <leader><F7> :call <SID>project_wide_search_from_context("selection", "FzfRg")<CR>
 
 " Shortcuts for substitute as ex command
 nnoremap <C-s> :%s/
@@ -453,8 +520,6 @@ vnoremap <C-s> :s/
 " }}}
 
 " Navigation{{{
-
-" TODO: add shortcuts to navigate conflict markers/diff hunks
 
 " When navigating to the EOF, center the screen
 nnoremap G Gzz
@@ -474,20 +539,20 @@ nnoremap z- z^
 " Pitfall: In order to use <C-q>, <C-s> shortcuts to navigate quick list
 " make sure to sisable XON/XOFF flow control with 'stty -ixon'
 " Quickfix list
-nnoremap <silent> ]q :cnext<CR>
-nnoremap <silent> [q :cprev<CR>
-nnoremap <silent> ]Q :clast<CR>
-nnoremap <silent> [Q :cfirst<CR>
-nnoremap <silent> ]<C-q> :cnfile<CR>
-nnoremap <silent> [<C-q> :cpfile<CR>
+nnoremap <silent> ]q :cnext<CR>zvzz
+nnoremap <silent> [q :cprev<CR>zvzz
+nnoremap <silent> ]Q :clast<CR>zvzz
+nnoremap <silent> [Q :cfirst<CR>zvzz
+nnoremap <silent> ]<C-q> :cnfile<CR>zvzz
+nnoremap <silent> [<C-q> :cpfile<CR>zvzz
 
 " Location list
-nnoremap <silent> ]l :lnext<CR>
-nnoremap <silent> [l :lprev<CR>
-nnoremap <silent> ]L :llast<CR>
-nnoremap <silent> [L :lfirst<CR>
-nnoremap <silent> ]<C-l> :lnfile<CR>
-nnoremap <silent> [<C-l> :lpfile<CR>
+nnoremap <silent> ]l :lnext<CR>zvzz
+nnoremap <silent> [l :lprev<CR>zvzz
+nnoremap <silent> ]L :llast<CR>zvzz
+nnoremap <silent> [L :lfirst<CR>zvzz
+nnoremap <silent> ]<C-l> :lnfile<CR>zvzz
+nnoremap <silent> [<C-l> :lpfile<CR>zvzz
 
 " Tag matching list
 nnoremap <silent> ]t :tnext<CR>
@@ -1168,6 +1233,17 @@ endfunction
 command! -nargs=1 -complete=command RedirectToBuffer silent call <SID>redirect_command_output_to_new_buffer(<q-args>)
 cnoreabbrev rdr RedirectToBuffer
 
+" Get visually selected text
+function! s:get_selected_text()
+  try
+    let regb = @z
+    normal! gv"zy
+    return @z
+  finally
+    let @z = regb
+  endtry
+endfunction
+
 "}}}
 
 
@@ -1506,11 +1582,6 @@ xnoremap <silent> <leader>t "zy:FzfTags <C-r>z<CR>
 " fzf.BTags generate tags on-fly for current file
 nnoremap <silent> <leader>T :FzfBTags<CR>
 xnoremap <silent> <leader>T "zy:FzfBTags <C-r>z<CR>
-
-" Search files containing word under the cursor or selection using 'rg'
-" nnoremap  <expr> <leader>fg ':FzfRg '. expand("<cword>") . '<cr>'
-" xnoremap <silent> <leader>fg y:FzfRg <C-R>"<CR>
-cnoreabbrev rg FzfRg
 
 " Show list of change in fzf
 " Some code is borrowed from ctrlp.vim and tweaked to work with fzf
