@@ -209,7 +209,9 @@ call plug#begin('~/.vim/plugged')
   Plug 'editorconfig/editorconfig-vim'
   Plug 'alvan/vim-closetag'
   Plug 'samoshkin/vim-mergetool'
+  Plug 'romainl/vim-qf'
 
+  " Markdown
   Plug 'suan/vim-instant-markdown'
   Plug 'junegunn/goyo.vim'
   Plug 'junegunn/limelight.vim'
@@ -462,13 +464,15 @@ function s:project_wide_search(is_relative, text)
     exe "lcd " . expand("%:p:h")
   endif
 
+  " Set mark to easily get back after traversing thru search results
+  norm! mF
+
+  " Perform search
   silent! exe "grep! " . a:text
 
   " If matches are found, open quickfix list and focus first match
-  " Set mark to easily get back after traversing thru search results
+  " Do not open with copen, because we have qf list automatically open on search
   if len(getqflist())
-    norm! mF
-    botright copen
     cc
     redraw!
   else
@@ -535,25 +539,6 @@ nnoremap <C-o> <C-o>zz
 " z+, moves next line below the window
 " z-, moves next line above the window
 nnoremap z- z^
-
-" Borrowed from tpope/vim-unimpaired
-" Pitfall: In order to use <C-q>, <C-s> shortcuts to navigate quick list
-" make sure to sisable XON/XOFF flow control with 'stty -ixon'
-" Quickfix list
-nnoremap <silent> ]q :cnext<CR>zvzz
-nnoremap <silent> [q :cprev<CR>zvzz
-nnoremap <silent> ]Q :clast<CR>zvzz
-nnoremap <silent> [Q :cfirst<CR>zvzz
-nnoremap <silent> ]<C-q> :cnfile<CR>zvzz
-nnoremap <silent> [<C-q> :cpfile<CR>zvzz
-
-" Location list
-nnoremap <silent> ]l :lnext<CR>zvzz
-nnoremap <silent> [l :lprev<CR>zvzz
-nnoremap <silent> ]L :llast<CR>zvzz
-nnoremap <silent> [L :lfirst<CR>zvzz
-nnoremap <silent> ]<C-l> :lnfile<CR>zvzz
-nnoremap <silent> [<C-l> :lpfile<CR>zvzz
 
 " Tag matching list
 nnoremap <silent> ]t :tnext<CR>
@@ -1197,11 +1182,73 @@ nnoremap <localleader>sF [s1z=
 
 " }}}
 
+" Quickfix and Location list{{{
+
+" <F5> always opens quickfix list. If already opened, focus it
+nmap <expr> <F5> !qf#IsQfWindowOpen() ? '<Plug>(qf_qf_toggle)' :
+      \ !qf#IsQfWindow(winnr()) ? '<Plug>(qf_qf_switch)' : ''
+nmap <expr> <leader><F5> qf#IsQfWindowOpen() ? '<Plug>(qf_qf_toggle)' : ''
+
+" <F6> always opens location list. If already opened, focus it
+nmap <expr> <F6> !qf#IsLocWindowOpen(0) ? '<Plug>(qf_loc_toggle)' :
+      \ !qf#IsLocWindow(winnr()) ? '<Plug>(qf_loc_switch)' : ''
+nmap <expr> <leader><F6> qf#IsLocWindowOpen(0) ? '<Plug>(qf_loc_toggle)' : ''
+
+" Automatically quit if qf/loc is the last window opened
+let g:qf_auto_quit = 1
+
+" Don't autoresize if number of items is less than 10
+let g:qf_auto_resize = 0
+
+" Automatically open qf/loc list after :grep, :make
+let g:qf_auto_open_quickfix = 1
+let g:qf_auto_open_loclist = 1
+
+" Use qf/loc list local mappings to open match in split/tab/preview window
+" s - open entry in a new horizontal window
+" v - open entry in a new vertical window
+" t - open entry in a new tab
+" o - open entry and come back
+" O - open entry and close the location/quickfix window
+" p - open entry in a preview window
+let g:qf_mapping_ack_style = 1
+
+" Navigate thru items in quickfix and location lists
+" Borrowed from tpope/vim-unimpaired
+" Pitfall: In order to use <C-q>, <C-s> shortcuts to navigate quick list
+" make sure to sisable XON/XOFF flow control with 'stty -ixon'
+
+" Quickfix list
+nnoremap <silent> ]q :<C-u>call <SID>qf_loc_list_navigate("cnext")<CR>
+nnoremap <silent> [q :<C-u>call <SID>qf_loc_list_navigate("cprev")<CR>
+nnoremap <silent> ]Q :<C-u>call <SID>qf_loc_list_navigate("clast")<CR>
+nnoremap <silent> [Q :<C-u>call <SID>qf_loc_list_navigate("cfirst")<CR>
+nnoremap <silent> ]<C-q> :<C-u>call <SID>qf_loc_list_navigate("cnfile")<CR>
+nnoremap <silent> [<C-q> :<C-u>call <SID>qf_loc_list_navigate("cpfile")<CR>
+
+" Location list
+nnoremap <silent> ]l :<C-u>call <SID>qf_loc_list_navigate("lnext")<CR>
+nnoremap <silent> [l :<C-u>call <SID>qf_loc_list_navigate("lprev")<CR>
+nnoremap <silent> ]L :<C-u>call <SID>qf_loc_list_navigate("llast")<CR>
+nnoremap <silent> [L :<C-u>call <SID>qf_loc_list_navigate("lfirst")<CR>
+nnoremap <silent> ]<C-l> :<C-u>call <SID>qf_loc_list_navigate("lnfile")<CR>
+nnoremap <silent> [<C-l> :<C-u>call <SID>qf_loc_list_navigate("lpfile")<CR>
+
+function s:qf_loc_list_navigate(command)
+  exe a:command
+  if &foldopen =~ 'quickfix' && foldclosed(line('.')) != -1
+    normal! zv
+  endif
+  normal zz
+endfunction
+
+" }}}
+
 " Misc{{{
 
 " Check if files are changed outside and prompt to reload
-noremap <F5> :checktime<cr>
-inoremap <F5> <esc>:checktime<cr>
+" noremap <F5> :checktime<cr>
+" inoremap <F5> <esc>:checktime<cr>
 
 " Expand '%%' for directory of current file in command line mode
 cnoremap %% <C-R>=fnameescape(expand('%:h')).'/'<cr>
