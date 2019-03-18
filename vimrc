@@ -193,7 +193,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'svermeulen/vim-cutlass'
   Plug 'svermeulen/vim-subversive'
   Plug 'svermeulen/vim-yoink'
-  Plug 'farmergreg/vim-lastplace'
+  Plug 'samoshkin/vim-lastplace'
   Plug 'rhysd/clever-f.vim'
   Plug 'ryanoasis/vim-devicons'
   " Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
