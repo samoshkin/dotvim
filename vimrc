@@ -59,7 +59,7 @@ set hidden
 set cursorline
 
 " Show cursorline in current window and not in insert mode
-augroup cursor_line
+augroup aug_cursor_line
   au!
   au InsertEnter * setlocal nocursorline
   au InsertLeave * setlocal cursorline
@@ -274,7 +274,7 @@ fun s:PatchColorScheme()
 endf
 
 " Customime color scheme after it was loaded
-augroup color_scheme
+augroup aug_color_scheme
   au!
 
   autocmd ColorScheme * call s:PatchColorScheme()
@@ -387,7 +387,7 @@ noremap <silent> <F6> :set wrap!<CR>
 " Format options
 " Remove most related to hard wrapping
 " Use autocommand to override defaults from $VIMRUNTIME/ftplugin
-augroup format_options
+augroup aug_format_options
   au!
 
   au Filetype * setlocal formatoptions=rqn1j
@@ -411,7 +411,7 @@ set wrapscan
 " Turn on hlsearch to highlight all matches during incremental search
 " Use <C-j> and <C-k> to navigate through matches instead of <C-d>,<C-t>
 " Pitfall: Works only in vim8. CmdlineEnter and CmdlineLeave appeared in vim8
-augroup vimrc-incsearch-highlight
+augroup aug_search
   autocmd!
   autocmd CmdlineEnter /,\? :set hlsearch
   autocmd CmdlineEnter /,\? :cmap <C-j> <C-g>
@@ -552,13 +552,6 @@ nnoremap <silent> [p :ptprev<CR>
 nnoremap <silent> ]P :ptlast<CR>
 nnoremap <silent> [P :ptfirst<CR>
 
-" TODO: toggle quickfix and location list
-" Automatically open quickfix window
-"augroup autoquickfix
-"  autocmd!
-"  autocmd QuickFixCmdPost [^l]* cwindow
-"  autocmd QuickFixCmdPost    l* lwindow
-"augroup END
 " }}}
 
 " Insert mode{{{
@@ -707,11 +700,6 @@ nnoremap <leader><Space> za
 " Close all folds except the one under the cursor, and center the screen
 nnoremap <leader>z zMzvzz
 
-augroup ft_vim
-  au!
-  au FileType vim setlocal foldmethod=marker
-augroup END
-
 " }}}
 
 " Windows,buffers,tabs  {{{
@@ -788,7 +776,7 @@ nnoremap <C-w><Tab> <C-^>zz
 " Use <Bslash> instead of <C-w>, which is tough to type
 nmap <Bslash> <C-w>
 
-augroup window_management
+augroup aug_window_management
   au!
 
   au BufWinEnter,WinEnter,BufDelete * call s:CheckIfWindowWasClosed()
@@ -908,7 +896,7 @@ if &diff
   let s:is_started_as_vim_diff = 1
 endif
 
-augroup diffs
+augroup aug_diffs
   au!
 
   " Inspect whether some windows are in diff mode, and apply changes for such windows
@@ -1019,7 +1007,7 @@ endfunction
 
 " Automatically try loading session for current directory,
 " unless arguments are passed to vim and input is not read from stdin
-augroup load_session_on_startup
+augroup aug_session_management
   au!
 
   autocmd StdinReadPre * let g:__is_stdin = 1
@@ -1538,7 +1526,7 @@ noremap <F2> :NERDTreeToggle<CR>
 noremap  <S-F2> :NERDTreeFind<CR>
 inoremap <S-F2> <esc>:NERDTreeFind<CR>
 
-augroup nerd_tree
+augroup aug_nerd_tree
   au!
 
   " Auto launch tree when vim is run with directory as argument
@@ -1690,7 +1678,7 @@ let g:fzf_history_dir = '~/.local/share/fzf-history'
 " }}}
 
 " PLUGIN: vim-figutive{{{
-augroup vim_figutive
+augroup aug_vim_figutive
   au!
 
   " Move one level up with '..' when browsing tree or blob
@@ -1793,7 +1781,7 @@ noremap <silent> <c-f> :call smooth_scroll#down(&scroll*2, 20, 4)<CR>
 " }}}
 
 " PLUGIN: vim-commentary{{{
-augroup commentary
+augroup aug_commentary
   au!
   au FileType vim setlocal commentstring=\"\ %s
 augroup end
@@ -1952,7 +1940,7 @@ let g:user_emmet_mode = 'iv'
 
 " Enable only for some file types
 let g:user_emmet_install_global = 0
-augroup plugin_emmet
+augroup aug_plugin_emmet
   au!
 
   autocmd FileType html,css EmmetInstall
@@ -2010,7 +1998,7 @@ let g:instant_markdown_autostart = 0
 let g:goyo_width = 90
 nnoremap <silent> <F3> :Goyo<CR>
 
-augroup plug_goyo
+augroup aug_plug_goyo
   au!
 
   autocmd! User GoyoEnter Limelight
@@ -2056,7 +2044,9 @@ augroup ft_vim
   au!
 
   " Automatically source vimrc on change
-  autocmd BufWritePost $MYVIMRC source $MYVIMRC
+  au BufWritePost $MYVIMRC source $MYVIMRC
+
+  au FileType vim setlocal foldmethod=marker
 augroup END
 
 augroup ft_help
