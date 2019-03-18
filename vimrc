@@ -790,8 +790,12 @@ nmap <Bslash> <C-w>
 
 augroup window_management
   au!
+
   au BufWinEnter,WinEnter,BufDelete * call s:CheckIfWindowWasClosed()
   au User OnWinClose call s:Noop()
+
+  " Make all windows of equal size on Vim resize
+  au VimResized * wincmd =
 augroup END
 
 
