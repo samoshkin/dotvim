@@ -1041,39 +1041,23 @@ command! -nargs=? SessionUnload call <SID>SessionUnload(<f-args>)" }}}
 " - "autowrite" saves file on buffer change and quit
 " - '907th/vim-auto-save' saves file on given events (TextChanged, InsertLeave, CursorHold)
 
-" Global preference, can be overridden per buffer or per window
-let g:should_auto_save = 0
-nnoremap <F10> :call <SID>ToggleGlobalAutoSave()<CR>
+set noautowrite
 
 " '907th/vim-auto-save' settings
+" Can be overridden per buffer
 let g:auto_save=0
-let g:auto_save_events = ["InsertLeave", "TextChanged"]
+let g:auto_save_events = ["InsertLeave", "TextChanged", "CursorHold"]
 let g:auto_save_silent = 1
+let g:auto_save_presave_hook = 'call OnAutoSaveHook()'
 
-function s:CheckAutoSaveMode()
-  " TODO: disable in diff mode
-  let autosave_expected = s:get_var('should_auto_save')
-
-  if (autosave_expected != g:auto_save)
-    execute printf("set %shidden", autosave_expected ? 'no' : '')
-    execute printf("set %sautowrite", autosave_expected ? '' : 'no')
-    " '907th/vim-auto-save' command
-    silent AutoSaveToggle
+function OnAutoSaveHook()
+  " Disable auto-saving in diff mode
+  if &diff
+    let g:auto_save_abort = 1
   endif
 endfunction
 
-function s:ToggleGlobalAutoSave()
-  let g:should_auto_save = !g:should_auto_save
-  echo "AutoSave: " . (g:should_auto_save ? 'ON' : 'OFF')
-  call s:CheckAutoSaveMode()
-endfunction
-
-" Check autosave preference per buffer, and turn it on/off
-augroup _auto_save
-  au!
-  au VimEnter,BufEnter * call s:CheckAutoSaveMode()
-augroup END
-
+nnoremap <F10> :AutoSaveToggle<CR>
 
 " Automatically read files which are changed outside vim
 set autoread
@@ -1412,7 +1396,7 @@ call airline#parts#define_function('_diffmerge', 'AirlineDiffmergePart')
 call airline#parts#define_accent('_diffmerge', 'bold')
 
 function! AirlineAutosavePart()
-  return g:auto_save ? '' . s:spc : ''
+  return s:get_var('auto_save', 0) ? '' . s:spc : ''
 endfunction
 
 call airline#parts#define_function('_autosave', 'AirlineAutosavePart')
@@ -2084,8 +2068,9 @@ augroup END
 augroup ft_markdown
   au!
 
+  " Enable spell checking and auto-save
   au FileType markdown setlocal spell |
-        \ let b:should_auto_save = 1 |
+        \ let b:auto_save = 1 |
         \ setlocal synmaxcol=500
 augroup END
 
