@@ -907,9 +907,9 @@ endif
 augroup diffs
   au!
 
-  " Keep syntax settings in sync with diff and normal windows
-  " Run asynchronously, to ensure 'w:&diff' option is properly set by Vim
-  au WinEnter,BufEnter * call timer_start(50, 'EnsureSyntaxOffForDiffWindows')
+  " Inspect whether some windows are in diff mode, and apply changes for such windows
+  " Run asynchronously, to ensure '&diff' option is properly set by Vim
+  au WinEnter,BufEnter * call timer_start(50, 'CheckDiffMode')
 
   " Highlight VCS conflict markers
   au VimEnter,WinEnter * if !exists('w:_vsc_conflict_marker_match') |
@@ -922,18 +922,41 @@ function s:GetDiffWindows()
   return filter(range(1, winnr('$')), { idx, val -> getwinvar(val, '&diff') })
 endfunction
 
-" Set syntax=off for diff windows, and vice versa
-function EnsureSyntaxOffForDiffWindows(timer)
-  for _win in range(1, winnr('$'))
-    let l:syntax = getbufvar(winbufnr(_win), '&syntax')
-    let l:diffmode = getwinvar(_win, '&diff') ? 'off' : 'on'
+" In diff mode:
+" - Disable syntax highlighting
+" - Disable spell checking
+function CheckDiffMode(timer)
+  let curwin = winnr()
 
-    " Set syntax only when is out of sync with diff mode
-    " Do it conditionally to avoid reapplying syntax rules on each BufEnter,WinEnter
-    if (l:diffmode == 'off' && l:syntax != 'off') || (l:diffmode == 'on' && l:syntax == 'off')
-      call setbufvar(winbufnr(_win), '&syntax', l:diffmode)
-    endif
+  " Check each window
+  for _win in range(1, winnr('$'))
+    exe "noautocmd " . _win . "wincmd w"
+
+    call s:change_option_in_diffmode('b:', 'syntax', 'off')
+    call s:change_option_in_diffmode('w:', 'spell', 0, 1)
   endfor
+
+  " Get back to original window
+  exe "noautocmd " . curwin . "wincmd w"
+endfunction
+
+" Detect window or buffer local option is in sync with diff mode
+function s:change_option_in_diffmode(scope, option, value, ...)
+  let isBoolean = get(a:, "1", 0)
+  let backupVarname = a:scope . "_old_" . a:option
+
+  " Entering diff mode
+  if &diff && !exists(backupVarname)
+    exe "let " . backupVarname . "=&" . a:option
+    call s:set_option(a:option, a:value, 1, isBoolean)
+  endif
+
+  " Exiting diff mode
+  if !&diff && exists(backupVarname)
+    let oldValue = eval(backupVarname)
+    call s:set_option(a:option, oldValue, 1, isBoolean)
+    exe "unlet " . backupVarname
+  endif
 endfunction
 
 " Diff exchange and movement actions. Mappings come from 'samoshkin/vim-mergetool'
@@ -1028,6 +1051,7 @@ let g:auto_save_events = ["InsertLeave", "TextChanged"]
 let g:auto_save_silent = 1
 
 function s:CheckAutoSaveMode()
+  " TODO: disable in diff mode
   let autosave_expected = s:get_var('should_auto_save')
 
   if (autosave_expected != g:auto_save)
@@ -1290,6 +1314,17 @@ function! s:get_selected_text()
   finally
     let @z = regb
   endtry
+endfunction
+
+" Set option using set or setlocal, be it string or boolean value
+function s:set_option(option, value, ...)
+  let isLocal = get(a:, "1", 0)
+  let isBoolean = get(a:, "2", 0)
+  if isBoolean
+    exe (isLocal ? "setlocal " : "set ") . (a:value ? "" : "no") . a:option
+  else
+    exe (isLocal ? "setlocal " : "set ") . a:option . "=" . a:value
+  endif
 endfunction
 
 "}}}
