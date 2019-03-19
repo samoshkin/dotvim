@@ -332,14 +332,34 @@ vnoremap <silent> <A-k> :call <SID>MoveBlockUp()<CR>
 vnoremap <silent> <localleader>d "zy`>"zp
 nnoremap <silent> <localleader>d :<C-u>execute 'normal! "zyy' . v:count1 . '"zp'<CR>
 
+" Delete line without storing in clipboard
+nnoremap <silent> K :d _<CR>
+
 " Join lines and keep the cursor in place
 nnoremap J mzJ`z
 
-" Split line (experimental)
-" nnoremap S i<cr><esc>^mwgk:silent! s/\v +$//<cr>:noh<cr>`w
+" Split line (opposite to join lines)
+nnoremap M :call <SID>split_line()<CR>
 
-" Delete whole line without storing in clipboard
-nnoremap <silent> <S-k> :d _<CR>
+function s:split_line()
+  " Do a split
+  exe "normal! i\<CR>\<ESC>"
+
+  " Remember position and last search expression
+  normal! mw
+  let _s = @/
+
+  " Remove any trailing whitespace characters from the line above
+  silent! -1 s/\v +$//
+
+  " Restore last search expression
+  nohlsearch
+  let @/ = _s
+
+  " Restore cursor position
+  normal! `w
+endfunction
+
 
 " Add blank line above and below
 " When adding line below, move cursor to the just added line (most likely you're going to edit next)
