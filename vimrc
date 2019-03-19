@@ -450,22 +450,19 @@ endfunction
 vnoremap * :<C-u>call <SID>search_from_context("/", "selection")<CR>zz
 vnoremap # :<C-u>call <SID>search_from_context("?", "selection")<CR>zz
 
-" Project-wide search. Use ripgrep instead of GNU grep
+" Use ripgrep instead of GNU grep for 'grepprg'
 if executable("rg")
   set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case\ --hidden
   set grepformat=%f:%l:%c:%m
 endif
 
 " Project wide search using 'grepprg'
-function s:project_wide_search(is_relative, text)
+function s:grep_search(is_relative, text)
   " Change cwd temporarily if should search relative to current file
   if a:is_relative
     let cwdb = getcwd()
     exe "lcd " . expand("%:p:h")
   endif
-
-  " Set mark to easily get back after traversing thru search results
-  norm! mF
 
   " Perform search
   silent! exe "grep! " . a:text
@@ -490,33 +487,57 @@ function s:project_wide_search(is_relative, text)
   endif
 endfunction
 
-" Performa project wide search using predefined search text: current word or selection
-function! s:project_wide_search_from_context(context, command)
-  let text = a:context ==# 'word' ? expand("<cword>") : s:get_selected_text()
-  let text = escape(substitute(text, "\n", "", "g"), '"')
+" Perform a project wide search using predefined search text: current word or selection
+function! s:project_wide_search(context, command) range
+  let text = a:context ==# 'word' ? expand("<cword>")
+        \ : a:context ==# 'selection' ? s:get_selected_text()
+        \ : ''
+  let args = ''
 
-  " Quote when using with Grep
+  " Remove new lines (when several lines are visually selected)
+  let text = substitute(text, "\n", "", "g")
+
   if a:command ==# "Grep"
+    " put in quotes
+    let text = escape(text, '"')
     let text = empty(text) ? text : '"' . text . '"'
+
+    " Do not use regular expression search pattern comes from context
+    if !empty(text)
+      let args = ' -F'
+    endif
   endif
 
-  call feedkeys(":" . a:command . " " . text)
+  if a:command ==# 'FzfRg'
+    " Escape backslash
+    let text = escape(text, '\')
+  endif
+
+  " Set global mark to easily get back after we're done with a search
+  normal mF
+
+  " Put actual command in a command line, but do not execute
+  " User would initiate a search manually with <CR>
+  call feedkeys(":" . a:command . args . " " . text)
 endfunction
 
 " Without bang, search is relative to cwd, otherwise relative to current file
-command -nargs=* -bang -complete=file Grep :call s:project_wide_search(<bang>0, <q-args>)
+command -nargs=* -bang -complete=file Grep :call s:grep_search(<bang>0, <q-args>)
 
 " Project-wide search mappings
 
 " Using :Grep and grepprg
-nnoremap <F7> :Grep<Space>
-nnoremap <S-F7> :call <SID>project_wide_search_from_context("word", "Grep")<CR>
-vnoremap <F7> :call <SID>project_wide_search_from_context("selection", "Grep")<CR>
+nnoremap <F7> :call <SID>project_wide_search("", "Grep")<CR>
+nnoremap <S-F7> :call <SID>project_wide_search("word", "Grep")<CR>
+vnoremap <silent> <F7> :call <SID>project_wide_search("selection", "Grep")<CR>
+" TODO: with the last search pattern
 
 " Using fzf-vim + Rg
-nnoremap <leader><F7> :FzfRg<Space>
-nnoremap <leader><S-F7> :call <SID>project_wide_search_from_context("word", "FzfRg")<CR>
-vnoremap <leader><F7> :call <SID>project_wide_search_from_context("selection", "FzfRg")<CR>
+nnoremap <leader><F7> :call <SID>project_wide_search("", "FzfRg")<CR>
+nnoremap <leader><S-F7> :call <SID>project_wide_search("word", "FzfRg")<CR>
+vnoremap <silent> <leader><F7> :call <SID>project_wide_search("selection", "FzfRg")<CR>
+
+" TODO: ctrlsf.vim
 
 " Shortcuts for substitute as ex command
 nnoremap <C-s> :%s/
@@ -630,7 +651,7 @@ xmap P <plug>(SubversiveSubstitute)
 
 " Substitute operation performed multiple times for a given text range
 nmap <leader>s <plug>(SubversiveSubstituteRange)
-nmap <leader>ss <plug>(SubversiveSubstituteWordRange
+nmap <leader>ss <plug>(SubversiveSubstituteWordRange)
 xmap <leader>s <plug>(SubversiveSubstituteRange)
 
 " Store text that being substituted in register 'r'
@@ -1185,14 +1206,13 @@ nnoremap <localleader>sF [s1z=
 " Quickfix and Location list{{{
 
 " <F5> always opens quickfix list. If already opened, focus it
-nmap <expr> <F5> !qf#IsQfWindowOpen() ? '<Plug>(qf_qf_toggle)' :
-      \ !qf#IsQfWindow(winnr()) ? '<Plug>(qf_qf_switch)' : ''
-nmap <expr> <leader><F5> qf#IsQfWindowOpen() ? '<Plug>(qf_qf_toggle)' : ''
+nmap <F5> <Plug>(qf_qf_toggle)
+nmap <S-F5> <Plug>(qf_qf_switch)
+nmap <silent> <leader><F5> :call <SID>close_qf_loc_mode('qf')<CR>
 
-" <F6> always opens location list. If already opened, focus it
-nmap <expr> <F6> !qf#IsLocWindowOpen(0) ? '<Plug>(qf_loc_toggle)' :
-      \ !qf#IsLocWindow(winnr()) ? '<Plug>(qf_loc_switch)' : ''
-nmap <expr> <leader><F6> qf#IsLocWindowOpen(0) ? '<Plug>(qf_loc_toggle)' : ''
+nmap <F6> <Plug>(qf_loc_toggle)
+nmap <S-F6> <Plug>(qf_loc_switch)
+nmap <silent> <leader><F6> :call <SID>close_qf_loc_mode('loc')<CR>
 
 " Automatically quit if qf/loc is the last window opened
 let g:qf_auto_quit = 1
@@ -1235,12 +1255,42 @@ nnoremap <silent> ]<C-l> :<C-u>call <SID>qf_loc_list_navigate("lnfile")<CR>
 nnoremap <silent> [<C-l> :<C-u>call <SID>qf_loc_list_navigate("lpfile")<CR>
 
 function s:qf_loc_list_navigate(command)
-  exe a:command
+  try
+    exe a:command
+  catch /E553/
+    echohl WarningMsg
+    echo "No more items in a list"
+    echohl None
+  endtry
   if &foldopen =~ 'quickfix' && foldclosed(line('.')) != -1
     normal! zv
   endif
   normal zz
 endfunction
+
+" Close quickfix or location list if opened
+" And get back to cursor position before quickfix command was executed
+function s:close_qf_loc_mode(list_type)
+  if a:list_type ==# 'qf'
+    if qf#IsQfWindowOpen()
+      call qf#toggle#ToggleQfWindow(0)
+    endif
+    normal `Q
+  else
+    if qf#IsLocWindowOpen(0)
+      call qf#toggle#ToggleLocWindow(0)
+    endif
+    normal `L
+  endif
+endfunction
+
+augroup aug_quickfix_list
+  au!
+
+  " Remember cursor position before running quickfix cmd
+  autocmd QuickFixCmdPre [^l]* normal mQ
+  autocmd QuickFixCmdPre    l* normal mL
+augroup END
 
 " }}}
 
@@ -1715,12 +1765,13 @@ nnoremap <silent> <leader>glF :silent! Glog -- %<CR><C-l>
 nnoremap <silent> <leader>gls :silent! Glog<CR><C-l>
 nnoremap <silent> <leader>go :Git checkout<Space>
 nnoremap <silent> <leader>gb :Gblame<CR>
-cnoreabbrev gd Gdiff
-cnoreabbrev gc Gcommit -v -a
-cnoreabbrev ge Gedit
-cnoreabbrev gl Glog
-cnoreabbrev gr Ggrep
-cnoreabbrev go Git<Space>checkout
+" FIXME: only at the beginning of the line
+" cnoreabbrev gd Gdiff
+" cnoreabbrev gc Gcommit -v -a
+" cnoreabbrev ge Gedit
+" cnoreabbrev gl Glog
+" cnoreabbrev gr Ggrep
+" cnoreabbrev go Git<Space>checkout
 
 " Find fugitive status window and return it's number
 function s:GetFugitiveStatusWindow()
