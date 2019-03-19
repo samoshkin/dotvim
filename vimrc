@@ -1205,14 +1205,17 @@ nnoremap <localleader>sF [s1z=
 
 " Quickfix and Location list{{{
 
-" <F5> always opens quickfix list. If already opened, focus it
-nmap <F5> <Plug>(qf_qf_toggle)
-nmap <S-F5> <Plug>(qf_qf_switch)
-nmap <silent> <leader><F5> :call <SID>close_qf_loc_mode('qf')<CR>
+" <F5> for quickfix list
+nmap <F5>t <Plug>(qf_qf_toggle)
+nmap <F5>f <Plug>(qf_qf_switch)
+nmap <silent> <F5>r :QfReload<CR>
+nmap <silent> <leader><F5> :call <SID>qf_loc_quit('qf')<CR>
 
-nmap <F6> <Plug>(qf_loc_toggle)
-nmap <S-F6> <Plug>(qf_loc_switch)
-nmap <silent> <leader><F6> :call <SID>close_qf_loc_mode('loc')<CR>
+" <F6> for location list
+nmap <F6>t <Plug>(qf_loc_toggle)
+nmap <F6>f <Plug>(qf_loc_switch)
+nmap <silent> <F6>r :LocReload<CR>
+nmap <silent> <leader><F6> :call <SID>qf_loc_quit('loc')<CR>
 
 " Automatically quit if qf/loc is the last window opened
 let g:qf_auto_quit = 1
@@ -1254,6 +1257,17 @@ nnoremap <silent> [L :<C-u>call <SID>qf_loc_list_navigate("lfirst")<CR>
 nnoremap <silent> ]<C-l> :<C-u>call <SID>qf_loc_list_navigate("lnfile")<CR>
 nnoremap <silent> [<C-l> :<C-u>call <SID>qf_loc_list_navigate("lpfile")<CR>
 
+" Remove single item from quickfix/loc list using conditional '-' key mapping
+nnoremap <Plug>QfRemoveCurrentItem :<C-U>call <SID>qf_loc_remove_current_item('qf')<CR>
+nnoremap <Plug>LocRemoveCurrentItem :<C-U>call <SID>qf_loc_remove_current_item('loc')<CR>
+nmap <silent> <expr> - qf#IsLocWindowOpen(0) ? '<Plug>LocRemoveCurrentItem'
+      \ : qf#IsQfWindowOpen() ? '<Plug>QfRemoveCurrentItem' : '-'
+
+" Reload lists (useful to pull text changes after replace)
+command -nargs=0 QfReload call <SID>qf_loc_reload_list('qf')
+command -nargs=0 LocReload call <SID>qf_loc_reload_list('loc')
+
+" Navigate thru lists, open closed folds, and recenter screen
 function s:qf_loc_list_navigate(command)
   try
     exe a:command
@@ -1270,7 +1284,7 @@ endfunction
 
 " Close quickfix or location list if opened
 " And get back to cursor position before quickfix command was executed
-function s:close_qf_loc_mode(list_type)
+function s:qf_loc_quit(list_type)
   if a:list_type ==# 'qf'
     if qf#IsQfWindowOpen()
       call qf#toggle#ToggleQfWindow(0)
@@ -1281,6 +1295,65 @@ function s:close_qf_loc_mode(list_type)
       call qf#toggle#ToggleLocWindow(0)
     endif
     normal `L
+  endif
+endfunction
+
+" Removes current item from quickfix/location list and reloads it
+function s:qf_loc_remove_current_item(list_type)
+  if a:list_type ==# 'qf'
+    " Get index of current item in quickfix list
+    " Index is 1-based
+    let current_item_idx = get(getqflist({'idx': 0}), 'idx', 0)
+
+    " List is empty, nothing to remove
+    if current_item_idx == 0
+      echohl WarningMsg
+      echo "No more items in a list"
+      echohl None
+      return
+    endif
+
+    " Replace quickfix list with a new list without one item
+    " filter v:key index is 0-based
+    call setqflist(filter(getqflist(), 'v:key != ' . (current_item_idx - 1)), 'r')
+
+    " Close and reopen quickfix list to fix highlighting
+    cclose | cwindow
+
+    " Display the next item, so we don't start at first one
+    exe "cc " . current_item_idx
+  else
+    " Get index of current item in location list
+    let current_item_idx = get(getloclist(0, {'idx': 0}), 'idx', 0)
+
+    " List is empty, nothing to remove
+    if current_item_idx == 0
+      echohl WarningMsg
+      echo "No more items in a list"
+      echohl None
+      return
+    endif
+
+    " Replace quickfix list with a new list without one item
+    " filter v:key index is 0-based
+    call setloclist(0, filter(getloclist(0), 'v:key != ' . (current_item_idx - 1)), 'r')
+
+    " Close and reopen quickfix list to fix highlighting
+    lclose | lwindow
+
+    " Display the next item, so we don't start at first one
+    exe "ll " . current_item_idx
+  endif
+endfunction
+
+" Reloads quickfix list to pull changes after 'Search&replace' scenario
+function s:qf_loc_reload_list(list_type)
+  if a:list_type ==# 'qf'
+    call setqflist(map(getqflist(), 'extend(v:val, {"text":get(getbufline(v:val.bufnr, v:val.lnum),0)})'), 'r')
+    cfirst
+  else
+    call setloclist(0, map(getloclist(), 'extend(v:val, {"text":get(getbufline(v:val.bufnr, v:val.lnum),0)})'), 'r')
+    lfirst
   endif
 endfunction
 
