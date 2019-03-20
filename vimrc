@@ -1536,6 +1536,12 @@ endfunction
 
 " {{{ Args list
 
+" Navigation over args list
+nnoremap <silent> ]a :next<CR>
+nnoremap <silent> [a :prev<CR>
+nnoremap <silent> ]A :last<CR>
+nnoremap <silent> [A :first<CR>
+
 function s:args_get_files()
   let i = 0
   let files = []
