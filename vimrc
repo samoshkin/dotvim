@@ -551,6 +551,15 @@ nnoremap <F7> :call <SID>project_wide_search("", "Grep")<CR>
 nnoremap <S-F7> :call <SID>project_wide_search("word", "Grep")<CR>
 vnoremap <silent> <F7> :call <SID>project_wide_search("selection", "Grep")<CR>
 " TODO: with the last search pattern
+" TODO: search within buffers/args
+
+" TODO: conversions:
+" - buffers -> args
+" - buffer of files -> quickfix
+" - quickfix -> buffer of files
+" - buffer of files -> args
+" - args -> buffer of files
+" - args <-> quickfix list
 
 " Using fzf-vim + Rg
 nnoremap <leader><F7> :call <SID>project_wide_search("", "FzfRg")<CR>
@@ -562,6 +571,69 @@ vnoremap <silent> <leader><F7> :call <SID>project_wide_search("selection", "FzfR
 " Shortcuts for substitute as ex command
 nnoremap <C-s> :%s/
 vnoremap <C-s> :s/
+
+" Project wide Find files
+" Similar to built-in grepprg, makeprg
+let g:findprg = "fd --hidden"
+
+" Find commands. View results in quickfix list, scratch buffer or args list
+command -nargs=* -bang Find :call s:project_wide_find(<q-args>, 'qf')
+command -nargs=* -bang FindB :call s:project_wide_find(<q-args>, 'buffer')
+command -nargs=* -bang FindA :call s:project_wide_find(<q-args>, 'args')
+
+" Do not expose keyboard mappings, it does not add much value
+
+" Execute 'findprg' via system() call and return list of files
+function s:execute_findprg(command)
+  let output = system(g:findprg . " " . a:command)
+  return split(output, "\n")
+endfunction
+
+" Execute find command and render results in selected view
+function s:project_wide_find(command, view_in)
+  let files = s:execute_findprg(a:command)
+  if empty(files)
+    call s:echo_warning('No files found')
+    return
+  endif
+
+  if a:view_in ==# 'qf'
+    call s:files_to_qf_list(l:files, "Find: " . a:command)
+  endif
+
+  if a:view_in ==# 'buffer'
+    call s:enew_scratch_buffer(l:files)
+  endif
+
+  if a:view_in ==# 'args'
+    call s:files_to_args_list(l:files, 1)
+  endif
+endfunction
+
+" Create new quickfix list with a list of files
+function s:files_to_qf_list(files, title)
+  " Map file names to format, as understood by 'errorformat' (similar to grepformat)
+  cexpr map(a:files, 'v:val . ":1:" . fnamemodify(v:val, ":t")')
+
+  " Set QF window title
+  if !empty(a:title)
+    copen
+    let w:quickfix_title = a:title
+    wincmd p
+  endif
+endfunction
+
+" Populate args with a list of files
+function s:files_to_args_list(files, should_edit_first_arg)
+  %argdelete
+  for l:file in a:files
+    exe "argadd " . l:file
+  endfor
+
+  if a:should_edit_first_arg
+    argument 1
+  endif
+endfunction
 
 " }}}
 
@@ -1435,7 +1507,7 @@ vnoremap . :normal .<CR>
 command ViewSyntaxAttr call SyntaxAttr()
 
 " Capture command's output and show it in a new buffer
-function! s:redirect_command_output_to_new_buffer(cmd)
+function! s:read_command_output_in_new_buffer(cmd)
   " Capture command output
   if a:cmd =~ '^!'
     let output = system(matchstr(a:cmd, '^!\zs.*'))
@@ -1446,15 +1518,10 @@ function! s:redirect_command_output_to_new_buffer(cmd)
   endif
 
   " Show in new scratch buffer
-  " NOTE: or maybe show in vertical split
-  enew
-  let w:scratch = 1
-  setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile
-  call setline(1, split(output, "\n"))
+  call s:enew_scratch_buffer(output)
 endfunction
 
-command! -nargs=1 -complete=command RedirectToBuffer silent call <SID>redirect_command_output_to_new_buffer(<q-args>)
-cnoreabbrev rdr RedirectToBuffer
+command! -nargs=1 -complete=command Eread silent call <SID>read_command_output_in_new_buffer(<q-args>)
 
 " Get visually selected text
 function! s:get_selected_text()
@@ -1478,6 +1545,25 @@ function s:set_option(option, value, ...)
   endif
 endfunction
 
+" Echo warning message with highlighting enabled
+function s:echo_warning(message)
+  echohl WarningMsg
+  echo a:message
+  echohl None
+endfunction
+
+" Show text of list of lines in new scratch buffer
+function s:enew_scratch_buffer(content)
+  enew
+  let w:scratch = 1
+  setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile
+
+  if type(a:content) == type([])
+    call setline(1, a:content)
+  else
+    call setline(1, split(a:content, "\n"))
+  endif
+endfunction
 "}}}
 
 
