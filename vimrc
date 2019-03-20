@@ -470,6 +470,14 @@ endfunction
 vnoremap * :<C-u>call <SID>search_from_context("/", "selection")<CR>zz
 vnoremap # :<C-u>call <SID>search_from_context("?", "selection")<CR>zz
 
+" Shortcuts for substitute as ex command
+nnoremap <C-s> :%s/
+vnoremap <C-s> :s/
+
+" }}}
+
+" {{{ Project-wide search with Grep
+
 " Use ripgrep instead of GNU grep for 'grepprg'
 if executable("rg")
   set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case\ --hidden
@@ -483,6 +491,9 @@ function s:grep_search(is_relative, text)
     let cwdb = getcwd()
     exe "lcd " . expand("%:p:h")
   endif
+
+  " Set global mark to easily get back after we're done with a search
+  normal mF
 
   " Perform search
   silent! exe "grep! " . a:text
@@ -533,9 +544,6 @@ function! s:project_wide_search(context, command) range
     let text = escape(text, '\')
   endif
 
-  " Set global mark to easily get back after we're done with a search
-  normal mF
-
   " Put actual command in a command line, but do not execute
   " User would initiate a search manually with <CR>
   call feedkeys(":" . a:command . args . " " . text)
@@ -553,14 +561,6 @@ vnoremap <silent> <F7> :call <SID>project_wide_search("selection", "Grep")<CR>
 " TODO: with the last search pattern
 " TODO: search within buffers/args
 
-" TODO: conversions:
-" - buffers -> args
-" - buffer of files -> quickfix
-" - quickfix -> buffer of files
-" - buffer of files -> args
-" - args -> buffer of files
-" - args <-> quickfix list
-
 " Using fzf-vim + Rg
 nnoremap <leader><F7> :call <SID>project_wide_search("", "FzfRg")<CR>
 nnoremap <leader><S-F7> :call <SID>project_wide_search("word", "FzfRg")<CR>
@@ -568,13 +568,12 @@ vnoremap <silent> <leader><F7> :call <SID>project_wide_search("selection", "FzfR
 
 " TODO: ctrlsf.vim
 
-" Shortcuts for substitute as ex command
-nnoremap <C-s> :%s/
-vnoremap <C-s> :s/
+" }}}
 
-" Project wide Find files
+" {{{ Project-wide find files
+
 " Similar to built-in grepprg, makeprg
-let g:findprg = "fd --hidden"
+let g:findprg = executable('fd') ? 'fd --hidden' : 'find .'
 
 " Find commands. View results in quickfix list, scratch buffer or args list
 command -nargs=* -bang Find :call s:project_wide_find(<q-args>, 'qf')
@@ -597,41 +596,19 @@ function s:project_wide_find(command, view_in)
     return
   endif
 
+  " Set global mark to easily get back after we're done with a search
+  normal mF
+
   if a:view_in ==# 'qf'
-    call s:files_to_qf_list(l:files, "Find: " . a:command)
+    call s:set_qf_list_with_files(l:files, "Find: " . a:command)
   endif
 
   if a:view_in ==# 'buffer'
-    call s:enew_scratch_buffer(l:files)
+    call s:new_scratch_buffer(l:files, "Find: " . a:command)
   endif
 
   if a:view_in ==# 'args'
-    call s:files_to_args_list(l:files, 1)
-  endif
-endfunction
-
-" Create new quickfix list with a list of files
-function s:files_to_qf_list(files, title)
-  " Map file names to format, as understood by 'errorformat' (similar to grepformat)
-  cexpr map(a:files, 'v:val . ":1:" . fnamemodify(v:val, ":t")')
-
-  " Set QF window title
-  if !empty(a:title)
-    copen
-    let w:quickfix_title = a:title
-    wincmd p
-  endif
-endfunction
-
-" Populate args with a list of files
-function s:files_to_args_list(files, should_edit_first_arg)
-  %argdelete
-  for l:file in a:files
-    exe "argadd " . l:file
-  endfor
-
-  if a:should_edit_first_arg
-    argument 1
+    call s:set_args_list_with_files(l:files, 1)
   endif
 endfunction
 
@@ -961,6 +938,51 @@ function s:QuitWindow()
   endif
 
   quit
+endfunction
+
+" Scratch buffer and Eread command
+
+" Read command output and show it in new scratch buffer
+" :Eread !{system_command}
+" :Eread {vim_command}
+command! -nargs=1 -complete=command Eread silent call <SID>read_command_output_in_new_buffer(<q-args>)
+
+" Capture command's output and show it in a new buffer
+function! s:read_command_output_in_new_buffer(cmd)
+  " Capture command output
+  if a:cmd =~ '^!'
+    let output = system(matchstr(a:cmd, '^!\zs.*'))
+  else
+    redir => output
+    execute a:cmd
+    redir END
+  endif
+
+  " Show in new scratch buffer
+  call s:new_scratch_buffer(output, "Command: " . a:cmd)
+endfunction
+
+" Show text of list of lines in new scratch buffer
+function s:new_scratch_buffer(content, ...)
+  let title = get(a:, "1", "[Scratch]")
+  let new_command = get(a:, "2", "enew")
+
+  exe new_command
+  let w:scratch = 1
+  setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile hidden
+  exe "file! " . title
+
+  " Automatically kill buffer on WinLeave
+  augroup aug_scratch_autohide
+    autocmd!
+    execute 'autocmd WinLeave <buffer=' . bufnr('%') . '> bdelete'
+  augroup END
+
+  if type(a:content) == type([])
+    call setline(1, a:content)
+  else
+    call setline(1, split(a:content, "\n"))
+  endif
 endfunction
 
 " }}}
@@ -1361,6 +1383,14 @@ nnoremap <Plug>LocRemoveCurrentItem :<C-U>call <SID>qf_loc_remove_current_item('
 nmap <silent> <expr> - qf#IsLocWindowOpen(0) ? '<Plug>LocRemoveCurrentItem'
       \ : qf#IsQfWindowOpen() ? '<Plug>QfRemoveCurrentItem' : '-'
 
+augroup aug_quickfix_list
+  au!
+
+  " Remember cursor position before running quickfix cmd
+  autocmd QuickFixCmdPre [^l]* normal mQ
+  autocmd QuickFixCmdPre    l* normal mL
+augroup END
+
 " Navigate thru lists, open closed folds, and recenter screen
 function s:qf_loc_list_navigate(command)
   try
@@ -1455,25 +1485,19 @@ endfunction
 " Build new derived qf/loc list which contains only filenames
 function s:qf_loc_set_files_only(list_type)
   if a:list_type ==# 'qf'
-    let bufnums = uniq(map(getqflist(), 'v:val["bufnr"]'))
-    call setqflist(map(bufnums, '{ "bufnr": v:val , "lnum": 1, "text": fnamemodify(bufname(v:val), ":t") }'))
-    cfirst
+    let files = s:qf_loc_get_files(getqflist())
+    call s:set_qf_list_with_files(files, 'Files Only')
   else
-    let bufnums = uniq(map(getloclist(0), 'v:val["bufnr"]'))
-    call setloclist(0, map(bufnums, '{ "bufnr": v:val , "lnum": 1, "text": fnamemodify(bufname(v:val), ":t") }'))
-    lfirst
+    let files = s:qf_loc_get_files(getloclist(0))
+    call s:set_loc_list_with_files(files, 'Files Only')
   endif
-endfunction
-
-" Get unique list of file names in a quick list
-function s:qf_loc_get_file_names(list)
-  return map(uniq(map(a:list, 'v:val["bufnr"]')), 'bufname(v:val)')
 endfunction
 
 " Navigate to older/newer qf/loc list
 function s:qf_loc_history_navigate(command)
   try
     exe a:command
+    cfirst
   catch /E\(380\|381\)/
     echohl WarningMsg
     echo "Reached end of the history"
@@ -1481,13 +1505,107 @@ function s:qf_loc_history_navigate(command)
   endtry
 endfunction
 
-augroup aug_quickfix_list
-  au!
+" Create new quickfix list with a list of files
+function s:set_qf_list_with_files(files, title)
+  " Map file names to format, as understood by 'errorformat' (similar to grepformat)
+  cexpr map(a:files, 'v:val . ":1:" . fnamemodify(v:val, ":t")')
 
-  " Remember cursor position before running quickfix cmd
-  autocmd QuickFixCmdPre [^l]* normal mQ
-  autocmd QuickFixCmdPre    l* normal mL
-augroup END
+  " Set QF window title
+  if !empty(a:title)
+    call setqflist([], 'r', { 'title': a:title })
+  endif
+endfunction
+
+" Create new location list with a list of files
+function s:set_loc_list_with_files(files, title)
+  " Map file names to format, as understood by 'errorformat' (similar to grepformat)
+  lexpr map(a:files, 'v:val . ":1:" . fnamemodify(v:val, ":t")')
+
+  " Set location list window title
+  if !empty(a:title)
+    call setloclist(0, [], 'r', { 'title': a:title })
+  endif
+endfunction
+
+" Get unique list of file names in a quick list
+function s:qf_loc_get_files(list)
+  return map(uniq(map(a:list, 'v:val["bufnr"]')), 'bufname(v:val)')
+endfunction
+
+" }}}
+
+" {{{ Args list
+
+function s:args_get_files()
+  let i = 0
+  let files = []
+  while i < argc()
+    call add(l:files, argv(i))
+    let i = i + 1
+  endwhile
+
+  return l:files
+endfunction
+
+" Populate args with a list of files
+function s:set_args_list_with_files(files, should_edit_first_arg)
+  %argdelete
+  for l:file in a:files
+    exe "argadd " . l:file
+  endfor
+
+  if a:should_edit_first_arg
+    argument 1
+  else
+    echo "Args list is set"
+  endif
+endfunction
+
+" }}}
+
+" {{{ QF vs Buffer vs Args conversion
+
+" Convert between quickfix list <-> scratch buffer <-> args list
+command -nargs=0 Buffer2Qf call <SID>convert_buffer_to_quickfix()
+command -nargs=0 Buffer2Args call <SID>convert_buffer_to_args()
+command -nargs=0 Qf2Buffer call <SID>convert_quickfix_to_buffer()
+command -nargs=0 Qf2Args call <SID>convert_quickfix_to_args()
+command -nargs=0 Args2Qf call <SID>convert_args_to_quickfix()
+command -nargs=0 Args2Buffer call <SID>convert_args_to_buffer()
+
+function s:convert_buffer_to_quickfix()
+  let lines = getline(1, '$')
+  let title = bufname('%')
+  bdelete
+  call s:set_qf_list_with_files(lines, title)
+endfunction
+
+function s:convert_buffer_to_args()
+  let lines = getline(1, '$')
+  bdelete
+  call s:set_args_list_with_files(lines, 0)
+endfunction
+
+function s:convert_quickfix_to_buffer()
+  let files = s:qf_loc_get_files(getqflist())
+  call s:new_scratch_buffer(files, 'From Quickfix', 'rightbelow new')
+  call qf#toggle#ToggleQfWindow(0)
+endfunction
+
+function s:convert_quickfix_to_args()
+  let files = s:qf_loc_get_files(getqflist())
+  call s:set_args_list_with_files(files, 0)
+endfunction
+
+function s:convert_args_to_buffer()
+  let files = s:args_get_files()
+  call s:new_scratch_buffer(files, 'From Args', 'rightbelow new')
+endfunction
+
+function s:convert_args_to_quickfix()
+  let files = s:args_get_files()
+  call s:set_qf_list_with_files(files, 'From Args')
+endfunction
 
 " }}}
 
@@ -1505,23 +1623,6 @@ vnoremap . :normal .<CR>
 
 " Shortcut command to 'vim-scripts/SyntaxAttr.vim'
 command ViewSyntaxAttr call SyntaxAttr()
-
-" Capture command's output and show it in a new buffer
-function! s:read_command_output_in_new_buffer(cmd)
-  " Capture command output
-  if a:cmd =~ '^!'
-    let output = system(matchstr(a:cmd, '^!\zs.*'))
-  else
-    redir => output
-    execute a:cmd
-    redir END
-  endif
-
-  " Show in new scratch buffer
-  call s:enew_scratch_buffer(output)
-endfunction
-
-command! -nargs=1 -complete=command Eread silent call <SID>read_command_output_in_new_buffer(<q-args>)
 
 " Get visually selected text
 function! s:get_selected_text()
@@ -1552,18 +1653,6 @@ function s:echo_warning(message)
   echohl None
 endfunction
 
-" Show text of list of lines in new scratch buffer
-function s:enew_scratch_buffer(content)
-  enew
-  let w:scratch = 1
-  setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile
-
-  if type(a:content) == type([])
-    call setline(1, a:content)
-  else
-    call setline(1, split(a:content, "\n"))
-  endif
-endfunction
 "}}}
 
 
