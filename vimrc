@@ -480,7 +480,7 @@ vnoremap <C-s> :s/
 
 " Use ripgrep instead of GNU grep for 'grepprg'
 if executable("rg")
-  set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case\ --hidden
+  set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case\ --hidden\ --follow\ --glob\ \"!.git/*\"
   set grepformat=%f:%l:%c:%m
 endif
 
