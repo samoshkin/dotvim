@@ -1770,8 +1770,22 @@ let g:airline#extensions#hunks#non_zero_only = 1
 function! AirlineBufnrPart()
   return bufnr('') . ':'
 endfunction
+
 call airline#parts#define_function('bufnr', 'AirlineBufnrPart')
 call airline#parts#define_condition('bufnr', "&diff")
+
+" Indicator to tell if this is a scratch buffer
+" Show indicator only in NORMAL mode
+function! AirlinsScratchBufferIndicatorPart()
+  if &buftype ==# 'nofile' && (&bufhidden ==# 'wipe' || &bufhidden ==# 'delete') && !buflisted(bufnr('%'))
+    return 'Scratch'
+  endif
+
+  return ''
+endfunction
+
+call airline#parts#define_function('scratch', 'AirlinsScratchBufferIndicatorPart')
+call airline#parts#define_condition('scratch', "mode() ==# 'n'")
 
 " Do not show live word count
 let g:airline#extensions#wordcount#enabled = 0
@@ -1783,6 +1797,7 @@ let g:airline#extensions#whitespace#mixed_indent_format = 'i[%s]'
 let g:airline#extensions#whitespace#mixed_indent_file_format = 'i[%s]'
 
 " Airline sections customization
+let g:airline_section_a = airline#section#create_left(['mode', 'scratch', 'crypt', 'paste', 'keymap', 'spell', 'capslock', 'xkblayout', 'iminsert'])
 let g:airline_section_z = airline#section#create(['_autosave', '_diffmerge', '_gutentags', '_obsession', '%3p%% ', 'linenr', ':%3v'])
 let g:airline_section_c = airline#section#create(['bufnr', '%<', '%f', 'modified', ' ', 'readonly'])
 
