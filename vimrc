@@ -1387,8 +1387,9 @@ augroup aug_quickfix_list
   au!
 
   " Remember cursor position before running quickfix cmd
-  autocmd QuickFixCmdPre [^l]* normal mQ
-  autocmd QuickFixCmdPre    l* normal mL
+  " Disable folding
+  autocmd QuickFixCmdPre [^l]* set nofoldenable | normal mQ
+  autocmd QuickFixCmdPre    l* set nofoldenable | normal mL
 augroup END
 
 " Navigate thru lists, open closed folds, and recenter screen
@@ -1410,6 +1411,9 @@ endfunction
 " Close quickfix or location list if opened
 " And get back to cursor position before quickfix command was executed
 function s:qf_loc_quit(list_type)
+  " Restore folding back
+  set foldenable
+
   if a:list_type ==# 'qf'
     if qf#IsQfWindowOpen()
       call qf#toggle#ToggleQfWindow(0)
