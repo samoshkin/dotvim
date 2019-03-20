@@ -1226,15 +1226,21 @@ nnoremap <localleader>sF [s1z=
 " Quickfix and Location list{{{
 
 " <F5> for quickfix list
-nmap <F5>t <Plug>(qf_qf_toggle)
-nmap <F5>f <Plug>(qf_qf_switch)
-nmap <silent> <F5>r :QfReload<CR>
-nmap <silent> <leader><F5> :call <SID>qf_loc_quit('qf')<CR>
+nmap <F5><F5> <Plug>(qf_qf_toggle)
+nmap <S-F5> <Plug>(qf_qf_switch)
+nnoremap <silent> <F5>r :call <SID>qf_loc_reload_list('qf')<CR>
+nnoremap <silent> <F5>l :call <SID>qf_loc_set_files_only('qf')<CR>
+nnoremap <silent> <F5>[ :call <SID>qf_loc_history_navigate('colder')<CR>
+nnoremap <silent> <F5>] :call <SID>qf_loc_history_navigate('cnewer')<CR>
+nnoremap <silent> <leader><F5> :call <SID>qf_loc_quit('qf')<CR>
 
 " <F6> for location list
-nmap <F6>t <Plug>(qf_loc_toggle)
-nmap <F6>f <Plug>(qf_loc_switch)
-nmap <silent> <F6>r :LocReload<CR>
+nmap <F6><F6> <Plug>(qf_loc_toggle)
+nmap <S-F6> <Plug>(qf_loc_switch)
+nmap <silent> <F6>r :call <SID>qf_loc_reload_list('loc')<CR>
+nmap <silent> <F6>l :call <SID>qf_loc_set_files_only('loc')<CR>
+nnoremap <silent> <F6>[ :call <SID>qf_loc_history_navigate('lolder')<CR>
+nnoremap <silent> <F6>] :call <SID>qf_loc_history_navigate('lnewer')<CR>
 nmap <silent> <leader><F6> :call <SID>qf_loc_quit('loc')<CR>
 
 " Automatically quit if qf/loc is the last window opened
@@ -1283,10 +1289,6 @@ nnoremap <Plug>LocRemoveCurrentItem :<C-U>call <SID>qf_loc_remove_current_item('
 nmap <silent> <expr> - qf#IsLocWindowOpen(0) ? '<Plug>LocRemoveCurrentItem'
       \ : qf#IsQfWindowOpen() ? '<Plug>QfRemoveCurrentItem' : '-'
 
-" Reload lists (useful to pull text changes after replace)
-command -nargs=0 QfReload call <SID>qf_loc_reload_list('qf')
-command -nargs=0 LocReload call <SID>qf_loc_reload_list('loc')
-
 " Navigate thru lists, open closed folds, and recenter screen
 function s:qf_loc_list_navigate(command)
   try
@@ -1295,6 +1297,7 @@ function s:qf_loc_list_navigate(command)
     echohl WarningMsg
     echo "No more items in a list"
     echohl None
+    return
   endtry
   if &foldopen =~ 'quickfix' && foldclosed(line('.')) != -1
     normal! zv
@@ -1375,6 +1378,35 @@ function s:qf_loc_reload_list(list_type)
     call setloclist(0, map(getloclist(), 'extend(v:val, {"text":get(getbufline(v:val.bufnr, v:val.lnum),0)})'), 'r')
     lfirst
   endif
+endfunction
+
+" Build new derived qf/loc list which contains only filenames
+function s:qf_loc_set_files_only(list_type)
+  if a:list_type ==# 'qf'
+    let bufnums = uniq(map(getqflist(), 'v:val["bufnr"]'))
+    call setqflist(map(bufnums, '{ "bufnr": v:val , "lnum": 1, "text": fnamemodify(bufname(v:val), ":t") }'))
+    cfirst
+  else
+    let bufnums = uniq(map(getloclist(0), 'v:val["bufnr"]'))
+    call setloclist(0, map(bufnums, '{ "bufnr": v:val , "lnum": 1, "text": fnamemodify(bufname(v:val), ":t") }'))
+    lfirst
+  endif
+endfunction
+
+" Get unique list of file names in a quick list
+function s:qf_loc_get_file_names(list)
+  return map(uniq(map(a:list, 'v:val["bufnr"]')), 'bufname(v:val)')
+endfunction
+
+" Navigate to older/newer qf/loc list
+function s:qf_loc_history_navigate(command)
+  try
+    exe a:command
+  catch /E\(380\|381\)/
+    echohl WarningMsg
+    echo "Reached end of the history"
+    echohl None
+  endtry
 endfunction
 
 augroup aug_quickfix_list
