@@ -210,6 +210,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'alvan/vim-closetag'
   Plug 'samoshkin/vim-mergetool'
   Plug 'romainl/vim-qf'
+  Plug 'dyng/ctrlsf.vim'
 
   " Markdown
   Plug 'suan/vim-instant-markdown'
@@ -271,13 +272,17 @@ fun s:PatchColorScheme()
   hi! DiffText term=NONE ctermfg=215 ctermbg=233 cterm=NONE guifg=#FFB86C guibg=#14141a gui=NONE
   hi! link DiffChange NONE
   hi! clear DiffChange
+
+  " dyng/ctrlsf.vim
+  hi! link ctrlsfMatch DraculaOrange
+  hi! link ctrlsfCuttingLine Title
 endf
 
 " Customime color scheme after it was loaded
 augroup aug_color_scheme
   au!
 
-  autocmd ColorScheme * call s:PatchColorScheme()
+  autocmd ColorScheme dracula call s:PatchColorScheme()
 augroup END
 
 " Apply a particular color scheme
@@ -565,8 +570,6 @@ vnoremap <silent> <F7> :call <SID>project_wide_search("selection", "Grep")<CR>
 nnoremap <leader><F7> :call <SID>project_wide_search("", "FzfRg")<CR>
 nnoremap <leader><S-F7> :call <SID>project_wide_search("word", "FzfRg")<CR>
 vnoremap <silent> <leader><F7> :call <SID>project_wide_search("selection", "FzfRg")<CR>
-
-" TODO: ctrlsf.vim
 
 " }}}
 
@@ -2172,7 +2175,7 @@ xmap <leader>c <Plug>Commentary
 
 " bronson/vim-trailing-whitespaces is used for highlighting
 " we use custom routines to strip whitespaces
-let g:extra_whitespace_ignored_filetypes = ['fugitive', 'markdown', 'diff', 'qf', 'help', 'gitcommit']
+let g:extra_whitespace_ignored_filetypes = ['fugitive', 'markdown', 'diff', 'qf', 'help', 'gitcommit', 'ctrlsf']
 
 " Strips trailing whitespace
 " Remoces extra newlines at EOF
@@ -2396,6 +2399,71 @@ let g:vim_markdown_no_extensions_in_markdown = 1
 let g:vim_markdown_autowrite = 0
 
 " TODO: create key mapping for :Toc
+
+" }}}
+
+" {{{ PLUGIN: dyng/ctrlsf.vim
+
+let g:ctrlsf_auto_focus = { "at": "start" }
+let g:ctrlsf_ignore_dir = ['.git']
+let g:ctrlsf_regex_pattern = 1
+let g:ctrlsf_case_sensitive = 'smart'
+let g:ctrlsf_follow_symlinks = 1
+let g:ctrlsf_selected_line_hl = 'po'
+let g:ctrlsf_indent = 2
+
+" Autoclose search pane in both normal and compact view
+" o, <CR>, open file and close search pane
+" O, open file and keep search pane
+" n/N, navigate thru results and immediately open a preview
+let g:ctrlsf_auto_close = {
+      \ "normal" : 1,
+      \ "compact": 1
+      \ }
+let g:ctrlsf_mapping = {
+      \ "open": ["<CR>", "o"],
+      \ "openb": "O",
+      \ "next": { "key": "n", "suffix": ":norm O<CR><C-w>p" },
+      \ "prev": { "key": "N", "suffix": ":norm O<CR><C-w>p" },
+      \ }
+
+" If ripgrep is available, use it
+if executable('rg')
+  let g:ctrlsf_ackprg = 'rg'
+  let g:ctrlsf_extra_backend_args = {
+        \ 'rg': '--hidden'
+        \ }
+endif
+
+" Tweak search pane window options
+function! g:CtrlSFAfterMainWindowInit()
+  setlocal list
+endfunction
+
+" Commands and mappings
+command -nargs=* Fctrl :call s:search_ctrlsf(<q-args>)
+
+nnoremap <F8> :CtrlSFToggle<CR>
+nnoremap <S-F8> :CtrlSFFocus<CR>
+nnoremap <leader><F8> :call <SID>ctrlsf_search_quit()<CR>
+
+" Start search with CtrlSF
+function! s:search_ctrlsf(pattern)
+  tabnew
+  setlocal bufhidden=delete nobuflisted
+  let t:is_ctrlsf_tab = 1
+
+  exe "norm! :CtrlSF " . a:pattern . "\<CR>"
+endfunction
+
+" Stop searching, get back
+function s:ctrlsf_search_quit()
+  CtrlSFClose
+  CtrlSFClearHL
+  if exists("t:is_ctrlsf_tab")
+    tabclose
+  endif
+endfunction
 
 " }}}
 
