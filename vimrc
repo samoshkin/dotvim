@@ -651,12 +651,12 @@ let g:findprg = executable('fd') ? 'fd --hidden' : 'find .'
 
 " Find commands. View results in quickfix list, scratch buffer or args list
 " Do not expose keyboard mappings, it does not add much value
-command -nargs=* -bang Find :call s:execute_find(<q-args>, 'qf')
-command -nargs=* -bang FindB :call s:execute_find(<q-args>, 'buffer')
-command -nargs=* -bang FindA :call s:execute_find(<q-args>, 'args')
+command -nargs=* -bang Find :call s:execute_find(<q-args>, 'qf', <bang>0)
+command -nargs=* -bang FindB :call s:execute_find(<q-args>, 'buffer', <bang>0)
+command -nargs=* -bang FindA :call s:execute_find(<q-args>, 'args', <bang>0)
 
 " Execute find command and render results in selected view
-function s:execute_find(args, view)
+function s:execute_find(args, view, is_relative)
   if (empty(a:args))
     call s:echo_warning("Seach text not specified")
     return
@@ -667,6 +667,11 @@ function s:execute_find(args, view)
 
   " Set global mark to easily get back after we're done with a search
   normal mF
+
+  " Change cwd temporarily if search is relative to the current file
+  if a:is_relative
+    exe "cd " . expand("%:p:h")
+  endif
 
   " Start composing "find" command
   let command = g:findprg
@@ -723,6 +728,11 @@ function s:execute_find(args, view)
 
   if a:view ==# 'args'
     call s:set_args_list_with_files(l:files, 1)
+  endif
+
+  " Revert cwd back
+  if a:is_relative
+    exe "cd -"
   endif
 endfunction
 
@@ -1085,7 +1095,7 @@ function s:new_scratch_buffer(content, ...)
   exe new_command
   let w:scratch = 1
   setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile hidden
-  exe "file! " . title
+  silent! exe "file! " . title
 
   " Automatically kill buffer on WinLeave
   augroup aug_scratch_autohide
