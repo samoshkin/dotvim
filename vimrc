@@ -564,6 +564,7 @@ function s:execute_search(command, args, is_relative)
     endif
   endif
 
+  " TODO: pass extra_args
   " Execute search using fzf.vim + grep/ripgrep
   if a:command ==# 'GrepFzf'
     " Run in fullscreen mode, with preview at the top
@@ -649,38 +650,78 @@ endfunction
 let g:findprg = executable('fd') ? 'fd --hidden' : 'find .'
 
 " Find commands. View results in quickfix list, scratch buffer or args list
-command -nargs=* -bang Find :call s:project_wide_find(<q-args>, 'qf')
-command -nargs=* -bang FindB :call s:project_wide_find(<q-args>, 'buffer')
-command -nargs=* -bang FindA :call s:project_wide_find(<q-args>, 'args')
-
 " Do not expose keyboard mappings, it does not add much value
-
-" Execute 'findprg' via system() call and return list of files
-function s:execute_findprg(command)
-  let output = system(g:findprg . " " . a:command)
-  return split(output, "\n")
-endfunction
+command -nargs=* -bang Find :call s:execute_find(<q-args>, 'qf')
+command -nargs=* -bang FindB :call s:execute_find(<q-args>, 'buffer')
+command -nargs=* -bang FindA :call s:execute_find(<q-args>, 'args')
 
 " Execute find command and render results in selected view
-function s:project_wide_find(command, view_in)
-  let files = s:execute_findprg(a:command)
+function s:execute_find(args, view)
+  if (empty(a:args))
+    call s:echo_warning("Seach text not specified")
+    return
+  endif
+
+  let using_fd = g:findprg =~ '^fd'
+  let ignore_dir_args = []
+
+  " Set global mark to easily get back after we're done with a search
+  normal mF
+
+  " Start composing "find" command
+  let command = g:findprg
+
+  " Exclude well known ignore dirs
+  " Examples:
+  " find . \( -path '*/plugged/*' -o -path '*/.git/*' \) -prune -o -name "index" -print
+  " fd -E "node_modules/" -E ".git/" index
+  let ignore_dirs = s:get_var('search_ignore_dirs')
+  if !empty(ignore_dirs)
+    if using_fd
+      for l:dir in ignore_dirs
+        call add(ignore_dir_args, '-E ' . shellescape(printf("%s/", l:dir)))
+      endfor
+      let command .= " " . join(ignore_dir_args) . " "
+    else
+      for l:dir in ignore_dirs
+        call add(ignore_dir_args, '-path ' . shellescape(printf("*/%s/*", l:dir)))
+      endfor
+      let command .= " \\( " . join(ignore_dir_args, " -o ") . " \\) -prune -o"
+    endif
+  endif
+
+  " Add user supplied args
+  let command .= " " . a:args
+
+  " When using GNU find, append "-print" suffix
+  if !using_fd
+    let command .= " -print"
+  endif
+
+  " Execute command and parse into list of files
+  let output = system(command)
+  if v:shell_error
+    call s:echo_warning('Find backend failed')
+    echom "$ " . l:command
+    echom output
+    return
+  endif
+
+  let files = split(output, "\n")
   if empty(files)
     call s:echo_warning('No files found')
     return
   endif
 
-  " Set global mark to easily get back after we're done with a search
-  normal mF
-
-  if a:view_in ==# 'qf'
-    call s:set_qf_list_with_files(l:files, "Find: " . a:command)
+  if a:view ==# 'qf'
+    call s:set_qf_list_with_files(l:files, "Find: " . command)
   endif
 
-  if a:view_in ==# 'buffer'
-    call s:new_scratch_buffer(l:files, "Find: " . a:command)
+  if a:view ==# 'buffer'
+    call s:new_scratch_buffer(l:files, "Find: " . command)
   endif
 
-  if a:view_in ==# 'args'
+  if a:view ==# 'args'
     call s:set_args_list_with_files(l:files, 1)
   endif
 endfunction
@@ -834,6 +875,7 @@ set foldmethod=marker
 set foldlevelstart=0
 set foldcolumn=1
 set foldopen-=block
+set foldopen-=hor
 set foldopen+=jump
 
 " Use [z and ]z to navigate to start/end of the fold
