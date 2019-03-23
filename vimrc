@@ -535,12 +535,13 @@ function s:execute_search(command, args, is_relative)
 
   " Exclude well known ignore dirs
   " This is useful for GNU grep, that does not respect .gitignore
-  " Except for ctrlsf.vim, that accepts ignore dirs thru settings
   let ignore_dirs = s:get_var('search_ignore_dirs')
   for l:dir in ignore_dirs
-    call add(extra_args, using_ripgrep
-          \ ? printf('--glob "!%s/"', l:dir)
-          \ : printf('--exclude-dir "%s"', l:dir))
+    if using_ripgrep
+      call add(extra_args, '--glob ' . shellescape(printf("!%s/", l:dir)))
+    else
+      call add(extra_args, '--exclude-dir ' . shellescape(printf("%s", l:dir)))
+    endif
   endfor
 
   " Change cwd temporarily if search is relative to the current file
@@ -564,11 +565,10 @@ function s:execute_search(command, args, is_relative)
     endif
   endif
 
-  " TODO: pass extra_args
   " Execute search using fzf.vim + grep/ripgrep
   if a:command ==# 'GrepFzf'
     " Run in fullscreen mode, with preview at the top
-    call fzf#vim#grep(&grepprg . " --color=always " .a:args,
+    call fzf#vim#grep(printf("%s %s --color=always %s", &grepprg, join(extra_args), a:args),
           \ 1,
           \ fzf#vim#with_preview('up:60%'),
           \ 1)
