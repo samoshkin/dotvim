@@ -2122,10 +2122,14 @@ imap <c-x><c-k> <plug>(fzf-complete-word)
 imap <c-x><c-f> <plug>(fzf-complete-path)
 imap <c-x><c-l> <plug>(fzf-complete-buffer-line)
 
-" Open directory explorer at cwd
-nmap <silent> <leader>O :edit .<CR>
+" Use preview when FzfFiles runs in fullscreen
+command! -nargs=? -bang -complete=dir FzfFiles
+      \ call fzf#vim#files(<q-args>, <bang>0 ? fzf#vim#with_preview('up:60%') : {}, <bang>0)
+command FzfChanges call s:fzf_changes()
 
-nnoremap <silent> <expr> <leader>o (expand('%') =~ 'NERD_tree' ? "\<C-w>\<C-w>" : '').":FzfFiles\<CR>"
+" Mappings
+nnoremap <silent> <leader>o :FzfFiles<CR>
+nnoremap <silent> <leader>O :FzfFiles!<CR>
 cnoremap <silent> <C-p>  :FzfHistory:<CR>
 cnoremap <silent> <C-_> <ESC>:FzfHistory/<CR>
 nnoremap <silent> <leader>b  :FzfBuffers<CR>
@@ -2167,9 +2171,6 @@ function! s:fzf_changes()
         \ 'options': '+m +s --nth=3..'
         \ }))
 endfunction
-
-command FzfChanges call s:fzf_changes()
-nnoremap <silent> <leader>f; :FzfChanges<CR>
 
 
 " Enable per-command history.
