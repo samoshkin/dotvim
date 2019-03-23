@@ -481,95 +481,165 @@ vnoremap <C-s> :s/
 
 " }}}
 
-" {{{ Project-wide search with Grep
+" {{{ Project-wide search
 
-" Use ripgrep instead of GNU grep for 'grepprg'
+let g:search_ignore_dirs = ['.git', 'node_modules']
+
+" TODO: git grep when under repository
+" Choose grep backend, use ripgrep if available
 if executable("rg")
-  set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case\ --hidden\ --follow\ --glob\ \"!.git/*\"
+  set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case\ --hidden\ --follow
   set grepformat=%f:%l:%c:%m
+else
+  set grepprg=grep\ -n\ --with-filename\ -I\ -R
 endif
 
-" Project wide search using 'grepprg'
-function s:grep_search(is_relative, text)
-  " Change cwd temporarily if should search relative to current file
-  if a:is_relative
-    let cwdb = getcwd()
-    exe "lcd " . expand("%:p:h")
+" Without bang, search is relative to cwd, otherwise relative to current file
+command -nargs=* -bang -complete=file Grep call <SID>execute_search("Grep", <q-args>, <bang>0)
+command -nargs=* -bang -complete=file GrepFzf call <SID>execute_search("GrepFzf", <q-args>, <bang>0)
+command -nargs=* -bang -complete=file GrepSF call <SID>execute_search_ctrlsf(<q-args>, <bang>0)
+
+" :grep + grepprg + quickfix list
+nnoremap <F7><F7> :call <SID>prepare_search_command("", "Grep")<CR>
+nnoremap <F7>w :call <SID>prepare_search_command("word", "Grep")<CR>
+nnoremap <F7>s :call <SID>prepare_search_command("selection", "Grep")<CR>
+nnoremap <F7>/ :call <SID>prepare_search_command("search", "Grep")<CR>
+vnoremap <silent> <F7> :call <SID>prepare_search_command("selection", "Grep")<CR>
+
+" ctrlsf.vim (uses ack, ag or rg under the hood)
+nnoremap <S-F7><F7> :call <SID>prepare_search_command("", "GrepSF")<CR>
+nnoremap <S-F7>w :call <SID>prepare_search_command("word", "GrepSF")<CR>
+nnoremap <S-F7>s :call <SID>prepare_search_command("selection", "GrepSF")<CR>
+nnoremap <S-F7>/ :call <SID>prepare_search_command("search", "GrepSF")<CR>
+vnoremap <silent> <S-F7> :call <SID>prepare_search_command("selection", "GrepSF")<CR>
+
+" fzf-vim + ripgrep
+nnoremap <leader><F7><F7> :call <SID>prepare_search_command("", "GrepFzf")<CR>
+nnoremap <leader><F7>w :call <SID>prepare_search_command("word", "GrepFzf")<CR>
+nnoremap <leader><F7>s :call <SID>prepare_search_command("selection", "GrepFzf")<CR>
+nnoremap <leader><F7>/ :call <SID>prepare_search_command("search", "GrepFzf")<CR>
+vnoremap <silent> <leader><F7> :call <SID>prepare_search_command("selection", "GrepFzf")<CR>
+
+" Execute search for particular command (Grep, GrepSF, GrepFzf)
+function s:execute_search(command, args, is_relative)
+  if empty(a:args)
+    call s:echo_warning("Search text not specified")
+    return
   endif
+
+  let extra_args = []
+  let using_ripgrep = &grepprg =~ '^rg'
 
   " Set global mark to easily get back after we're done with a search
   normal mF
 
-  " Perform search
-  silent! exe "grep! " . a:text
+  " Exclude well known ignore dirs
+  " This is useful for GNU grep, that does not respect .gitignore
+  " Except for ctrlsf.vim, that accepts ignore dirs thru settings
+  let ignore_dirs = s:get_var('search_ignore_dirs')
+  for l:dir in ignore_dirs
+    call add(extra_args, using_ripgrep
+          \ ? printf('--glob "!%s/"', l:dir)
+          \ : printf('--exclude-dir "%s"', l:dir))
+  endfor
 
-  " If matches are found, open quickfix list and focus first match
-  " Do not open with copen, because we have qf list automatically open on search
-  if len(getqflist())
-    cc
-    redraw!
-  else
-    cclose
+  " Change cwd temporarily if search is relative to the current file
+  if a:is_relative
+    exe "cd " . expand("%:p:h")
+  endif
+
+  " Execute :grep + grepprg search, show results in quickfix list
+  if a:command ==# 'Grep'
+    " Perform search
+    silent! exe "grep! " . join(extra_args) . " " . a:args
     redraw!
 
-    echohl WarningMsg
-    echom "No match found for: " . a:text
-    echohl None
+    " If matches are found, open quickfix list and focus first match
+    " Do not open with copen, because we have qf list automatically open on search
+    if len(getqflist())
+      cc
+    else
+      cclose
+      call s:echo_warning("No match found")
+    endif
+  endif
+
+  " Execute search using fzf.vim + grep/ripgrep
+  if a:command ==# 'GrepFzf'
+    " Run in fullscreen mode, with preview at the top
+    call fzf#vim#grep(&grepprg . " --color=always " .a:args,
+          \ 1,
+          \ fzf#vim#with_preview('up:60%'),
+          \ 1)
   endif
 
   " Restore cwd back
   if a:is_relative
-    exe "lcd " . cwdb
+    exe "cd -"
   endif
 endfunction
 
-" Perform a project wide search using predefined search text: current word or selection
-function! s:project_wide_search(context, command) range
+function s:execute_search_ctrlsf(args, is_relative)
+  if empty(a:args)
+    call s:echo_warning("Search text not specified")
+    return
+  endif
+
+  " Show CtrlSF search pane in new tab
+  tab split
+  let t:is_ctrlsf_tab = 1
+
+  " Change cwd, but do it window-local
+  " Do not restore cwd, because ctrlsf#Search is async
+  " Just close tab, when you're done with a search
+  if a:is_relative
+    exe "lcd " . expand("%:p:h")
+  endif
+
+  " Create new scratch buffer
+  enew
+  setlocal bufhidden=delete nobuflisted
+
+  " Execute search
+  call ctrlsf#Search(a:args)
+endfunction
+
+" Initiate search, prepare command using selected backend and context for the search
+" Contexts are: word, selection, last search pattern
+function s:prepare_search_command(context, backend)
   let text = a:context ==# 'word' ? expand("<cword>")
         \ : a:context ==# 'selection' ? s:get_selected_text()
+        \ : a:context ==# 'search' ? @\
         \ : ''
-  let args = ''
 
+  " Properly escape search text
   " Remove new lines (when several lines are visually selected)
   let text = substitute(text, "\n", "", "g")
 
-  if a:command ==# "Grep"
-    " put in quotes
-    let text = escape(text, '"')
-    let text = empty(text) ? text : '"' . text . '"'
+  " Escape backslashes
+  let text = escape(text, '\')
 
-    " Do not use regular expression search pattern comes from context
-    if !empty(text)
-      let args = ' -F'
-    endif
+  " Put in double quotes
+  let text = escape(text, '"')
+  let text = empty(text) ? text : '"' . text . '"'
+
+  " Grep/ripgrep/ctrlsf args
+  " Always search literally, without regexp
+  " Use word boundaries when context is 'word'
+  let args = [a:backend ==# 'GrepSF' ? '-L' : '-F']
+  if a:context ==# 'word'
+    call add(args, a:backend ==# 'GrepSF' ? '-W' : '-w')
   endif
 
-  if a:command ==# 'FzfRg'
-    " Escape backslash
-    let text = escape(text, '\')
-  endif
+  " Compose ":GrepXX" command to put on a command line
+  let search_command = ":\<C-u>" . a:backend
+  let search_command .= empty(args) ? ' ' : ' ' . join(args, ' ') . ' '
+  let search_command .= text
 
   " Put actual command in a command line, but do not execute
   " User would initiate a search manually with <CR>
-  call feedkeys(":" . a:command . args . " " . text)
+  call feedkeys(search_command, 'n')
 endfunction
-
-" Without bang, search is relative to cwd, otherwise relative to current file
-command -nargs=* -bang -complete=file Grep :call s:grep_search(<bang>0, <q-args>)
-
-" Project-wide search mappings
-
-" Using :Grep and grepprg
-nnoremap <F7> :call <SID>project_wide_search("", "Grep")<CR>
-nnoremap <S-F7> :call <SID>project_wide_search("word", "Grep")<CR>
-vnoremap <silent> <F7> :call <SID>project_wide_search("selection", "Grep")<CR>
-" TODO: with the last search pattern
-" TODO: search within buffers/args
-
-" Using fzf-vim + Rg
-nnoremap <leader><F7> :call <SID>project_wide_search("", "FzfRg")<CR>
-nnoremap <leader><S-F7> :call <SID>project_wide_search("word", "FzfRg")<CR>
-vnoremap <silent> <leader><F7> :call <SID>project_wide_search("selection", "FzfRg")<CR>
 
 " }}}
 
@@ -1628,8 +1698,10 @@ endfunction
 " noremap <F5> :checktime<cr>
 " inoremap <F5> <esc>:checktime<cr>
 
-" Expand '%%' for directory of current file in command line mode
-cnoremap %% <C-R>=fnameescape(expand('%:h')).'/'<cr>
+" Expand '%%' and '##' for current/alternate files in command line
+" This is useful for commands that do not understand %%
+cnoremap %% <C-R>=fnameescape(expand('%'))<cr>
+cnoremap ## <C-R>=fnameescape(expand('#'))<cr>
 
 " Apply '.' repeat command for selected each line in visual mode
 vnoremap . :normal .<CR>
@@ -2405,7 +2477,7 @@ let g:vim_markdown_autowrite = 0
 " {{{ PLUGIN: dyng/ctrlsf.vim
 
 let g:ctrlsf_auto_focus = { "at": "start" }
-let g:ctrlsf_ignore_dir = ['.git']
+let g:ctrlsf_ignore_dir = g:search_ignore_dirs
 let g:ctrlsf_regex_pattern = 1
 let g:ctrlsf_case_sensitive = 'smart'
 let g:ctrlsf_follow_symlinks = 1
@@ -2441,20 +2513,9 @@ function! g:CtrlSFAfterMainWindowInit()
 endfunction
 
 " Commands and mappings
-command -nargs=* Fctrl :call s:search_ctrlsf(<q-args>)
-
 nnoremap <F8> :CtrlSFToggle<CR>
 nnoremap <S-F8> :CtrlSFFocus<CR>
 nnoremap <leader><F8> :call <SID>ctrlsf_search_quit()<CR>
-
-" Start search with CtrlSF
-function! s:search_ctrlsf(pattern)
-  tabnew
-  setlocal bufhidden=delete nobuflisted
-  let t:is_ctrlsf_tab = 1
-
-  exe "norm! :CtrlSF " . a:pattern . "\<CR>"
-endfunction
 
 " Stop searching, get back
 function s:ctrlsf_search_quit()
