@@ -1983,12 +1983,13 @@ let g:airline#extensions#tabline#show_close_button = 0
 let g:airline#extensions#tabline#tab_nr_type = 1
 let g:airline#extensions#tabline#show_tab_nr = 1
 let g:airline#extensions#tabline#tab_min_count = 2
+let g:airline#extensions#tabline#tabs_label = 't'
 
 " Disable fancy powerline arrows
 let g:airline#extensions#tabline#left_sep = ''
-let g:airline#extensions#tabline#left_alt_sep = '|'
+let g:airline#extensions#tabline#left_alt_sep = ''
 let g:airline#extensions#tabline#right_sep = ''
-let g:airline#extensions#tabline#right_alt_sep = '|'
+let g:airline#extensions#tabline#right_alt_sep = ''
 
 " Buffers (for now disable, Tabline makes sense only for tabs IMO)
 let g:airline#extensions#tabline#show_buffers = 0
@@ -2081,6 +2082,9 @@ let g:WebDevIconsNerdTreeBeforeGlyphPadding=''
 " Do not overwrite airline.section_y with custom fileformat indicator
 " BUG: unfortunately, vim-devicons overrites section instead of appending
 let g:webdevicons_enable_airline_statusline_fileformat_symbols = 0
+
+" Disable for tabline. Distract too much
+let g:webdevicons_enable_airline_tabline = 0
 
 " Plugin 'tiagofumo/vim-nerdtree-syntax-highlight'
 " Adds syntax highlighting for common filie extensions
