@@ -610,7 +610,7 @@ endfunction
 function s:prepare_search_command(context, backend)
   let text = a:context ==# 'word' ? expand("<cword>")
         \ : a:context ==# 'selection' ? s:get_selected_text()
-        \ : a:context ==# 'search' ? @\
+        \ : a:context ==# 'search' ? @/
         \ : ''
 
   " Properly escape search text
