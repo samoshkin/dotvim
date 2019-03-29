@@ -28,7 +28,7 @@ set ttimeout
 set timeoutlen=2000
 set ttimeoutlen=30
 
-" Zsh like <Tab> completion in Command mode
+" Zsh like <Tab> completion in command mode
 set wildmenu
 set wildmode=full
 
@@ -492,6 +492,7 @@ if executable("rg")
   set grepformat=%f:%l:%c:%m
 else
   set grepprg=grep\ -n\ --with-filename\ -I\ -R
+  set grepformat=%f:%l:%m
 endif
 
 " Without bang, search is relative to cwd, otherwise relative to current file
@@ -635,7 +636,7 @@ function s:prepare_search_command(context, backend)
   " Compose ":GrepXX" command to put on a command line
   let search_command = ":\<C-u>" . a:backend
   let search_command .= empty(args) ? ' ' : ' ' . join(args, ' ') . ' '
-  let search_command .= text
+  let search_command .= '-- ' . text
 
   " Put actual command in a command line, but do not execute
   " User would initiate a search manually with <CR>
@@ -1511,11 +1512,20 @@ nmap <silent> <expr> - qf#IsLocWindowOpen(0) ? '<Plug>LocRemoveCurrentItem'
 augroup aug_quickfix_list
   au!
 
-  " Remember cursor position before running quickfix cmd
-  " Disable folding
-  autocmd QuickFixCmdPre [^l]* bufdo set nofoldenable | normal mQ
-  autocmd QuickFixCmdPre    l* bufdo set nofoldenable | normal mL
+  autocmd QuickFixCmdPre [^l]* call s:qf_loc_on_enter('qf')
+  autocmd QuickFixCmdPre    l* call s:qf_loc_on_enter('loc')
 augroup END
+
+" Remember cursor position before running quickfix cmd
+" Disable folding
+function s:qf_loc_on_enter(list_type)
+  exe "normal m" . (a:list_type ==# 'qf' ? 'Q' : 'L')
+
+  " Disable folding temporarily
+  let curr_buffer = bufnr("%")
+  bufdo set nofoldenable
+  execute 'buffer ' . curr_buffer
+endfunction
 
 " Navigate thru lists, open closed folds, and recenter screen
 function s:qf_loc_list_navigate(command)
@@ -1535,6 +1545,7 @@ endfunction
 
 " Close quickfix or location list if opened
 " And get back to cursor position before quickfix command was executed
+" FIXME: should remove focus first if current window is quickfix list
 function s:qf_loc_quit(list_type)
   " Restore folding back
   bufdo set foldenable
@@ -1762,6 +1773,7 @@ vnoremap . :normal .<CR>
 command ViewSyntaxAttr call SyntaxAttr()
 
 " Get visually selected text
+" FIXME: should not change cursor position
 function! s:get_selected_text()
   try
     let regb = @z
