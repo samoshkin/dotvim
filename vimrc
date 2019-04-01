@@ -199,7 +199,6 @@ call plug#begin('~/.vim/plugged')
   " Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
   Plug 'vim-scripts/CursorLineCurrentWindow'
   Plug 'majutsushi/tagbar'
-  Plug 'Valloric/ListToggle'
   Plug 'ludovicchabant/vim-gutentags'
   Plug 'Raimondi/delimitMate'
   Plug 'vim-scripts/SyntaxAttr.vim'
@@ -2392,11 +2391,6 @@ let g:tagbar_foldlevel = 1
 let g:tagbar_indent = 1
 let g:tagbar_iconchars = ['▸', '▾']
 let g:tagbar_silent = 1
-" }}}
-
-" PLUGIN: Valloric/ListToggle{{{
-let g:lt_location_list_toggle_map = ',l'
-let g:lt_quickfix_list_toggle_map = ',q'
 " }}}
 
 " PLUGIN: ludovicchabant/vim-gutentags{{{
