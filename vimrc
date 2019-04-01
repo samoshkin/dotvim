@@ -106,7 +106,7 @@ set virtualedit+=onemore,block
 " Auto indentation
 set autoindent
 set smartindent
-set pastetoggle=<F2>
+set pastetoggle=<F12>
 
 " Experimental
 set shiftround
@@ -2035,11 +2035,14 @@ let NERDTreeWinSize=40
 let NERDTreeAutoDeleteBuffer=1
 
 " Toggle tree visibility
-noremap <F2> :NERDTreeToggle<CR>
+noremap <S-F2> :NERDTreeToggle<CR>
+
+" Close NERD tree
+noremap <leader><F2> :NERDTreeClose<CR>
 
 " Locate current file in a tree
-noremap  <S-F2> :NERDTreeFind<CR>
-inoremap <S-F2> <esc>:NERDTreeFind<CR>
+noremap  <F2> :NERDTreeFind<CR>
+inoremap <F2> <esc>:NERDTreeFind<CR>
 
 augroup aug_nerd_tree
   au!
