@@ -1129,8 +1129,10 @@ nmap <expr> <C-Left> &diff? '<Plug>(MergetoolDiffExchangeLeft)' : '<C-Left>'
 nmap <expr> <C-Right> &diff? '<Plug>(MergetoolDiffExchangeRight)' : '<C-Right>'
 nmap <expr> <C-Down> &diff? '<Plug>(MergetoolDiffExchangeDown)' : '<C-Down>'
 nmap <expr> <C-Up> &diff? '<Plug>(MergetoolDiffExchangeUp)' : '<C-Up>'
-nmap <expr> <Up> &diff ? '[c' : '<Up>'
-nmap <expr> <Down> &diff ? ']c' : '<Down>'
+
+" Move through diffs. [c and ]c are native Vim mappings
+nmap <expr> <Up> &diff ? '[czz' : '<Up>'
+nmap <expr> <Down> &diff ? ']czz' : '<Down>'
 
 " Change :diffsplit command to open diff in new tab
 cnoreabbrev <expr> diffsplit getcmdtype() == ":" && getcmdline() == 'diffsplit' ? 'tab split \| diffsplit' : 'diffsplit'
