@@ -150,6 +150,11 @@ if &term =~ 'xterm' && !has("gui_running")
   " set t_kh=[1~
   " set <Home>=[1~
 
+  " NOTE: not portable solution, but I need <S-CR> so much
+  " I configured iTerm to send '[13;2u' escape sequence for <S-CR>, so I can map it in Vim
+  nmap [13;2u <S-CR>
+  imap [13;2u <S-CR>
+  nnoremap <silent> <S-CR> :call <SID>Noop()<CR>
 endif
 
 function s:Noop()
@@ -713,6 +718,8 @@ inoremap <C-v>c <C-v>
 " Insert digraph, 'd' for digraph
 inoremap <C-v>d <C-k>
 
+" Shift-Enter to start editing new line without splitting the current one
+inoremap <S-CR> <C-o>o
 " }}}
 
 " Clipboard{{{
