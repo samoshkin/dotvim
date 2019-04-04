@@ -211,6 +211,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'romainl/vim-qf'
   Plug 'dyng/ctrlsf.vim'
   Plug 'samoshkin/vim-find-files'
+  Plug 'RRethy/vim-hexokinase'
 
   " Markdown
   Plug 'suan/vim-instant-markdown'
@@ -2424,6 +2425,15 @@ if executable('fd')
 else
   let g:find_files_findprg = printf("find $d %s ! -type d $* -print", s:findprg_compose_ignoredir_args("find", g:search_ignore_dirs))
 endif
+
+" }}}
+
+" {{{ PLUGIN: RRethy/vim-hexokinase
+
+let g:Hexokinase_refreshEvents = ['CursorHold', 'CursorHoldI']
+let g:Hexokinase_ftAutoload = ['css']
+" two {u258B} unicode characters
+let g:Hexokinase_signIcon = '▋▋'
 
 " }}}
 
