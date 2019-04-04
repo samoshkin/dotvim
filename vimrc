@@ -210,6 +210,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'samoshkin/vim-mergetool'
   Plug 'romainl/vim-qf'
   Plug 'dyng/ctrlsf.vim'
+  Plug 'samoshkin/vim-find-files'
 
   " Markdown
   Plug 'suan/vim-instant-markdown'
@@ -644,100 +645,6 @@ endfunction
 
 " }}}
 
-" {{{ Project-wide find files
-
-" Similar to built-in grepprg, makeprg
-let g:findprg = executable('fd') ? 'fd --hidden' : 'find .'
-
-" Find commands. View results in quickfix list, scratch buffer or args list
-" Do not expose keyboard mappings, it does not add much value
-command -nargs=* -bang Find :call s:execute_find(<q-args>, 'qf', <bang>0)
-command -nargs=* -bang FindB :call s:execute_find(<q-args>, 'buffer', <bang>0)
-command -nargs=* -bang FindA :call s:execute_find(<q-args>, 'args', <bang>0)
-
-" Execute find command and render results in selected view
-function s:execute_find(args, view, is_relative)
-  if (empty(a:args))
-    call s:echo_warning("Seach text not specified")
-    return
-  endif
-
-  let using_fd = g:findprg =~ '^fd'
-  let ignore_dir_args = []
-
-  " Set global mark to easily get back after we're done with a search
-  normal mF
-
-  " Change cwd temporarily if search is relative to the current file
-  if a:is_relative
-    exe "cd " . expand("%:p:h")
-  endif
-
-  " Start composing "find" command
-  let command = g:findprg
-
-  " Exclude well known ignore dirs
-  " Examples:
-  " find . \( -path '*/plugged/*' -o -path '*/.git/*' \) -prune -o -name "index" -print
-  " fd -E "node_modules/" -E ".git/" index
-  let ignore_dirs = s:get_var('search_ignore_dirs')
-  if !empty(ignore_dirs)
-    if using_fd
-      for l:dir in ignore_dirs
-        call add(ignore_dir_args, '-E ' . shellescape(printf("%s/", l:dir)))
-      endfor
-      let command .= " " . join(ignore_dir_args) . " "
-    else
-      for l:dir in ignore_dirs
-        call add(ignore_dir_args, '-path ' . shellescape(printf("*/%s/*", l:dir)))
-      endfor
-      let command .= " \\( " . join(ignore_dir_args, " -o ") . " \\) -prune -o"
-    endif
-  endif
-
-  " Add user supplied args
-  let command .= " " . a:args
-
-  " When using GNU find, append "-print" suffix
-  if !using_fd
-    let command .= " -print"
-  endif
-
-  " Execute command and parse into list of files
-  let output = system(command)
-  if v:shell_error
-    call s:echo_warning('Find backend failed')
-    echom "$ " . l:command
-    echom output
-    return
-  endif
-
-  let files = split(output, "\n")
-  if empty(files)
-    call s:echo_warning('No files found')
-    return
-  endif
-
-  if a:view ==# 'qf'
-    call s:set_qf_list_with_files(l:files, "Find: " . command)
-  endif
-
-  if a:view ==# 'buffer'
-    call s:new_scratch_buffer(l:files, "Find: " . command)
-  endif
-
-  if a:view ==# 'args'
-    call s:set_args_list_with_files(l:files, 1)
-  endif
-
-  " Revert cwd back
-  if a:is_relative
-    exe "cd -"
-  endif
-endfunction
-
-" }}}
-
 " Navigation{{{
 
 " When navigating to the EOF, center the screen
@@ -917,11 +824,17 @@ nnoremap <leader>z zMzvzz
 
 " }}}
 
-" Windows,buffers,tabs  {{{
+" Windows,buffers,tabs,args  {{{
 
 " Navigate buffers
 nnoremap <silent> ]b :bnext<CR>
 nnoremap <silent> [b :bprev<CR>
+
+" Navigation over args list
+nnoremap <silent> ]a :next<CR>
+nnoremap <silent> [a :prev<CR>
+nnoremap <silent> ]A :last<CR>
+nnoremap <silent> [A :first<CR>
 
 " Kill buffer
 nnoremap <silent> <leader>k :bd!<CR>
@@ -931,7 +844,6 @@ noremap <silent> <C-k> :wincmd k<CR>
 noremap <silent> <C-j> :wincmd j<CR>
 noremap <silent> <C-h> :wincmd h<CR>
 noremap <silent> <C-l> :wincmd l<CR>
-
 
 " Tab navigation
 nnoremap <silent> <leader>1 :tabnext 1<CR>
@@ -1518,6 +1430,11 @@ augroup END
 " Remember cursor position before running quickfix cmd
 " Disable folding
 function s:qf_loc_on_enter(list_type)
+  " Do nothing, when we're already in quickfix list
+  if &filetype ==# 'qf'
+    return
+  endif
+
   exe "normal m" . (a:list_type ==# 'qf' ? 'Q' : 'L')
 
   " Disable folding temporarily
@@ -1544,8 +1461,12 @@ endfunction
 
 " Close quickfix or location list if opened
 " And get back to cursor position before quickfix command was executed
-" FIXME: should remove focus first if current window is quickfix list
 function s:qf_loc_quit(list_type)
+  " First, remove focus from quickfix list
+  if &filetype ==# 'qf'
+    wincmd p
+  endif
+
   " Restore folding back
   bufdo set foldenable
 
@@ -1610,6 +1531,7 @@ function s:qf_loc_remove_current_item(list_type)
   endif
 endfunction
 
+" TODO: submit pull request to "romainl/vim-qf"
 " Reloads quickfix list to pull changes after 'Search&replace' scenario
 function s:qf_loc_reload_list(list_type)
   if a:list_type ==# 'qf'
@@ -1618,17 +1540,6 @@ function s:qf_loc_reload_list(list_type)
   else
     call setloclist(0, map(getloclist(), 'extend(v:val, {"text":get(getbufline(v:val.bufnr, v:val.lnum),0)})'), 'r')
     lfirst
-  endif
-endfunction
-
-" Build new derived qf/loc list which contains only filenames
-function s:qf_loc_set_files_only(list_type)
-  if a:list_type ==# 'qf'
-    let files = s:qf_loc_get_files(getqflist())
-    call s:set_qf_list_with_files(files, 'Files Only')
-  else
-    let files = s:qf_loc_get_files(getloclist(0))
-    call s:set_loc_list_with_files(files, 'Files Only')
   endif
 endfunction
 
@@ -1642,114 +1553,6 @@ function s:qf_loc_history_navigate(command)
     echo "Reached end of the history"
     echohl None
   endtry
-endfunction
-
-" Create new quickfix list with a list of files
-function s:set_qf_list_with_files(files, title)
-  " Map file names to format, as understood by 'errorformat' (similar to grepformat)
-  cexpr map(a:files, 'v:val . ":1:" . fnamemodify(v:val, ":t")')
-
-  " Set QF window title
-  if !empty(a:title)
-    call setqflist([], 'r', { 'title': a:title })
-  endif
-endfunction
-
-" Create new location list with a list of files
-function s:set_loc_list_with_files(files, title)
-  " Map file names to format, as understood by 'errorformat' (similar to grepformat)
-  lexpr map(a:files, 'v:val . ":1:" . fnamemodify(v:val, ":t")')
-
-  " Set location list window title
-  if !empty(a:title)
-    call setloclist(0, [], 'r', { 'title': a:title })
-  endif
-endfunction
-
-" Get unique list of file names in a quick list
-function s:qf_loc_get_files(list)
-  return map(uniq(map(a:list, 'v:val["bufnr"]')), 'bufname(v:val)')
-endfunction
-
-" }}}
-
-" {{{ Args list
-
-" Navigation over args list
-nnoremap <silent> ]a :next<CR>
-nnoremap <silent> [a :prev<CR>
-nnoremap <silent> ]A :last<CR>
-nnoremap <silent> [A :first<CR>
-
-function s:args_get_files()
-  let i = 0
-  let files = []
-  while i < argc()
-    call add(l:files, argv(i))
-    let i = i + 1
-  endwhile
-
-  return l:files
-endfunction
-
-" Populate args with a list of files
-function s:set_args_list_with_files(files, should_edit_first_arg)
-  %argdelete
-  for l:file in a:files
-    exe "argadd " . l:file
-  endfor
-
-  if a:should_edit_first_arg
-    argument 1
-  else
-    echo "Args list is set"
-  endif
-endfunction
-
-" }}}
-
-" {{{ QF vs Buffer vs Args conversion
-
-" Convert between quickfix list <-> scratch buffer <-> args list
-command -nargs=0 Buffer2Qf call <SID>convert_buffer_to_quickfix()
-command -nargs=0 Buffer2Args call <SID>convert_buffer_to_args()
-command -nargs=0 Qf2Buffer call <SID>convert_quickfix_to_buffer()
-command -nargs=0 Qf2Args call <SID>convert_quickfix_to_args()
-command -nargs=0 Args2Qf call <SID>convert_args_to_quickfix()
-command -nargs=0 Args2Buffer call <SID>convert_args_to_buffer()
-
-function s:convert_buffer_to_quickfix()
-  let lines = getline(1, '$')
-  let title = bufname('%')
-  bdelete
-  call s:set_qf_list_with_files(lines, title)
-endfunction
-
-function s:convert_buffer_to_args()
-  let lines = getline(1, '$')
-  bdelete
-  call s:set_args_list_with_files(lines, 0)
-endfunction
-
-function s:convert_quickfix_to_buffer()
-  let files = s:qf_loc_get_files(getqflist())
-  call s:new_scratch_buffer(files, 'From Quickfix', 'rightbelow new')
-  call qf#toggle#ToggleQfWindow(0)
-endfunction
-
-function s:convert_quickfix_to_args()
-  let files = s:qf_loc_get_files(getqflist())
-  call s:set_args_list_with_files(files, 0)
-endfunction
-
-function s:convert_args_to_buffer()
-  let files = s:args_get_files()
-  call s:new_scratch_buffer(files, 'From Args', 'rightbelow new')
-endfunction
-
-function s:convert_args_to_quickfix()
-  let files = s:args_get_files()
-  call s:set_qf_list_with_files(files, 'From Args')
 endfunction
 
 " }}}
@@ -2591,6 +2394,36 @@ function s:ctrlsf_search_quit()
     tabclose
   endif
 endfunction
+
+" }}}
+
+" {{{ Plugin: samoshkin/vim-find-files
+
+function s:findprg_compose_ignoredir_args(backend, ignore_dirs)
+  if empty(a:ignore_dirs)
+    return ""
+  endif
+
+  let args = []
+  if a:backend ==# 'fd'
+    for l:dir in a:ignore_dirs
+      call add(args, '-E ' . shellescape(printf('%s/', l:dir)))
+    endfor
+    return join(args)
+  else
+    for l:dir in a:ignore_dirs
+      call add(args, '-path ' . shellescape(printf('*/%s/*', l:dir)))
+    endfor
+    return "\\( " . join(args) . " \\) -prune -o"
+  endif
+endfunction
+
+" Similar to built-in grepprg, makeprg
+if executable('fd')
+  let g:find_files_findprg = printf("fd --hidden %s $* $d", s:findprg_compose_ignoredir_args("fd", g:search_ignore_dirs))
+else
+  let g:find_files_findprg = printf("find $d %s ! -type d $* -print", s:findprg_compose_ignoredir_args("find", g:search_ignore_dirs))
+endif
 
 " }}}
 
