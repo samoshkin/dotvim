@@ -674,6 +674,15 @@ nnoremap <silent> [p :ptprev<CR>
 nnoremap <silent> ]P :ptlast<CR>
 nnoremap <silent> [P :ptfirst<CR>
 
+" Center screen after navigation shortcuts
+nnoremap } }zz
+nnoremap { {zz
+
+nnoremap ]] ]]zz
+nnoremap [[ [[zz
+nnoremap [] []zz
+nnoremap ][ ][zz
+
 " }}}
 
 " Insert mode{{{
@@ -2092,8 +2101,8 @@ nnoremap <silent> <F4> :GitGutterFold<CR>
 " Use 'd' as a motion for hunks, instead of default 'c'
 " Use '[d' and ']d' to move between hunks in regular files and in diff mode
 " It's easier to use 'do' and 'dp' when a finger is already on 'd' key
-nmap <expr> ]d &diff ? ']c' : '<Plug>GitGutterNextHunk'
-nmap <expr> [d &diff ? '[c' : '<Plug>GitGutterPrevHunk'
+nmap <expr> ]d &diff ? ']czz' : '<Plug>GitGutterNextHunkzz'
+nmap <expr> [d &diff ? '[czz' : '<Plug>GitGutterPrevHunkzz'
 omap id <Plug>GitGutterTextObjectInnerPending
 omap ad <Plug>GitGutterTextObjectOuterPending
 xmap id <Plug>GitGutterTextObjectInnerVisual
