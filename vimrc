@@ -2217,6 +2217,10 @@ let g:clever_f_smart_case = 1
 
 " Use same highlighting group as a normal search
 let g:clever_f_mark_char_color = 'IncSearch'
+
+" Use ; character as a placeholder for any sign characters: {, (, "
+let g:clever_f_chars_match_any_signs = ';'
+
 " }}}
 
 " PLUGIN: majutsushi/tagbar{{{
