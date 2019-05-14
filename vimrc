@@ -7,8 +7,11 @@ filetype plugin indent on
 " Ask before unsafe actions
 set confirm
 
+" FIXME: use /bin/bash as a shell, until I fix lags with zsh
 set shell=/bin/bash
 set encoding=utf-8
+
+" Show absolute line numbers in a gutter
 set number
 
 " Whitespaces and tabs
@@ -43,6 +46,7 @@ set sidescroll=0
 set sidescrolloff=3
 
 " Minimal number of screen lines to keep above and below the cursor, expect for bol and eol
+" Sets padding to the screen boundaries when scrolling up and down
 set scrolloff=2
 
 " Status line
@@ -55,7 +59,7 @@ set hidden
 " Highlight the line with a cursor
 set cursorline
 
-" Show cursorline in current window and not in insert mode
+" Disable cursor line highlighting in Insert mode
 augroup aug_cursor_line
   au!
   au InsertEnter * setlocal nocursorline
@@ -65,11 +69,8 @@ augroup END
 " Disable reading vim variables & options from special comments within file header or footer
 set modelines=0
 
-" Display uncompleted commands in the status line
+" Display uncompleted keystrokes in the status line
 set showcmd
-
-" Show ruler
-set ruler
 
 " Use /g flag for substitute command by default
 set gdefault
@@ -105,7 +106,7 @@ set autoindent
 set smartindent
 set pastetoggle=<F12>
 
-" Experimental
+" Experimental. Round indent to multiple of 'shiftwidth'.
 set shiftround
 
 " Disable startup message
@@ -121,7 +122,7 @@ inoremap jk <ESC>
 noremap <C-C> <ESC>
 xnoremap <C-C> <ESC>
 
-" Do not use arrows
+" Do not use arrows in Normal mode
 noremap <silent> <Up>    <Nop>
 noremap <silent> <Down>  <Nop>
 noremap <silent> <Left>  <Nop>
@@ -154,22 +155,6 @@ if &term =~ 'xterm' && !has("gui_running")
   nnoremap <silent> <S-CR> :call <SID>Noop()<CR>
 endif
 
-function s:Noop()
-endfunction
-
-function s:get_var(...)
-  let varName = a:1
-
-  if exists('w:' . varName)
-    return w:{varName}
-  elseif exists('b:' . varName)
-    return b:{varName}
-  elseif exists('g:' . varName)
-    return g:{varName}
-  else
-    return exists('a:2') ? a:2 : ''
-  endif
-endfunction
 " }}}
 
 
@@ -1635,6 +1620,23 @@ function s:echo_warning(message)
   echohl WarningMsg
   echo a:message
   echohl None
+endfunction
+
+function s:Noop()
+endfunction
+
+function s:get_var(...)
+  let varName = a:1
+
+  if exists('w:' . varName)
+    return w:{varName}
+  elseif exists('b:' . varName)
+    return b:{varName}
+  elseif exists('g:' . varName)
+    return g:{varName}
+  else
+    return exists('a:2') ? a:2 : ''
+  endif
 endfunction
 
 "}}}
