@@ -332,7 +332,7 @@ nnoremap <silent> K :d _<CR>
 nnoremap J mzJ`z
 
 " Split line (opposite to join lines)
-nnoremap M :call <SID>split_line()<CR>
+nnoremap <silent> M :call <SID>split_line()<CR>
 
 function s:split_line()
   " Do a split
@@ -351,6 +351,8 @@ function s:split_line()
 
   " Restore cursor position
   normal! `w
+
+  startinsert
 endfunction
 
 
