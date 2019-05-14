@@ -699,14 +699,14 @@ inoremap <C-r> <C-g>u<C-r>
 " Use <C-v> instead of <C-r>
 " Yes we're overriding <C-v> normal behavior, and unable to use some registers
 " In these rare cases, resort back to <C-r>
-imap <C-v> <C-r>
+" imap <C-v> <C-r>
 
 " p/P, paste with formatting, due to 'g:yoinkAutoFormatPaste=1'
 imap <C-v>p <ESC>pi
 imap <C-v>P <ESC>Pi
 
 " <C-v>v, paste verbatim, by entering Paste mode
-imap <C-v>v <F2><C-r>+<F2>
+imap <C-v>v <F12><C-r>+<F12>
 
 " Retain original <C-v> behavior, insert character by code
 " 'c' for character
