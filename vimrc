@@ -1979,7 +1979,6 @@ imap <c-x><c-l> <plug>(fzf-complete-buffer-line)
 " Use preview when FzfFiles runs in fullscreen
 command! -nargs=? -bang -complete=dir FzfFiles
       \ call fzf#vim#files(<q-args>, <bang>0 ? fzf#vim#with_preview('up:60%') : {}, <bang>0)
-command FzfChanges call s:fzf_changes()
 
 " Mappings
 nnoremap <silent> <leader>o :FzfFiles<CR>
@@ -2004,6 +2003,8 @@ xnoremap <silent> <leader>T "zy:FzfBTags <C-r>z<CR>
 
 " Show list of change in fzf
 " Some code is borrowed from ctrlp.vim and tweaked to work with fzf
+command FzfChanges call s:fzf_changes()
+
 function! s:fzf_changelist()
   redir => result
   silent! changes
