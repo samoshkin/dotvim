@@ -17,9 +17,6 @@ set tabstop=2 softtabstop=2 shiftwidth=2 expandtab
 " Otherwise, tabstop is used always. Shiftwidth is only used for >>
 set smarttab
 
-" Let buffer be switched to another one without requiring to save it first
-set hidden
-
 " Timeout settings
 " Wait forever until I recall mapping
 " Don't wait to much for keycodes send by terminal, so there's no delay on <ESC>
