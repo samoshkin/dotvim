@@ -721,7 +721,7 @@ inoremap <S-CR> <C-o>o
 
 " Clipboard{{{
 
-" Using these plugins:board
+" Extend built-in functionality with these plugins:
 " - https://github.com/svermeulen/vim-cutlass
 " - https://github.com/svermeulen/vim-subversive
 " - https://github.com/svermeulen/vim-yoink
@@ -729,8 +729,15 @@ inoremap <S-CR> <C-o>o
 " always use system clipboard as unnamed register
 set clipboard=unnamed,unnamedplus
 
-" Reselect text that was just pasted
+" Reselect text that was just pasted, similar to "gv" to reselect last selection
 nnoremap <expr> g<C-v> '`[' . getregtype()[0] . '`]'
+
+" Normalize Y behavior to yank till the end of line
+nnoremap Y y$
+
+" ------------------------------
+" https://github.com/svermeulen/vim-cutlass
+" ------------------------------
 
 " Use 'x' as cut operation instead
 " All other actions, like d, c, s will delete without storing in clipboard
@@ -741,61 +748,66 @@ xnoremap x d
 
 " Retain original x and X behavior
 " when we want to remove single character without entering insert mode
-nnoremap <localleader>x "_x
-nnoremap <localleader>X "_X
+nnoremap <localleader>x x
+nnoremap <localleader>X X
 
-" Normalize Y behavior to yank till the end of line
-nnoremap Y y$
-
-" Preserve cursor position after yank operation
-nmap y <plug>(YoinkYankPreserveCursorPosition)
-xmap y <plug>(YoinkYankPreserveCursorPosition)
-
-" 'Use 's' as 'substitute' action, not as a shortcut to 'change' action
-nmap s <plug>(SubversiveSubstitute)
-nmap ss <plug>(SubversiveSubstituteLine)
-" Don't remap S as exception, use it to split lines (counterpart to join lines)
-nmap S <plug>(SubversiveSubstituteToEndOfLine)
-xmap s <plug>(SubversiveSubstitute)
-
-" In visual mode, regular 'put' operation actually does a substitution
-" After remapping we can cycle through yank ring provided by 'vim-yoink' with <C-p> and <C-n>
-xmap p <plug>(SubversiveSubstitute)
-xmap P <plug>(SubversiveSubstitute)
-
-" Substitute operation performed multiple times for a given text range
-nmap <leader>s <plug>(SubversiveSubstituteRange)
-nmap <leader>ss <plug>(SubversiveSubstituteWordRange)
-xmap <leader>s <plug>(SubversiveSubstituteRange)
-
-" Store text that being substituted in register 'r'
-let g:subversiveCurrentTextRegister='r'
+" ------------------------------
+" https://github.com/svermeulen/vim-yoink
+" ------------------------------
 
 " Normally cursor remains in place during paste
 " Move it to the end, so it's easy to start editing
 let g:yoinkMoveCursorToEndOfPaste=1
+
+" Every time the yank history changes the numbered registers 1 - 9 will be updated to sync with the first 9 entries in the yank history
+let g:yoinkSyncNumberedRegisters = 1
 
 " Auto formatting on paste, and be able to toggle formatting on/off
 " Replaces the need for 'vim-pasta' plugin
 let g:yoinkAutoFormatPaste=1
 nmap <leader>= <plug>(YoinkPostPasteToggleFormat)
 
-" For integration with 'svermeulen/cutclass'
+" For integration with 'svermeulen/cutclass', so 'cut'/x operator will be added to the yank history
 let g:yoinkIncludeDeleteOperations=1
 
 " Navigation through yank ring
 nmap <C-p> <plug>(YoinkPostPasteSwapBack)
 nmap <C-n> <plug>(YoinkPostPasteSwapForward)
 
+" Map p and P keys to notify yoink that paste has occurred so we can further traverse yank ring with <c-n> and <c-p>
+" NOTE: vim-yoink does not supports swapping when doing paste in visual mode, so we don't add "xmap p" here
+" this feature is handled separately by vim-subversive
 nmap p <plug>(YoinkPaste_p)
 nmap P <plug>(YoinkPaste_P)
 
-" Copy file basename only
-" Copy full file path
-" Copy file's dirname
-nnoremap <localleader>fn :let @+ = expand("%:t") \| echo 'Copied to clipboard: ' . @+<CR>
-nnoremap <localleader>fp :let @+ = expand("%:p:~") \| echo 'Copied to clipboard: ' . @+<CR>
-nnoremap <localleader>fd :let @+ = expand("%:p:~:h") \| echo 'Copied to clipboard: ' . @+<CR>
+" Preserve cursor position after yank operation
+nmap y <plug>(YoinkYankPreserveCursorPosition)
+xmap y <plug>(YoinkYankPreserveCursorPosition)
+
+" ------------------------------
+" https://github.com/svermeulen/vim-subversive
+" ------------------------------
+
+" Store text that being substituted in register 'r'
+let g:subversiveCurrentTextRegister='r'
+
+" 'Use 's' as 'cut & replace' action, not as a shortcut to 'change' action
+nmap s <plug>(SubversiveSubstitute)
+nmap ss <plug>(SubversiveSubstituteLine)
+nmap S <plug>(SubversiveSubstituteToEndOfLine)
+xmap s <plug>(SubversiveSubstitute)
+
+" In visual mode, regular 'put' operation actually does a substitution
+" After remapping we can cycle through yank ring provided by 'vim-yoink' with <C-p> and <C-n>
+" complements "svermeulen/vim-yoink"
+xmap p <plug>(SubversiveSubstitute)
+xmap P <plug>(SubversiveSubstitute)
+
+" Substitute operation performed multiple times for a given text range
+" Common usage is to replace same word in a paragraph or sentence
+nmap <leader>s <plug>(SubversiveSubstituteRange)
+nmap <leader>ss <plug>(SubversiveSubstituteWordRange)
+xmap <leader>s <plug>(SubversiveSubstituteRange)
 
 " }}}
 
@@ -990,6 +1002,11 @@ function s:QuitWindow()
 
   quit
 endfunction
+
+" Copy file basename only, file path, dirname
+command! -nargs=0 CopyFileName let @+ = expand("%:t") | echo 'Copied to clipboard: ' . @+
+command! -nargs=0 CopyFilePath let @+ = expand("%:p:~") | echo 'Copied to clipboard: ' . @+
+command! -nargs=0 CopyFileDir let @+ = expand("%:p:~:h") | echo 'Copied to clipboard: ' . @+
 
 " Scratch buffer and Eread command
 
