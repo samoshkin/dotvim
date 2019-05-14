@@ -1108,7 +1108,7 @@ augroup aug_diffs
 
   " Highlight VCS conflict markers
   au VimEnter,WinEnter * if !exists('w:_vsc_conflict_marker_match') |
-        \   let w:_vsc_conflict_marker_match = matchadd('ErrorMsg', '^\(<\|=\|>\)\{7\}\([^=].\+\)\?$') |
+        \   let w:_vsc_conflict_marker_match = matchadd('ErrorMsg', '^\(<\|=\||\|>\)\{7\}\([^=].\+\)\?$') |
         \ endif
 augroup END
 
