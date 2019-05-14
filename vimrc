@@ -835,158 +835,20 @@ nnoremap <leader>z zMzvzz
 
 " }}}
 
-" Windows,buffers,tabs,args  {{{
+" Buffers and args {{{
 
 " Navigate buffers
 nnoremap <silent> ]b :bnext<CR>
 nnoremap <silent> [b :bprev<CR>
+
+" Kill buffer
+nnoremap <silent> <leader>k :bd!<CR>
 
 " Navigation over args list
 nnoremap <silent> ]a :next<CR>
 nnoremap <silent> [a :prev<CR>
 nnoremap <silent> ]A :last<CR>
 nnoremap <silent> [A :first<CR>
-
-" Kill buffer
-nnoremap <silent> <leader>k :bd!<CR>
-
-" Navigate between windows
-noremap <silent> <C-k> :wincmd k<CR>
-noremap <silent> <C-j> :wincmd j<CR>
-noremap <silent> <C-h> :wincmd h<CR>
-noremap <silent> <C-l> :wincmd l<CR>
-
-" Tab navigation
-nnoremap <silent> <leader>1 :tabnext 1<CR>
-nnoremap <silent> <leader>2 :tabnext 2<CR>
-nnoremap <silent> <leader>3 :tabnext 3<CR>
-nnoremap <silent> <leader>4 :tabnext 4<CR>
-nnoremap <silent> <leader>5 :tabnext 5<CR>
-nnoremap <silent> <leader>9 :tablast<CR>
-nnoremap <silent> ]<Tab> :tabnext<CR>
-nnoremap <silent> [<Tab> :tabprev<CR>
-
-" Tab management
-nnoremap <silent> <leader>+ :tabnew<CR>:edit .<CR>
-nnoremap <silent> <leader>_ :tabonly<CR>
-nnoremap <silent> <leader>- :tabclose<CR>
-nnoremap <silent> <leader>0 :only<CR>
-
-" Open splits right and below
-" Try these mappings, if | and _ are not OK
-set splitbelow
-set splitright
-nnoremap <silent> _ :split<CR>
-nnoremap <silent> \| :vsplit<CR>
-
-" Save and quit for single buffer
-command QuitWindow call s:QuitWindow()
-nnoremap <silent> <leader>w :update!<CR>
-nnoremap <silent> <leader>q :QuitWindow<CR>
-nnoremap ZZ :update! \| QuitWindow<CR>
-cnoreabbrev q QuitWindow
-
-" Save and quit for multiple buffers
-nnoremap <silent> <leader>W :wall<CR>
-nnoremap <silent> <leader>Q :confirm qall<CR>
-nnoremap <silent> ZX :confirm xall<CR>
-
-" Additional <C-w> mappings
-" <C-w>T, moves window to a new tab
-" <C-w>t, copies window to a new tab
-" NOTE: Hides original <C-w>t behavior to move to the topmost window
-nnoremap <C-w>t :tab split<CR>
-
-" Maximize window
-" Use '\=' to make window sizes equal
-nnoremap <C-w><Bslash> <C-w>_<C-w>\|
-
-" Resize windows in steps greather than just 1 column at a time
-let _resize_factor = 1.2
-nnoremap <C-w>> :exe "vert resize " . float2nr(round(winwidth(0) * _resize_factor))<CR>
-nnoremap <C-w>< :exe "vert resize " . float2nr(round(winwidth(0) * 1/_resize_factor))<CR>
-nnoremap <C-w>+ :exe "resize " . float2nr(round(winheight(0) * _resize_factor))<CR>
-nnoremap <C-w>- :exe "resize " . float2nr(round(winheight(0) * 1/_resize_factor))<CR>
-
-" Cycle between main and alternate file
-nnoremap <C-w><Tab> <C-^>zz
-
-" Use <Bslash> instead of <C-w>, which is tough to type
-nmap <Bslash> <C-w>
-
-augroup aug_window_management
-  au!
-
-  au BufWinEnter,WinEnter,BufDelete * call s:CheckIfWindowWasClosed()
-  au User OnWinClose call s:Noop()
-
-  " Make all windows of equal size on Vim resize
-  au VimResized * wincmd =
-augroup END
-
-
-" Detect when window in a tab was closed
-" Vim does not have WinClose event, so try to emulate it
-" NOTE: does not work when non-current window gets closed
-" See: https://github.com/vim/vim/issues/742
-function! s:CheckIfWindowWasClosed()
-  " Check if previous window count per tab is greather than current window count
-  " It indicates that window was closed
-  if get(t:, 'prevWinCount', 0) > winnr('$')
-    doautocmd User OnWinClose
-  endif
-
-  let t:prevWinCount = winnr('$')
-endfunction
-
-function s:CloseEachWindow(windows)
-  " Reverse sort window numbers, start closing from the highest window number: 3,2,1
-  " This is to ensure window numbers are not shifted while closing
-  for _win in sort(copy(a:windows), {a, b -> b - a})
-    exe _win . "wincmd c"
-  endfor
-endfunction
-
-" Context-aware quit window logic
-function s:QuitWindow()
-
-  " If we're in merge mode, exit it
-  if get(g:, 'mergetool_in_merge_mode', 0)
-    call mergetool#stop()
-    return
-  endif
-
-  " TODO: maybe use buffers instead of windows
-  let l:diff_windows = s:GetDiffWindows()
-
-  " When running as 'vimdiff' or 'vim -d', close both files and exit Vim
-  if get(s:, 'is_started_as_vim_diff', 0)
-    qall
-    return
-  endif
-
-  " If current window is in diff mode, and we have two or more diff windows
-  if &diff && len(l:diff_windows) >= 2
-    let l:fug_diff_windows = filter(l:diff_windows[:], { idx, val -> s:IsFugitiveDiffWindow(val) })
-
-    if s:GetFugitiveStatusWindow() != -1
-      call s:CloseEachWindow(l:diff_windows)
-    elseif !empty(l:fug_diff_windows)
-      call s:CloseEachWindow(l:fug_diff_windows)
-    else
-      quit
-    endif
-
-    diffoff!
-    diffoff!
-
-    exe "norm zvzz"
-
-    return
-  endif
-
-  quit
-endfunction
 
 " Copy file basename only, file path, dirname
 command! -nargs=0 CopyFileName let @+ = expand("%:t") | echo 'Copied to clipboard: ' . @+
@@ -1036,6 +898,151 @@ function s:new_scratch_buffer(content, ...)
   else
     call setline(1, split(a:content, "\n"))
   endif
+endfunction
+
+" }}}
+
+"  Window management {{{
+
+" Navigate between windows
+noremap <silent> <C-k> :wincmd k<CR>
+noremap <silent> <C-j> :wincmd j<CR>
+noremap <silent> <C-h> :wincmd h<CR>
+noremap <silent> <C-l> :wincmd l<CR>
+
+" Use <Bslash> instead of <C-w>, which is tough to type
+nmap <Bslash> <C-w>
+
+" Splits
+set splitbelow
+set splitright
+nnoremap <silent> <C-w>_ :split<CR>
+nnoremap <silent> <C-w>\| :vsplit<CR>
+nnoremap <silent> <leader>0 :only<CR>
+
+" Tab navigation
+nnoremap <silent> <leader>1 :tabnext 1<CR>
+nnoremap <silent> <leader>2 :tabnext 2<CR>
+nnoremap <silent> <leader>3 :tabnext 3<CR>
+nnoremap <silent> <leader>4 :tabnext 4<CR>
+nnoremap <silent> <leader>5 :tabnext 5<CR>
+nnoremap <silent> <leader>9 :tablast<CR>
+nnoremap <silent> ]<Tab> :tabnext<CR>
+nnoremap <silent> [<Tab> :tabprev<CR>
+
+" Tab management
+nnoremap <silent> <leader>+ :tabnew<CR>:edit .<CR>
+nnoremap <silent> <leader>_ :tabonly<CR>
+nnoremap <silent> <leader>- :tabclose<CR>
+
+" <C-w>T, moves window to a new tab
+" <C-w>t, copies window to a new tab
+" NOTE: Hides original <C-w>t behavior to move to the topmost window
+nnoremap <C-w>t :tab split<CR>
+
+" Maximize window
+" Use '\=' to make window sizes equal
+nnoremap <C-w><Bslash> <C-w>_<C-w>\|
+
+" Cycle between main and alternate file
+nnoremap <C-w><Tab> <C-^>zz
+
+" Resize windows
+" in steps greather than just 1 column at a time
+let _resize_factor = 1.2
+nnoremap <C-w>> :exe "vert resize " . float2nr(round(winwidth(0) * _resize_factor))<CR>
+nnoremap <C-w>< :exe "vert resize " . float2nr(round(winwidth(0) * 1/_resize_factor))<CR>
+nnoremap <C-w>+ :exe "resize " . float2nr(round(winheight(0) * _resize_factor))<CR>
+nnoremap <C-w>- :exe "resize " . float2nr(round(winheight(0) * 1/_resize_factor))<CR>
+
+augroup aug_window_management
+  au!
+
+  " Detect when window is closed and fire custom event
+  au BufWinEnter,WinEnter,BufDelete * call s:CheckIfWindowWasClosed()
+  au User OnWinClose call s:Noop()
+
+  " Make all windows of equal size on Vim resize
+  au VimResized * wincmd =
+augroup END
+
+" Detect when window in a tab was closed
+" Vim does not have WinClose event, so try to emulate it
+" NOTE: does not work when non-current window gets closed
+" See: https://github.com/vim/vim/issues/742
+function! s:CheckIfWindowWasClosed()
+  " Check if previous window count per tab is greather than current window count
+  " It indicates that window was closed
+  if get(t:, 'prevWinCount', 0) > winnr('$')
+    doautocmd User OnWinClose
+  endif
+
+  let t:prevWinCount = winnr('$')
+endfunction
+
+" Smart quit window function
+command QuitWindow call s:QuitWindow()
+nnoremap <silent> <leader>q :QuitWindow<CR>
+cnoreabbrev q QuitWindow
+
+" Save and quit
+nnoremap <silent> <leader>w :update!<CR>
+nnoremap ZZ :update! \| QuitWindow<CR>
+
+" Save and quit for multiple buffers
+nnoremap <silent> <leader>W :wall<CR>
+nnoremap <silent> <leader>Q :confirm qall<CR>
+nnoremap <silent> ZX :confirm xall<CR>
+
+
+" Close list of windows
+function s:CloseEachWindow(windows)
+  " Reverse sort window numbers, start closing from the highest window number: 3,2,1
+  " This is to ensure window numbers are not shifted while closing
+  for _win in sort(copy(a:windows), {a, b -> b - a})
+    exe _win . "wincmd c"
+  endfor
+endfunction
+
+" Context-aware quit window logic
+function s:QuitWindow()
+
+  " If we're in merge mode, exit it
+  if get(g:, 'mergetool_in_merge_mode', 0)
+    call mergetool#stop()
+    return
+  endif
+
+  " TODO: maybe use buffers instead of windows
+  let l:diff_windows = s:GetDiffWindows()
+
+  " When running as 'vimdiff' or 'vim -d', close both files and exit Vim
+  if get(s:, 'is_started_as_vim_diff', 0)
+    qall
+    return
+  endif
+
+  " If current window is in diff mode, and we have two or more diff windows
+  if &diff && len(l:diff_windows) >= 2
+    let l:fug_diff_windows = filter(l:diff_windows[:], { idx, val -> s:IsFugitiveDiffWindow(val) })
+
+    if s:GetFugitiveStatusWindow() != -1
+      call s:CloseEachWindow(l:diff_windows)
+    elseif !empty(l:fug_diff_windows)
+      call s:CloseEachWindow(l:fug_diff_windows)
+    else
+      quit
+    endif
+
+    diffoff!
+    diffoff!
+
+    exe "norm zvzz"
+
+    return
+  endif
+
+  quit
 endfunction
 
 " }}}
