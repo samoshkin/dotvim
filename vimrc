@@ -954,7 +954,7 @@ nnoremap <leader>z zMzvzz
 
 " }}}
 
-" Buffers and args {{{
+" Buffers and Files {{{
 
 " Navigate buffers
 nnoremap <silent> ]b :bnext<CR>
@@ -1017,6 +1017,71 @@ function s:new_scratch_buffer(content, ...)
   else
     call setline(1, split(a:content, "\n"))
   endif
+endfunction
+
+" Smart quit window function
+command QuitWindow call s:QuitWindow()
+nnoremap <silent> <leader>q :QuitWindow<CR>
+cnoreabbrev q QuitWindow
+
+" Save and quit
+nnoremap <silent> <leader>w :update!<CR>
+nnoremap ZZ :update! \| QuitWindow<CR>
+
+" Save and quit for multiple buffers
+nnoremap <silent> <leader>W :wall<CR>
+nnoremap <silent> <leader>Q :confirm qall<CR>
+nnoremap <silent> ZX :confirm xall<CR>
+
+
+" Close list of windows
+function s:CloseEachWindow(windows)
+  " Reverse sort window numbers, start closing from the highest window number: 3,2,1
+  " This is to ensure window numbers are not shifted while closing
+  for _win in sort(copy(a:windows), {a, b -> b - a})
+    exe _win . "wincmd c"
+  endfor
+endfunction
+
+" Context-aware quit window logic
+function s:QuitWindow()
+
+  " If we're in merge mode, exit it
+  if get(g:, 'mergetool_in_merge_mode', 0)
+    call mergetool#stop()
+    return
+  endif
+
+  " TODO: maybe use buffers instead of windows
+  let l:diff_windows = s:GetDiffWindows()
+
+  " When running as 'vimdiff' or 'vim -d', close both files and exit Vim
+  if get(s:, 'is_started_as_vim_diff', 0)
+    qall
+    return
+  endif
+
+  " If current window is in diff mode, and we have two or more diff windows
+  if &diff && len(l:diff_windows) >= 2
+    let l:fug_diff_windows = filter(l:diff_windows[:], { idx, val -> s:IsFugitiveDiffWindow(val) })
+
+    if s:GetFugitiveStatusWindow() != -1
+      call s:CloseEachWindow(l:diff_windows)
+    elseif !empty(l:fug_diff_windows)
+      call s:CloseEachWindow(l:fug_diff_windows)
+    else
+      quit
+    endif
+
+    diffoff!
+    diffoff!
+
+    exe "norm zvzz"
+
+    return
+  endif
+
+  quit
 endfunction
 
 " }}}
@@ -1097,71 +1162,6 @@ function! s:CheckIfWindowWasClosed()
   endif
 
   let t:prevWinCount = winnr('$')
-endfunction
-
-" Smart quit window function
-command QuitWindow call s:QuitWindow()
-nnoremap <silent> <leader>q :QuitWindow<CR>
-cnoreabbrev q QuitWindow
-
-" Save and quit
-nnoremap <silent> <leader>w :update!<CR>
-nnoremap ZZ :update! \| QuitWindow<CR>
-
-" Save and quit for multiple buffers
-nnoremap <silent> <leader>W :wall<CR>
-nnoremap <silent> <leader>Q :confirm qall<CR>
-nnoremap <silent> ZX :confirm xall<CR>
-
-
-" Close list of windows
-function s:CloseEachWindow(windows)
-  " Reverse sort window numbers, start closing from the highest window number: 3,2,1
-  " This is to ensure window numbers are not shifted while closing
-  for _win in sort(copy(a:windows), {a, b -> b - a})
-    exe _win . "wincmd c"
-  endfor
-endfunction
-
-" Context-aware quit window logic
-function s:QuitWindow()
-
-  " If we're in merge mode, exit it
-  if get(g:, 'mergetool_in_merge_mode', 0)
-    call mergetool#stop()
-    return
-  endif
-
-  " TODO: maybe use buffers instead of windows
-  let l:diff_windows = s:GetDiffWindows()
-
-  " When running as 'vimdiff' or 'vim -d', close both files and exit Vim
-  if get(s:, 'is_started_as_vim_diff', 0)
-    qall
-    return
-  endif
-
-  " If current window is in diff mode, and we have two or more diff windows
-  if &diff && len(l:diff_windows) >= 2
-    let l:fug_diff_windows = filter(l:diff_windows[:], { idx, val -> s:IsFugitiveDiffWindow(val) })
-
-    if s:GetFugitiveStatusWindow() != -1
-      call s:CloseEachWindow(l:diff_windows)
-    elseif !empty(l:fug_diff_windows)
-      call s:CloseEachWindow(l:fug_diff_windows)
-    else
-      quit
-    endif
-
-    diffoff!
-    diffoff!
-
-    exe "norm zvzz"
-
-    return
-  endif
-
-  quit
 endfunction
 
 " }}}
