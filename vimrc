@@ -427,24 +427,6 @@ set nohlsearch
 set incsearch
 set wrapscan
 
-" Turn on hlsearch to highlight all matches during incremental search
-" Use <C-j> and <C-k> to navigate through matches instead of <C-d>,<C-t>
-" Pitfall: Works only in vim8. CmdlineEnter and CmdlineLeave appeared in vim8
-augroup aug_search
-  autocmd!
-  autocmd CmdlineEnter /,\? :set hlsearch
-  autocmd CmdlineEnter /,\? :cmap <C-j> <C-g>
-  autocmd CmdlineEnter /,\? :cmap <C-k> <C-t>
-
-  autocmd CmdlineLeave /,\? :set nohlsearch
-  autocmd CmdlineLeave /,\? :cunmap <C-j>
-  autocmd CmdlineLeave /,\? :cunmap <C-k>
-augroup END
-
-" Toggle search highlighting
-" Don't use :nohl, because by default searches are not highlighted
-nnoremap <silent> <leader>n :set hlsearch!<cr>
-
 " Highlight both search and incremental search identically
 " In dracula theme, one is green, whereas another is orange.
 hi! link Search IncSearch
@@ -455,6 +437,112 @@ nnoremap N Nzvzz
 nnoremap * *zvzz
 nnoremap # #zvzz
 
+" Individual shortcut to print total search matches count for last search
+nnoremap <silent> g/ :call <SID>PrintSearchTotalCount()<CR>
+
+" Toggle search highlighting
+" Don't use :nohl, because by default searches are not highlighted
+nnoremap <silent> <leader>n :set hlsearch!<cr>
+
+" Detect when search command line is entered and left
+" Detect when search is triggered by hooking into <CR>
+" Inspired by https://github.com/google/vim-searchindex
+augroup aug_search
+  autocmd!
+
+  " Pitfall: Works only in vim8. CmdlineEnter and CmdlineLeave appeared in vim8
+  autocmd CmdlineEnter /,\? call <SID>on_search_cmdline_focus(1)
+  autocmd CmdlineLeave /,\? call <SID>on_search_cmdline_focus(0)
+
+  " Detect when search command window is entered
+  autocmd CmdwinEnter *
+        \ if getcmdwintype() =~ '[/?]' |
+        \   silent! nmap <buffer> <CR> <CR><Plug>OnSearchCompleted|
+        \ endif
+augroup END
+
+function! s:on_search_cmdline_focus(enter)
+  if a:enter
+    " Turn on hlsearch to highlight all matches during incremental search
+    set hlsearch
+
+    " Use <C-j> and <C-k> to navigate through matches during incremental search instead of <C-d>,<C-t>
+    cmap <C-j> <C-g>
+    cmap <C-k> <C-t>
+
+    " Detect when search is triggered by hooking into <CR>
+    cmap <expr> <CR> "\<CR>" . (getcmdtype() =~ '[/?]' ? "<Plug>OnSearchCompleted" : "")
+  else
+    " On cmdline leave, rollback all changes and mappings
+    set nohlsearch
+
+    cunmap <C-j>
+    cunmap <C-k>
+    cunmap <CR>
+  endif
+endfunction
+
+" Define OnSearchCompleted hook
+noremap  <Plug>OnSearchCompleted <Nop>
+nnoremap <silent> <Plug>OnSearchCompleted :call <SID>OnSearchCompleted()<CR>
+
+function s:OnSearchCompleted()
+  " Print total search matches count
+  call s:PrintSearchTotalCount()
+
+  " Open folds in the matches lines
+  " foldopen+=search causes search commands to open folds in the matched line
+  " - but it doesn't work in mappings. Hence, we just open the folds here.
+  if &foldopen =~# "search"
+    normal! zv
+  endif
+
+  " Recenter screen for any kind of search (same as we do for n/N shortcuts)
+  normal! zz
+endfunction
+
+function s:PrintSearchTotalCount()
+  " Detect search direction
+  let search_dir = v:searchforward ? '/' : '?'
+
+  " Remember cursor position
+  let pos=getpos('.')
+
+  " Remember start and end marks of last change/yank
+  let saved_marks = [ getpos("'["), getpos("']") ]
+
+  try
+    " Execute "%s///gn" command to capture match count for the last search pattern
+    let output = ''
+    redir => output
+      silent! keepjumps %s///gne
+    redir END
+
+    " Extract only match count from string like "X matches on Y lines"
+    let match_count = str2nr(matchstr(output, '\d\+'))
+
+    " Compose message like "X matches for /pattern"
+    let msg = l:match_count . " matches for " . l:search_dir . @/
+
+    " Flush any delayed screen updates before printing "l:msg".
+    " See ":h :echo-redraw".
+    redraw | echo l:msg
+  finally
+
+    " Restore [ and ] marks
+    call setpos("'[", saved_marks[0])
+    call setpos("']", saved_marks[1])
+
+    " Restore cursor position
+    call setpos('.', pos)
+  endtry
+endfunction
+
+" Make '*' and '#' search for a selection in visual mode
+" Inspired by https://github.com/nelstrom/vim-visual-star-search
+vnoremap * :<C-u>call <SID>search_from_context("/", "selection")<CR>
+vnoremap # :<C-u>call <SID>search_from_context("?", "selection")<CR>
+
 function! s:search_from_context(direction, context)
   let text = a:context ==# 'word' ? expand("<cword>") : s:get_selected_text()
   let text = substitute(escape(text, a:direction . '\'), '\n', '\\n', 'g')
@@ -462,12 +550,6 @@ function! s:search_from_context(direction, context)
 
   call feedkeys(a:direction . "\<C-R>=@/\<CR>\<CR>")
 endfunction
-
-" Make '*' and '#' search for a selection in visual mode
-" Inspired by https://github.com/nelstrom/vim-visual-star-search
-" Plus center search results, same as we do in normal mode
-vnoremap * :<C-u>call <SID>search_from_context("/", "selection")<CR>zz
-vnoremap # :<C-u>call <SID>search_from_context("?", "selection")<CR>zz
 
 " Shortcuts for substitute as ex command
 nnoremap <C-s> :%s/
