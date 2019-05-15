@@ -266,6 +266,9 @@ fun s:PatchColorScheme()
   hi! link ctrlsfCuttingLine Title
 endf
 
+" Shortcut command to 'vim-scripts/SyntaxAttr.vim'
+command ViewSyntaxAttr call SyntaxAttr()
+
 " Customime color scheme after it was loaded
 augroup aug_color_scheme
   au!
@@ -1597,9 +1600,6 @@ cnoremap ## <C-R>=fnameescape(expand('#'))<cr>
 
 " Apply '.' repeat command for selected each line in visual mode
 vnoremap . :normal .<CR>
-
-" Shortcut command to 'vim-scripts/SyntaxAttr.vim'
-command ViewSyntaxAttr call SyntaxAttr()
 
 " Get visually selected text
 " FIXME: should not change cursor position
