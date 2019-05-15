@@ -362,7 +362,8 @@ endfunction
 " Add blank line above and below
 " When adding line below, move cursor to the just added line (most likely you're going to edit next)
 " When adding line above, don't move cursor at all
-nnoremap <expr> <CR> &buftype ==# 'quickfix' ? "\<CR>" : "o\<ESC>"
+" Do not override <CR> in quickfix and command line window
+nnoremap <expr> <CR> &buftype ==# 'quickfix' \|\| getcmdwintype() != '' ? "\<CR>" : "o\<ESC>"
 nmap <leader><CR> <Plug>blankUp
 
 " }}}
