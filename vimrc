@@ -921,6 +921,8 @@ set foldenable
 set foldmethod=marker
 set foldlevelstart=0
 set foldcolumn=1
+
+" What triggers automatic fold opening
 set foldopen-=block
 set foldopen-=hor
 set foldopen+=jump
