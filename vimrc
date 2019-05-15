@@ -1100,9 +1100,13 @@ nmap <Bslash> <C-w>
 " Splits
 set splitbelow
 set splitright
-nnoremap <silent> <C-w>_ :split<CR>
-nnoremap <silent> <C-w>\| :vsplit<CR>
+nnoremap <silent> <leader>_ :split<CR>
+nnoremap <silent> <leader>\| :vsplit<CR>
 nnoremap <silent> <leader>0 :only<CR>
+
+" Maximize split
+" Use '<C-w>=' to make window sizes equal back
+nnoremap <C-w><Bslash> <C-w>_<C-w>\|
 
 " Tab navigation
 nnoremap <silent> <leader>1 :tabnext 1<CR>
@@ -1111,22 +1115,20 @@ nnoremap <silent> <leader>3 :tabnext 3<CR>
 nnoremap <silent> <leader>4 :tabnext 4<CR>
 nnoremap <silent> <leader>5 :tabnext 5<CR>
 nnoremap <silent> <leader>9 :tablast<CR>
+
+" Or use built-in gt/gT to traverse between tabs
 nnoremap <silent> ]<Tab> :tabnext<CR>
 nnoremap <silent> [<Tab> :tabprev<CR>
 
 " Tab management
 nnoremap <silent> <leader>+ :tabnew<CR>:edit .<CR>
-nnoremap <silent> <leader>_ :tabonly<CR>
+nnoremap <silent> <leader>) :tabonly<CR>
 nnoremap <silent> <leader>- :tabclose<CR>
 
-" <C-w>T, moves window to a new tab
+" <C-w>T, moves window to a new tab (built-in)
 " <C-w>t, copies window to a new tab
 " NOTE: Hides original <C-w>t behavior to move to the topmost window
 nnoremap <C-w>t :tab split<CR>
-
-" Maximize window
-" Use '\=' to make window sizes equal
-nnoremap <C-w><Bslash> <C-w>_<C-w>\|
 
 " Cycle between main and alternate file
 nnoremap <C-w><Tab> <C-^>zz
