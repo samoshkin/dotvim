@@ -1024,7 +1024,6 @@ endfunction
 " Smart quit window function
 command QuitWindow call s:QuitWindow()
 nnoremap <silent> <leader>q :QuitWindow<CR>
-cnoreabbrev q QuitWindow
 
 " Save and quit
 nnoremap <silent> <leader>w :update!<CR>
@@ -1058,8 +1057,8 @@ function s:QuitWindow()
   let l:diff_windows = s:GetDiffWindows()
 
   " When running as 'vimdiff' or 'vim -d', close both files and exit Vim
-  if get(s:, 'is_started_as_vim_diff', 0)
-    qall
+  if get(g:, 'is_started_as_vim_diff', 0)
+    windo quit
     return
   endif
 
@@ -1211,7 +1210,7 @@ set diffopt=internal,filler,vertical,context:5,foldcolumn:1,indent-heuristic,alg
 " Detect if vim is started as a diff tool (vim -d, vimdiff)
 " NOTE: Does not work when you start Vim as usual and enter diff mode using :diffthis
 if &diff
-  let s:is_started_as_vim_diff = 1
+  let g:is_started_as_vim_diff = 1
 endif
 
 augroup aug_diffs
