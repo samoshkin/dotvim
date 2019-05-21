@@ -1205,9 +1205,6 @@ set redrawtime=500
 " Redraw as fewer as possible
 set lazyredraw
 
-" Indicate we have a fast terminal connection. Improves smooth redrawing
-set ttyfast
-
 " Don't try to highlight lines longer than N characters.
 set synmaxcol=200
 
