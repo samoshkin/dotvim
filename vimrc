@@ -799,7 +799,7 @@ onoremap * iW
 " [ - operate inside parentheses ( [ { . Same shortcut as used in rhysd/clever-f.vim plugin to match all signs
 " t - operate inside tags
 omap q iq
-omap [ ij
+omap j ij
 omap t it
 
 " }}}
@@ -1296,17 +1296,26 @@ cnoreabbrev <expr> diffsplit getcmdtype() == ":" && getcmdline() == 'diffsplit' 
 " }}}
 
 " Session management{{{
+
+" Session is created manually and bounded to project cwd
+" If given dir has session associated, it gets loaded automatically
+
+" Use "https://github.com/tpope/vim-obsession" to automatically save session using :mksession on various events
+" when new buffer is added, when Vim is exited, when layout changes
+
+" What is going to be save in session
+" + buffers,curdir,tabpages,winsize,terminal
 set sessionoptions-=folds
 set sessionoptions-=options
 set sessionoptions-=help
 set sessionoptions-=blank
 
+" All sessions are stored in "~/.vim/sessions" directory
 function! s:GetSessionDir()
   return $HOME . "/.vim/sessions" . getcwd()
 endfunction
 
-" Session is created manually
-" Session is bound to project cwd
+" Create new session
 function! s:SessionCreate()
   let l:sessiondir = s:GetSessionDir()
   if !isdirectory(l:sessiondir)
@@ -1328,9 +1337,9 @@ endfunction
 
 " Unload current session, stop tracking.
 " Do not remove underlying session file, so you can load session back later
-function! s:SessionUnload()
+function! s:SessionUnload(shouldRemove)
   if ObsessionStatus() == '[$]'
-    exe "Obsession"
+    exe (a:shouldRemove ? "Obsession!" : "Obsession")
     silent! %bdelete
   else
     echo "No session loaded."
@@ -1349,9 +1358,12 @@ augroup aug_session_management
 augroup END
 
 " Expose set of commands to manage sessions
-command! -nargs=? SessionCreate call <SID>SessionCreate(<f-args>)
-command! -nargs=? SessionLoad call <SID>SessionLoad(<f-args>)
-command! -nargs=? SessionUnload call <SID>SessionUnload(<f-args>)" }}}
+command! -nargs=0 SessionCreate call <SID>SessionCreate()
+command! -nargs=0 SessionLoad call <SID>SessionLoad()
+command! -nargs=0 SessionUnload call <SID>SessionUnload(0)
+command! -nargs=0 SessionRemove call <SID>SessionUnload(1)
+
+" }}}
 
 " Autosave and backup{{{
 
@@ -1362,9 +1374,10 @@ command! -nargs=? SessionUnload call <SID>SessionUnload(<f-args>)" }}}
 " - swapfile: on
 
 " Regarding autosaving:
-" - "autowrite" saves file on buffer change and quit
+" - built-in "autowrite" saves file on buffer change and quit
 " - '907th/vim-auto-save' saves file on given events (TextChanged, InsertLeave, CursorHold)
 
+" Do not use built-in "autosave" behavior, because it triggers for a limited set of events
 set noautowrite
 
 " '907th/vim-auto-save' settings
@@ -1381,12 +1394,14 @@ function OnAutoSaveHook()
   endif
 endfunction
 
+" Toggle "907th/vim-auto-save" ON/OFF
 nnoremap <F10> :AutoSaveToggle<CR>
 
 " Automatically read files which are changed outside vim
 set autoread
 
-" In addition to autosaving, enable swap file and disable backup
+" In addition to autosaving, enable swap file, disable backup
+" and keep persistent undo history that survives Vim process lifetime
 set swapfile
 set nobackup
 set undofile
