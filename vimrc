@@ -942,21 +942,21 @@ set foldopen+=jump
 
 " Use [z and ]z to navigate to start/end of the fold
 " Use zj and zk to navigate to neighbooring folds
-" Use zJ and zK to navigate to prev/next closed fold
+" Use zJ and zK to navigate to prev/next opened fold
 " https://stackoverflow.com/questions/9403098/is-it-possible-to-jump-to-closed-folds-in-vim
-nnoremap <silent> zJ :call <SID>NextClosedFold('j')<CR>
-nnoremap <silent> zK :call <SID>NextClosedFold('k')<CR>
+nnoremap <silent> zJ :call <SID>NextOpenedFold('j')<CR>
+nnoremap <silent> zK :call <SID>NextOpenedFold('k')<CR>
 
-function! s:NextClosedFold(dir)
+function! s:NextOpenedFold(dir)
   let cmd = 'norm!z' . a:dir
   let view = winsaveview()
-  let [l0, l, open] = [0, view.lnum, 1]
-  while l != l0 && open
+  let [l0, l, open] = [0, view.lnum, 0]
+  while l != l0 && !open
     exe cmd
     let [l0, l] = [l, line('.')]
     let open = foldclosed(l) < 0
   endwhile
-  if open
+  if !open
     call winrestview(view)
   endif
 endfunction
