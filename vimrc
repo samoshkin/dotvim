@@ -1038,6 +1038,9 @@ endfunction
 command QuitWindow call s:QuitWindow()
 nnoremap <silent> <leader>q :QuitWindow<CR>
 
+" Close all readonly buffers with just a "q" keystroke, otherwise "q" is used to record macros in a normal mode
+nnoremap  <expr> q &readonly ? ":quit\<CR>" : "q"
+
 " Save and quit
 nnoremap <silent> <leader>w :update!<CR>
 nnoremap ZZ :update! \| QuitWindow<CR>
@@ -2613,9 +2616,6 @@ augroup END
 
 augroup ft_help
   au!
-
-  " Close Help window using just 'q' keystroke
-  autocmd FileType help nnoremap <buffer> <silent> q :quit<CR>
 
   " If current tab has the only window, open help of the rightmost side
   autocmd BufWinEnter *.txt if winnr('$') == 2 && &buftype == 'help' | wincmd L | endif
