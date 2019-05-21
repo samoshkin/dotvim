@@ -789,6 +789,19 @@ nnoremap [[ [[zz
 nnoremap [] []zz
 nnoremap ][ ][zz
 
+" Some aliases for operator pending mode:
+" 8 - operate inside word
+" * - operate inside WORD
+onoremap 8 iw
+onoremap * iW
+
+" q - operate inside quotes (' " `)
+" [ - operate inside parentheses ( [ { . Same shortcut as used in rhysd/clever-f.vim plugin to match all signs
+" t - operate inside tags
+omap q iq
+omap [ ij
+omap t it
+
 " }}}
 
 " Insert mode{{{
