@@ -1510,22 +1510,15 @@ set nospell
 set spelllang=en
 
 " Dict with words marked as good/wrong
+" TODO: move to ~/sync/dropbox later
 set spellfile=~/.vim/spell/dict.utf-8.add
 
-" Automatically fix last misspelled word by picking first suggestion
+" In Insert mode automatically fix last misspelled word by picking first suggestion
 inoremap <C-S>f <C-G>u<Esc>[s1z=gi<C-G>u
 
-" Select previous misspelled word, and drop in Select mode
+" In insert mode, select previous misspelled word, and drop in Select mode
 " In insert mode, we usually don't care about next misspelled word
 inoremap <C-S>s <Esc>[sve<C-G>
-
-" In normal mode, select next/previous misspelled word, and drop in Select mode
-nnoremap <localleader>ss ]sve<C-G>
-nnoremap <localleader>sS [sve<C-G>
-
-" In normal mode, fix misspelled next/prev word by picking up first suggestion
-nnoremap <localleader>sf ]s1z=
-nnoremap <localleader>sF [s1z=
 
 " }}}
 
@@ -1734,10 +1727,6 @@ endfunction
 
 " Misc{{{
 
-" Check if files are changed outside and prompt to reload
-" noremap <F5> :checktime<cr>
-" inoremap <F5> <esc>:checktime<cr>
-
 " Expand '%%' and '##' for current/alternate files in command line
 " This is useful for commands that do not understand %%
 cnoremap %% <C-R>=fnameescape(expand('%'))<cr>
@@ -1779,6 +1768,7 @@ endfunction
 function s:Noop()
 endfunction
 
+" Resolves variable value respecting window, buffer, global hierarchy
 function s:get_var(...)
   let varName = a:1
 
