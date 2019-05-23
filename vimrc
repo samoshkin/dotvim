@@ -1517,7 +1517,7 @@ function OnAutoSaveHook()
 endfunction
 
 " Toggle "907th/vim-auto-save" ON/OFF
-nnoremap <F10> :AutoSaveToggle<CR>
+" nnoremap <F10> :AutoSaveToggle<CR>
 
 " Directories for backup, undo and swap files
 set undodir=~/.vim/tmp/undo//
@@ -2481,7 +2481,7 @@ let g:clever_f_chars_match_any_signs = ';'
 " }}}
 
 " PLUGIN: majutsushi/tagbar{{{
-nnoremap <silent> <F9> :TagbarToggle<CR>
+" nnoremap <silent> <F9> :TagbarToggle<CR>
 let g:tagbar_autoclose = 0
 let g:tagbar_autofocus = 1
 let g:tagbar_compact = 1
@@ -2514,7 +2514,7 @@ function s:GutentagsToggle()
 endfunction
 
 command! GutentagsToggle :call <SID>GutentagsToggle()
-nnoremap <silent> <F11> :GutentagsToggle<CR>
+" nnoremap <silent> <F11> :GutentagsToggle<CR>
 
 " Let user decide when to generate tags file for the project
 " Don't do it automatically for any VCS repo
