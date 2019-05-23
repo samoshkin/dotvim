@@ -1023,6 +1023,9 @@ command! -nargs=0 CopyFileName let @+ = expand("%:t") | echo 'Copied to clipboar
 command! -nargs=0 CopyFilePath let @+ = expand("%:p:~") | echo 'Copied to clipboard: ' . @+
 command! -nargs=0 CopyFileDir let @+ = expand("%:p:~:h") | echo 'Copied to clipboard: ' . @+
 
+" Open current directory in Finder
+nnoremap <leader>F :silent exec "!open %:p:h" \| redraw!<CR>
+
 " Scratch buffer and Eread command
 
 " Read command output and show it in new scratch buffer
