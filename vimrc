@@ -688,19 +688,20 @@ nnoremap <F7>s :call <SID>prepare_search_command("selection", "Grep")<CR>
 nnoremap <F7>/ :call <SID>prepare_search_command("search", "Grep")<CR>
 vnoremap <silent> <F7> :call <SID>prepare_search_command("selection", "Grep")<CR>
 
-" ctrlsf.vim (uses ack, ag or rg under the hood)
-nnoremap <S-F7><F7> :call <SID>prepare_search_command("", "GrepSF")<CR>
-nnoremap <S-F7>w :call <SID>prepare_search_command("word", "GrepSF")<CR>
-nnoremap <S-F7>s :call <SID>prepare_search_command("selection", "GrepSF")<CR>
-nnoremap <S-F7>/ :call <SID>prepare_search_command("search", "GrepSF")<CR>
-vnoremap <silent> <S-F7> :call <SID>prepare_search_command("selection", "GrepSF")<CR>
-
 " fzf-vim + ripgrep
-nnoremap <leader><F7><F7> :call <SID>prepare_search_command("", "GrepFzf")<CR>
-nnoremap <leader><F7>w :call <SID>prepare_search_command("word", "GrepFzf")<CR>
-nnoremap <leader><F7>s :call <SID>prepare_search_command("selection", "GrepFzf")<CR>
-nnoremap <leader><F7>/ :call <SID>prepare_search_command("search", "GrepFzf")<CR>
-vnoremap <silent> <leader><F7> :call <SID>prepare_search_command("selection", "GrepFzf")<CR>
+nnoremap <S-F7><S-F7> :call <SID>prepare_search_command("", "GrepFzf")<CR>
+nnoremap <S-F7>w :call <SID>prepare_search_command("word", "GrepFzf")<CR>
+nnoremap <S-F7>s :call <SID>prepare_search_command("selection", "GrepFzf")<CR>
+nnoremap <S-F7>/ :call <SID>prepare_search_command("search", "GrepFzf")<CR>
+vnoremap <silent> <S-F7> :call <SID>prepare_search_command("selection", "GrepFzf")<CR>
+
+" ctrlsf.vim (uses ack, ag or rg under the hood)
+nnoremap <F8><F8> :call <SID>prepare_search_command("", "GrepSF")<CR>
+nnoremap <F8>w :call <SID>prepare_search_command("word", "GrepSF")<CR>
+nnoremap <F8>s :call <SID>prepare_search_command("selection", "GrepSF")<CR>
+nnoremap <F8>/ :call <SID>prepare_search_command("search", "GrepSF")<CR>
+vnoremap <silent> <F8> :call <SID>prepare_search_command("selection", "GrepSF")<CR>
+
 
 " Execute search for particular command (Grep, GrepSF, GrepFzf)
 function s:execute_search(command, args, is_relative)
@@ -2679,8 +2680,7 @@ function! g:CtrlSFAfterMainWindowInit()
 endfunction
 
 " Commands and mappings
-nnoremap <F8> :CtrlSFToggle<CR>
-nnoremap <S-F8> :CtrlSFFocus<CR>
+nnoremap <S-F8> :CtrlSFOpen<CR>
 nnoremap <leader><F8> :call <SID>ctrlsf_search_quit()<CR>
 
 " Stop searching, get back
