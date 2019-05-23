@@ -251,11 +251,30 @@ if &t_Co > 2 || has("gui_running")
   set guifont=DroidSansMono\ Nerd\ Font\ Mono:h14
 endif
 
-fun s:PatchColorScheme()
+" Borrowed from https://github.com/tiagofumo/vim-nerdtree-syntax-highlight
+" Fits well for dark schemes
+let g:colors = {
+      \ 'brown': ["#905532", 95],
+      \ 'aqua': ["#3AFFDB", 86],
+      \ 'blue': ["#689FB6", 73],
+      \ 'darkBlue': ["#44788E", 66],
+      \ 'purple': ["#834F79", 93],
+      \ 'red': ["#AE403F", 131],
+      \ 'beige': ["#F5C06F", 215],
+      \ 'yellow': ["#F09F17", 214],
+      \ 'orange': ["#D4843E", 172],
+      \ 'darkOrange': ["#F16529", 202],
+      \ 'pink': ["#CB6F6F", 167],
+      \ 'lightGreen': ["#8FAA54", 107],
+      \ 'green': ["#31B53E", 71],
+      \ 'white': ["#FFFFFF", 231],
+      \}
+
+fun s:PatchDraculaScheme()
   hi! ColorColumn ctermfg=255 ctermbg=203 guifg=#F8F8F2 guibg=#FF5555
 
-  " Show NERDTree directory nodes in green
-  hi! __DirectoryNode cterm=bold ctermfg=106 gui=bold guifg=#9AC83A
+  " Show NERDTree directory nodes in yellow
+  hi! __DirectoryNode cterm=bold ctermfg=214 gui=bold guifg=#E7A427
   hi! link NerdTreeDir __DirectoryNode
   hi! link NERDTreeFlags __DirectoryNode
 
@@ -280,13 +299,14 @@ command ViewSyntaxAttr call SyntaxAttr()
 augroup aug_color_scheme
   au!
 
-  autocmd ColorScheme dracula call s:PatchColorScheme()
+  autocmd ColorScheme dracula call s:PatchDraculaScheme()
 augroup END
 
 " Apply a particular color scheme
 " NOTE: Should go after 'autocmd ColorScheme' customization
 set background=dark
 colorscheme dracula
+
 " }}}
 
 " Line manipulation{{{
@@ -2116,15 +2136,37 @@ let g:webdevicons_enable_airline_statusline_fileformat_symbols = 0
 " Disable for tabline. Distract too much
 let g:webdevicons_enable_airline_tabline = 0
 
-" Plugin 'tiagofumo/vim-nerdtree-syntax-highlight'
-" Adds syntax highlighting for common filie extensions
-" Works with devicons to highlight only icons
+" Colorize devicons
+let g:devicons_colors = {
+      \ 'brown': ['', '', ''],
+      \ 'aqua': [''],
+      \ 'blue': ['', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+      \ 'purple': ['', '', '', '', '', '', ''],
+      \ 'red': ['', '', '', '', '', ''],
+      \ 'beige': ['', '', '', ''],
+      \ 'yellow': ['', '', 'λ', ''],
+      \ 'orange': ['', '', ''],
+      \ 'darkOrange': ['', '', '', ''],
+      \ 'pink': ['', ''],
+      \ 'green': ['', '', '', '', '', '', '', ''],
+      \ 'white': ['', '', '', '', ''],
+      \ }
 
-" We can highlight folders
-" let g:NERDTreeHighlightFolders = 0 " enables folder icon highlighting using exact match
-" let g:NERDTreeHighlightFoldersFullName = 0 " highlights the folder name
-" let g:NERDTreeExactMatchHighlightColor = {} " this line is needed to avoid error
-" let g:NERDTreeExactMatchHighlightColor['tmp'] = "689FB6"
+augroup aug_vim_devicons
+  au!
+
+  " Apply devicons coloring only for NERDtree buffer
+  for color in keys(g:devicons_colors)
+    exec 'autocmd FileType nerdtree syntax match devicons_' . color . ' /\v' . join(g:devicons_colors[color], '.|') . './ containedin=ALL'
+    exec 'autocmd FileType nerdtree highlight devicons_' . color . ' guifg=' .g:colors[color][0] . ' ctermfg=' . g:colors[color][1]
+  endfor
+augroup END
+
+" From FAQ: How do I solve issues after re-sourcing my vimrc?
+if exists("g:loaded_webdevicons")
+  call webdevicons#refresh()
+endif
+
 " }}}
 
 " PLUGIN: fzf.vim{{{
