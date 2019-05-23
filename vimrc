@@ -306,13 +306,19 @@ endfunction
 
 nnoremap <silent> <Plug>blankUp   :<C-U>call <SID>BlankUp(v:count1)<CR>
 nnoremap <silent> <Plug>blankDown :<C-U>call <SID>BlankDown(v:count1)<CR>
-" Not used in favor of <leader><CR> and <CR>
-" nmap [<Space> <Plug>blankUp
-" nmap ]<Space> <Plug>blankDown
 
+" Add blank line above and below
+" When adding line below, move cursor to the just added line (most likely you're going to edit next)
+" When adding line above, don't move cursor at all
+" Do not override <CR> in quickfix and command line window
+nnoremap <expr> <CR> &buftype ==# 'quickfix' \|\| getcmdwintype() != '' ? "\<CR>" : "o\<ESC>"
+nmap <leader><CR> <Plug>blankUp
 
 " Move lines up/down
 " http://vim.wikia.com/wiki/Moving_lines_up_or_down
+
+" There is a plugin, but it does not worth installing.
+" matze/vim-move: Plugin to move lines and selections up and down - https://github.com/matze/vim-move
 function! s:MoveBlockDown() range
   execute a:firstline "," a:lastline "move '>+1"
   normal! gv=gv
@@ -364,14 +370,6 @@ function s:split_line()
 
   startinsert
 endfunction
-
-
-" Add blank line above and below
-" When adding line below, move cursor to the just added line (most likely you're going to edit next)
-" When adding line above, don't move cursor at all
-" Do not override <CR> in quickfix and command line window
-nnoremap <expr> <CR> &buftype ==# 'quickfix' \|\| getcmdwintype() != '' ? "\<CR>" : "o\<ESC>"
-nmap <leader><CR> <Plug>blankUp
 
 " }}}
 
