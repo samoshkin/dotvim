@@ -842,6 +842,9 @@ nnoremap <BS> i<BS>
 " Which can be undone with '<C-o>u'
 inoremap <C-r> <C-g>u<C-r>
 
+" CTRL-U in insert mode deletes a lot. Use CTRL-G u to first break undo
+inoremap <C-u> <C-g>u<C-u>
+
 " Use <C-v> instead of <C-r>
 " Yes we're overriding <C-v> normal behavior, and unable to use some registers
 " In these rare cases, resort back to <C-r>
