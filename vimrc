@@ -375,14 +375,31 @@ endfunction
 
 " Wrapping{{{
 
-" Soft wraps by default
+" Soft wraps
+" Limitation: you cannot have soft wrap at specified line width (textwidth is responsible for hard wraps). The only workaround is to limit the width of the window using "set columns = 80"
 set wrap
 set breakindent
 
+" Hard wraps
+" "textwidth" and "wrapmargin" are not applicable for soft wraps
 " Don't do hard wraps ever
 set textwidth=0
 
+" No wraps. Long lines will exceed screen boundaries
+" set nowrap
+
+" Toggle between 'nowrap' and 'soft wrap'
+" TODO: fix mapping
+noremap <silent> <F6> :set wrap!<CR>
+
+" Recenter cursor during horizontal scroll
+" Keep some characters visible during horizontal scroll
+" Makes sense only for nowrap
+set sidescroll=0
+set sidescrolloff=3
+
 " Show invisible characters
+" "extends" and "precedes" is when long lines are not wrapped
 set list
 set listchars=tab:→\ ,space:⋅,extends:>,precedes:<
 set showbreak=↪
@@ -393,7 +410,7 @@ noremap  <silent> <expr> k v:count ? 'k' : 'gk'
 noremap  <silent> <expr> j v:count ? 'j' : 'gj'
 noremap  <silent> 0 g0
 noremap  <silent> $ g$
-" <Home> and <End> mapping don't work, until I find the solution with wrong tmux $TERM type
+" FIXME: <Home> and <End> mapping don't work, until I find the solution with wrong tmux $TERM type
 nnoremap <Home> g<Home>
 noremap  <End>  g<End>
 
@@ -405,15 +422,22 @@ inoremap <silent> <Up> <C-o>gk
 inoremap <silent> <Home> <C-o>g<Home>
 inoremap <silent> <End>  <C-o>g<End>
 
-" Toggle between 'nowrap' and 'soft wrap'
-noremap <silent> <F6> :set wrap!<CR>
-
 " Format options
 " Remove most related to hard wrapping
 " Use autocommand to override defaults from $VIMRUNTIME/ftplugin
 augroup aug_format_options
   au!
 
+  " t - automatic text wrapping, but not comments (for hard wrapping)
+  " c - auto wrap comments (for hard wrapping)
+  " a - reformat on any change
+  " q - allow formatting of comments with "gq"
+  " r - insert comment leader after hitting <CR> in Insert mode
+  " n - When formatting text, recognize numbered lists and use the indent after the number for the next line
+  " 2 - Use indent of the second line of a paragraph for the reset of the paragraph
+  " 1 - Don't break line after a one-letter word, it's broken before it.
+  " j - Remove a comment leader when joining lines
+  " o - automatically insert comment leader after hitting 'o' or 'O' in normal mode
   au Filetype * setlocal formatoptions=rqn1j
 augroup END
 
