@@ -2184,7 +2184,7 @@ endfunction
 let g:fzf_action = {
   \ 'ctrl-q': function('s:build_quickfix_list'),
   \ 'ctrl-t': 'tab split',
-  \ 'ctrl-x': 'split',
+  \ 'ctrl-s': 'split',
   \ 'ctrl-v': 'vsplit' }
 
 " Add namespace for fzf.vim exported commands
@@ -2205,15 +2205,15 @@ command! -nargs=? -bang -complete=dir FzfFiles
 " Mappings
 nnoremap <silent> <leader>o :FzfFiles<CR>
 nnoremap <silent> <leader>O :FzfFiles!<CR>
-cnoremap <silent> <C-p>  :FzfHistory:<CR>
-cnoremap <silent> <C-_> <ESC>:FzfHistory/<CR>
-nnoremap <silent> <leader>b  :FzfBuffers<CR>
+nnoremap <silent> <leader>l  :FzfBuffers<CR>
+nnoremap <silent> <leader>b :FzfBLines<CR>
 nnoremap <silent> <leader>`  :FzfMarks<CR>
+nnoremap <silent> <leader>p :FzfCommands<CR>
 nnoremap <silent> <F1> :FzfHelptags<CR>
 inoremap <silent> <F1> <ESC>:FzfHelptags<CR>
-noremap <silent> <leader>; :FzfCommands<CR>
-nnoremap <silent> <leader>l :FzfBLines<CR>
+cnoremap <silent> <expr> <C-p> getcmdtype() == ":" ? "<C-u>:FzfHistory:\<CR>" : "\<ESC>:FzfHistory/\<CR>"
 inoremap <silent> <F3> <ESC>:FzfSnippets<CR>
+cnoremap <silent> <C-_> <C-u>:FzfCommands<CR>
 
 " fzf.Tags uses existing 'tags' file or generates it otherwise
 nnoremap <silent> <leader>t :FzfTags<CR>
@@ -2226,6 +2226,7 @@ xnoremap <silent> <leader>T "zy:FzfBTags <C-r>z<CR>
 " Show list of change in fzf
 " Some code is borrowed from ctrlp.vim and tweaked to work with fzf
 command FzfChanges call s:fzf_changes()
+nnoremap <silent> <leader>; :FzfChanges<CR>
 
 function! s:fzf_changelist()
   redir => result
@@ -2248,7 +2249,6 @@ function! s:fzf_changes()
         \ 'options': '+m +s --nth=3..'
         \ }))
 endfunction
-
 
 " Enable per-command history.
 " CTRL-N and CTRL-P will be automatically bound to next-history and
