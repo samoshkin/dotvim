@@ -818,6 +818,11 @@ nnoremap [[ [[zvzz
 nnoremap [] []zvzz
 nnoremap ][ ][zvzz
 
+" Reselect text this was last changed or yanked
+" https://vim.fandom.com/wiki/Selecting_your_pasted_text
+nnoremap <expr> g[] '`[' . getregtype()[0] . '`]'
+onoremap [] :exec "normal g["<CR>
+
 " Some aliases for operator pending mode:
 " 8 - operate inside word
 " * - operate inside WORD
@@ -877,9 +882,6 @@ inoremap <S-CR> <C-o>o
 
 " always use system clipboard as unnamed register
 set clipboard=unnamed,unnamedplus
-
-" Reselect text that was just pasted, similar to "gv" to reselect last selection
-nnoremap <expr> g<C-v> '`[' . getregtype()[0] . '`]'
 
 " Normalize Y behavior to yank till the end of line
 nnoremap Y y$
