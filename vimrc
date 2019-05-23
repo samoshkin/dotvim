@@ -2396,16 +2396,19 @@ noremap <silent> <c-b> :call smooth_scroll#up(&scroll*2, 20, 4)<CR>
 noremap <silent> <c-f> :call smooth_scroll#down(&scroll*2, 20, 4)<CR>
 " }}}
 
-" PLUGIN: vim-commentary{{{
+" PLUGIN: vim-commentary {{{
+
 augroup aug_commentary
   au!
+
+  " Tell how comment is marked depending on file type
   au FileType vim setlocal commentstring=\"\ %s
 augroup end
 
-cnoreabbrev cm Commetary
-
+" Comment line and move 1 line down
 nmap <silent> <leader>c <Plug>CommentaryLine :normal j<CR>
 xmap <leader>c <Plug>Commentary
+
 " }}}
 
 " PLUGIN: bronson/vim-trailing-whitespace{{{
