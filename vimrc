@@ -810,13 +810,13 @@ nnoremap <silent> ]P :ptlast<CR>
 nnoremap <silent> [P :ptfirst<CR>
 
 " Center screen after navigation shortcuts
-nnoremap } }zz
-nnoremap { {zz
+nnoremap } }zvzz
+nnoremap { {zvzz
 
-nnoremap ]] ]]zz
-nnoremap [[ [[zz
-nnoremap [] []zz
-nnoremap ][ ][zz
+nnoremap ]] ]]zvzz
+nnoremap [[ [[zvzz
+nnoremap [] []zvzz
+nnoremap ][ ][zvzz
 
 " Some aliases for operator pending mode:
 " 8 - operate inside word
