@@ -1327,6 +1327,8 @@ nmap <expr> <C-Up> &diff? '<Plug>(MergetoolDiffExchangeUp)' : '<C-Up>'
 " Move through diffs. [c and ]c are native Vim mappings
 nnoremap <expr> <Up> &diff ? '[czz' : ''
 nnoremap <expr> <Down> &diff ? ']czz' : ''
+nnoremap <expr> <Left> &diff? '<C-w>h' : ''
+nnoremap <expr> <Right> &diff? '<C-w>l' : ''
 
 " Change :diffsplit command to open diff in new tab
 cnoreabbrev <expr> diffsplit getcmdtype() == ":" && getcmdline() == 'diffsplit' ? 'tab split \| diffsplit' : 'diffsplit'
