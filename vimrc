@@ -1784,6 +1784,136 @@ endfunction
 
 " }}}
 
+" {{{ GIT integration
+
+" --------------------
+" PLUGIN: tpope/vim-fugitive
+" --------------------
+
+" View GIT index window
+nnoremap <silent> <leader>gs :Gstatus<CR>
+
+" Use <leader>ge to return to working tree version from blob, blame, log
+nnoremap <silent> <leader>ge :Gedit<CR>
+
+" Undo changes in working tree
+" nnoremap <silent> <leader>gu :Git checkout HEAD -- %:p<CR>
+nnoremap <silent> <leader>gu :Gread<CR>
+xnoremap <silent> <leader>gu :Gread<CR>
+
+" Commit changes
+nnoremap <silent> <leader>gca :Gcommit --all --verbose<CR>
+nnoremap <silent> <leader>gcf :Gcommit --amend --reuse-message HEAD<CR>
+nnoremap <silent> <leader>gcf :Gcommit --amend --verbose<CR>
+
+" Diff working tree vs index vs HEAD
+nnoremap <silent> <leader>gdw :Gdiff<CR>
+nnoremap <silent> <leader>gdh :Gdiff HEAD<CR>
+nnoremap <silent> <leader>gdi :Gdiff --cached HEAD<CR>
+
+" gla, gva, list (a)ll commits
+nnoremap <silent> <leader>gla :FzfCommits<CR>
+nnoremap <silent> <leader>gva :GV<CR>
+
+" glf, gvf, list commits touching current (f)ile
+nnoremap <silent> <leader>glf :FzfBCommits<CR>
+nnoremap <silent> <leader>gvf :GV!<CR>
+xnoremap <silent> <leader>gvf :GV<CR>
+
+" gls, gvs, list commits touching current file, but show file revisions or (s)napshots (populates quickfix list)
+nnoremap <silent> <leader>gls :silent! Glog<CR><C-l>
+nnoremap <silent> <leader>gvs :GV?<CR>
+
+" glF, list commits touching current file, show full commit objects (using vim-fugitive)
+nnoremap <silent> <leader>glF :silent! Glog -- %<CR><C-l>
+
+" Change branch
+nnoremap <silent> <leader>gco :Git checkout<Space>
+
+" ------------------------------
+" PLUGIN: airblade/vim-gitgutter
+" ------------------------------
+
+let g:gitgutter_terminal_reports_focus=0
+let g:gitgutter_enabled = 1
+
+nnoremap <silent> <F4> :GitGutterFold<CR>
+nnoremap <silent> <leader><F4> :GitGutterBufferToggle<CR>
+
+" Use 'd' as a motion for hunks, instead of default 'c'
+" Use '[d' and ']d' to move between hunks in regular files and in diff mode
+" It's easier to use 'do' and 'dp' when a finger is already on 'd' key
+nmap <expr> ]d &diff ? ']czz' : '<Plug>GitGutterNextHunkzz'
+nmap <expr> [d &diff ? '[czz' : '<Plug>GitGutterPrevHunkzz'
+
+nmap <expr> + &diff ? '<Plug>GitGutterStageHunk' : '+'
+nmap <expr> - &diff ? '<Plug>GitGutterUndoHunk' : '-'
+
+" Text objects for diff hunks
+omap id <Plug>GitGutterTextObjectInnerPending
+omap ad <Plug>GitGutterTextObjectOuterPending
+xmap id <Plug>GitGutterTextObjectInnerVisual
+xmap ad <Plug>GitGutterTextObjectOuterVisual
+
+augroup aug_git_integration
+  au!
+
+  " Move one level up with '..' when browsing tree or blob
+  autocmd User fugitive
+        \ if get(b:, 'fugitive_type', '') =~# '^\%(tree\|blob\)$' |
+        \   nnoremap <buffer> .. :edit %:h<CR> |
+        \ endif
+
+  " Show Fugitive status window in separate tab
+  autocmd BufEnter */.git/index
+        \ if !exists('b:created') && get(b:, 'fugitive_type', '') == 'index' |
+        \   let b:created = 1 |
+        \   wincmd T |
+        \ endif
+
+  " Collapse status window when viewing diff or editing commit message
+  autocmd BufLeave */.git/index call s:OnFugitiveStatusBufferEnterOrLeave(0)
+  autocmd BufEnter */.git/index call s:OnFugitiveStatusBufferEnterOrLeave(1)
+
+  " Delete fugitive buffers automatically on leave
+  autocmd BufReadPost fugitive://* set bufhidden=delete
+
+  " Disable folding in "junegunn/gv.vim" plugin buffers
+  au FileType GV set nofoldenable
+augroup END
+
+" Find fugitive status window and return it's number
+function s:GetFugitiveStatusWindow()
+  for winnr in range(1, winnr('$'))
+    if getbufvar(winbufnr(winnr), 'fugitive_type') == 'index'
+      return winnr
+    endif
+  endfor
+  return -1
+endfunction
+
+function s:OnFugitiveStatusBufferEnterOrLeave(isEnter)
+  let l:fug_status_window = s:GetFugitiveStatusWindow()
+  if l:fug_status_window != -1
+    if a:isEnter
+      " When entering, resize status window to equal widht and height
+      exe l:fug_status_window . " wincmd w"
+      exe "wincmd ="
+    elseif !a:isEnter && winnr('$') > 1
+      " When leaving, collapse status window
+      exe l:fug_status_window . " wincmd w"
+      exe "resize 0"
+      exe "wincmd p"
+    endif
+  endif
+endfunction
+
+function s:IsFugitiveDiffWindow(winnr)
+  return bufname(winbufnr(a:winnr)) =~ '^fugitive:' && getwinvar(a:winnr, '&diff')
+endfunction
+
+" }}}
+
 " Misc{{{
 
 " Expand '%%' and '##' for current/alternate files in command line
@@ -2257,141 +2387,6 @@ endfunction
 " previous-history instead of down and up. If you don't like the change,
 " explicitly bind the keys to down and up in your $FZF_DEFAULT_OPTS.
 let g:fzf_history_dir = '~/.local/share/fzf-history'
-" }}}
-
-" PLUGIN: vim-figutive{{{
-
-augroup aug_vim_figutive
-  au!
-
-  " Move one level up with '..' when browsing tree or blob
-  autocmd User fugitive
-    \ if get(b:, 'fugitive_type', '') =~# '^\%(tree\|blob\)$' |
-    \   nnoremap <buffer> .. :edit %:h<CR> |
-    \ endif
-
-  " Show Fugitive status window in separate tab
-  autocmd BufEnter */.git/index
-    \ if !exists('b:created') && get(b:, 'fugitive_type', '') == 'index' |
-    \   let b:created = 1 |
-    \   wincmd T |
-    \ endif
-
-  " Collapse status window when viewing diff or editing commit message
-  autocmd BufLeave */.git/index call s:OnFugitiveStatusBufferEnterOrLeave(0)
-  autocmd BufEnter */.git/index call s:OnFugitiveStatusBufferEnterOrLeave(1)
-
-  " Delete fugitive buffers automatically on leave
-  autocmd BufReadPost fugitive://* set bufhidden=delete
-
-augroup END
-
-" View GIT index window
-nnoremap <silent> <leader>gs :Gstatus<CR>
-
-" Use <leader>ge to return to working tree version from blob, blame, log
-nnoremap <silent> <leader>ge :Gedit<CR>
-
-" Undo changes in working tree
-" nnoremap <silent> <leader>gu :Git checkout HEAD -- %:p<CR>
-nnoremap <silent> <leader>gu :Gread<CR>
-xnoremap <silent> <leader>gu :Gread<CR>
-
-" Commit changes
-nnoremap <silent> <leader>gca :Gcommit --all --verbose<CR>
-nnoremap <silent> <leader>gcf :Gcommit --amend --reuse-message HEAD<CR>
-nnoremap <silent> <leader>gcf :Gcommit --amend --verbose<CR>
-
-" Diff working tree vs index vs HEAD
-nnoremap <silent> <leader>gdw :Gdiff<CR>
-nnoremap <silent> <leader>gdh :Gdiff HEAD<CR>
-nnoremap <silent> <leader>gdi :Gdiff --cached HEAD<CR>
-
-" gla, gva, list (a)ll commits
-nnoremap <silent> <leader>gla :FzfCommits<CR>
-nnoremap <silent> <leader>gva :GV<CR>
-
-" glf, gvf, list commits touching current (f)ile
-nnoremap <silent> <leader>glf :FzfBCommits<CR>
-nnoremap <silent> <leader>gvf :GV!<CR>
-xnoremap <silent> <leader>gvf :GV<CR>
-
-" gls, gvs, list commits touching current file, but show file revisions or (s)napshots (populates quickfix list)
-nnoremap <silent> <leader>gls :silent! Glog<CR><C-l>
-nnoremap <silent> <leader>gvs :GV?<CR>
-
-" glF, list commits touching current file, show full commit objects (using vim-fugitive)
-nnoremap <silent> <leader>glF :silent! Glog -- %<CR><C-l>
-
-" Change branch
-nnoremap <silent> <leader>gco :Git checkout<Space>
-
-" Find fugitive status window and return it's number
-function s:GetFugitiveStatusWindow()
-  for winnr in range(1, winnr('$'))
-    if getbufvar(winbufnr(winnr), 'fugitive_type') == 'index'
-      return winnr
-    endif
-  endfor
-  return -1
-endfunction
-
-function s:OnFugitiveStatusBufferEnterOrLeave(isEnter)
-  let l:fug_status_window = s:GetFugitiveStatusWindow()
-  if l:fug_status_window != -1
-    if a:isEnter
-      " When entering, resize status window to equal widht and height
-      exe l:fug_status_window . " wincmd w"
-      exe "wincmd ="
-    elseif !a:isEnter && winnr('$') > 1
-      " When leaving, collapse status window
-      exe l:fug_status_window . " wincmd w"
-      exe "resize 0"
-      exe "wincmd p"
-    endif
-  endif
-endfunction
-
-function s:IsFugitiveDiffWindow(winnr)
-  return bufname(winbufnr(a:winnr)) =~ '^fugitive:' && getwinvar(a:winnr, '&diff')
-endfunction
-
-" }}}
-
-" {{{ PLUGIN: junegunn/gv.vim
-
-augroup aug_gv_vim
-  au!
-
-  " Disable folding in "junegunn/gv.vim" plugin buffers
-  au FileType GV set nofoldenable
-augroup END
-
-"}}}
-
-" PLUGIN: vim-gitgutter{{{
-
-let g:gitgutter_terminal_reports_focus=0
-let g:gitgutter_enabled = 1
-
-nnoremap <silent> <F4> :GitGutterFold<CR>
-nnoremap <silent> <leader><F4> :GitGutterBufferToggle<CR>
-
-" Use 'd' as a motion for hunks, instead of default 'c'
-" Use '[d' and ']d' to move between hunks in regular files and in diff mode
-" It's easier to use 'do' and 'dp' when a finger is already on 'd' key
-nmap <expr> ]d &diff ? ']czz' : '<Plug>GitGutterNextHunkzz'
-nmap <expr> [d &diff ? '[czz' : '<Plug>GitGutterPrevHunkzz'
-
-nmap <expr> + &diff ? '<Plug>GitGutterStageHunk' : '+'
-nmap <expr> - &diff ? '<Plug>GitGutterUndoHunk' : '-'
-
-" Text objects for diff hunks
-omap id <Plug>GitGutterTextObjectInnerPending
-omap ad <Plug>GitGutterTextObjectOuterPending
-xmap id <Plug>GitGutterTextObjectInnerVisual
-xmap ad <Plug>GitGutterTextObjectOuterVisual
-
 " }}}
 
 " PLUGIN: vim-smooth-scroll {{{
