@@ -1418,6 +1418,13 @@ command! -nargs=0 SessionRemove call <SID>SessionUnload(1)
 
 " Do not use built-in "autosave" behavior, because it triggers for a limited set of events
 set noautowrite
+" In addition to autosaving, enable swap file, disable backup
+" and keep persistent undo history that survives Vim process lifetime
+set swapfile
+set nobackup
+
+" Automatically read files which are changed outside vim
+set autoread
 
 " '907th/vim-auto-save' settings
 " Can be overridden per buffer
@@ -1435,15 +1442,6 @@ endfunction
 
 " Toggle "907th/vim-auto-save" ON/OFF
 nnoremap <F10> :AutoSaveToggle<CR>
-
-" Automatically read files which are changed outside vim
-set autoread
-
-" In addition to autosaving, enable swap file, disable backup
-" and keep persistent undo history that survives Vim process lifetime
-set swapfile
-set nobackup
-set undofile
 
 " Directories for backup, undo and swap files
 set undodir=~/.vim/tmp/undo//
