@@ -1969,6 +1969,25 @@ endfunction
 
 " }}}
 
+" Snippets {{{
+
+" 'SirVer/ultisnips' is only the snippet engine.
+" Defines snippet files syntax. Understands ULtiSnips syntax and vim-snipmate (another engine) snippets
+
+" Snippet definition files are separate and shipped by 'honza/vim-snippets'
+
+" Do not let UltiSnips set <Tab> mapping, as we're using own smart <Tab> implementation
+" Also we don't need snippet listing, as we're using fzf for this purpose
+let g:UltiSnipsExpandTrigger="<NUL>"
+let g:UltiSnipsListSnippets="<NUL>"
+let g:UltiSnipsEditSplit = 'context'
+
+" Find available snippets from Insert mode using fzf
+" Use :UltiSnipsEdit(!) command to edit private(all) snippet definition file
+inoremap <silent> <F9> <ESC>:FzfSnippets<CR>
+nnoremap <silent> <F9> :UltiSnipsEdit!<CR>
+" }}}
+
 " Misc{{{
 
 " Expand '%%' and '##' for current/alternate files in command line
@@ -2399,7 +2418,6 @@ nnoremap <silent> <leader>p :FzfCommands<CR>
 nnoremap <silent> <F1> :FzfHelptags<CR>
 inoremap <silent> <F1> <ESC>:FzfHelptags<CR>
 cnoremap <silent> <expr> <C-p> getcmdtype() == ":" ? "<C-u>:FzfHistory:\<CR>" : "\<ESC>:FzfHistory/\<CR>"
-inoremap <silent> <F3> <ESC>:FzfSnippets<CR>
 cnoremap <silent> <C-_> <C-u>:FzfCommands<CR>
 
 " fzf.Tags uses existing 'tags' file or generates it otherwise
@@ -2525,29 +2543,23 @@ let g:gutentags_generate_on_new = 0
 
 " PLUGIN: Raimondi/delimitMate{{{
 
+" Turn autoclosing behavior on
 let delimitMate_autoclose = 1
+
 let g:delimitMate_expand_cr = 2
 let g:delimitMate_expand_space = 1
 let g:delimitMate_jump_expansion = 1
 let g:delimitMate_balance_matchpairs = 1
 let g:delimitMate_matchpairs = "(:),[:],{:}"
+let g:delimitMate_nesting_quotes = ['`']
+
 " Indeed we are going to exclude Comment and String syntax group names
 " But turns out this plugin relies upon highlight groups rather than syntax group names
 " So we have to use linked Dracula highlight groups instead
 " NOTE: If you change current theme, this code should be updated as well
 " https://github.com/Raimondi/delimitMate/issues/277#issuecomment-466780034
 let g:delimitMate_excluded_regions = "DraculaYellow,DraculaComment"
-" }}}
 
-" PLUGIN: SirVer/ultisnips{{{
-" SirVer/ultisnips is only the snippet engine
-" For snippet definitions, see 'honza/vim-snippets'
-
-" Do not let UltiSnips set <Tab> mapping, as we're going to provide own implementation
-" Also we don't need snippet listing, as we're using fzf for this purpose
-let g:UltiSnipsExpandTrigger="<NUL>"
-let g:UltiSnipsListSnippets="<NUL>"
-let g:UltiSnipsEditSplit = 'context'
 " }}}
 
 " PLUGIN" mattn/emmet-vim{{{
