@@ -1,6 +1,7 @@
 " General options{{{
 
 " Should be first, use vim settings rather than vi settings
+" Enable loading plugins
 set nocompatible
 filetype plugin indent on
 
@@ -15,12 +16,17 @@ set encoding=utf-8
 set number
 
 " Whitespaces and tabs
+" - tabstop, width of a tab chracter
+" - expandtab, cause spaces to be used instead of tabs
+" - softtabstop, number of spaces inserted by Tab when expandtab is on.
+" - shiftwidth, number of spaces to insert/remove for indentation at the BOL (only used for >>)
+" Convert tab<->spaces. Change "expandtab" setting and run "retab!" command
 set tabstop=2 softtabstop=2 shiftwidth=2 expandtab
-" Use shiftwidth for tab with at the BOL, and tabstop in other places
-" Otherwise, tabstop is used always. Shiftwidth is only used for >>
 set smarttab
 
 " Timeout settings
+" Eliminating ESC delays in vim - Metaserv - https://meta-serv.com/article/vim_delay
+" Delayed esc from insert mode caused by cursor-shape terminal sequence - Vi and Vim Stack Exchange - https://vi.stackexchange.com/questions/15633/delayed-esc-from-insert-mode-caused-by-cursor-shape-terminal-sequence
 " Wait forever until I recall mapping
 " Don't wait to much for keycodes send by terminal, so there's no delay on <ESC>
 set notimeout
@@ -31,19 +37,16 @@ set ttimeoutlen=30
 " Zsh like <Tab> completion in command mode
 set wildmenu
 set wildmode=full
+" Files will be ignored when expanding globs.
+" set wildignore+=.hg,.git,.svn,*.swp,*.bak,*.pyc,*.class
 
 " Set <leader> key to <Space>
 nnoremap <Space> <Nop>
 let mapleader=" "
 let maplocalleader=","
 
-" <Backspace> in Insert mode
+" Allow Backspace to work over indent, line endings, and start of insert. By default Backspace works only against inserted text
 set backspace=indent,eol,start
-
-" Keep some characters visible during horizontal scroll
-" Recenter cursor during horizontal scroll
-set sidescroll=0
-set sidescrolloff=3
 
 " Minimal number of screen lines to keep above and below the cursor, expect for bol and eol
 " Sets padding to the screen boundaries when scrolling up and down
@@ -102,8 +105,12 @@ set updatetime=1000
 set virtualedit+=onemore,block
 
 " Auto indentation
+" Preserve the same level of indentation each time we create a new line in Insert mode.
+" Also, do smart autoindenting when starting a new line.
 set autoindent
 set smartindent
+" When pasting from clipboard, Vim acts as though each character has been typed by hand.
+" "set paste" option turns off Insert mode mappings and autoindentation, so text is pasted verbatim, and is not reindented. No formatting is done
 set pastetoggle=<F12>
 
 " Experimental. Round indent to multiple of 'shiftwidth'.
