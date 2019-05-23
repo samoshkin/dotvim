@@ -177,6 +177,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'junegunn/fzf', { 'do': './install --bin' }
   Plug 'junegunn/fzf.vim'
   Plug 'tpope/vim-fugitive'
+  Plug 'junegunn/gv.vim'
   Plug 'tpope/vim-repeat'
   Plug 'airblade/vim-gitgutter'
   Plug 'tpope/vim-surround'
@@ -2258,6 +2259,7 @@ let g:fzf_history_dir = '~/.local/share/fzf-history'
 " }}}
 
 " PLUGIN: vim-figutive{{{
+
 augroup aug_vim_figutive
   au!
 
@@ -2283,25 +2285,45 @@ augroup aug_vim_figutive
 
 augroup END
 
-nnoremap <silent> <leader>gs :G<CR>
+" View GIT index window
+nnoremap <silent> <leader>gs :Gstatus<CR>
+
+" Use <leader>ge to return to working tree version from blob, blame, log
 nnoremap <silent> <leader>ge :Gedit<CR>
-nnoremap <silent> <leader>gu :Git checkout HEAD -- %:p<CR>
-nnoremap <silent> <leader>gc :Gcommit -a -v<CR>
-nnoremap <silent> <leader>gd :Gdiff<CR>
-nnoremap <silent> <leader>gD :Gdiff HEAD<CR>
+
+" Undo changes in working tree
+" nnoremap <silent> <leader>gu :Git checkout HEAD -- %:p<CR>
+nnoremap <silent> <leader>gu :Gread<CR>
+xnoremap <silent> <leader>gu :Gread<CR>
+
+" Commit changes
+nnoremap <silent> <leader>gca :Gcommit --all --verbose<CR>
+nnoremap <silent> <leader>gcf :Gcommit --amend --reuse-message HEAD<CR>
+nnoremap <silent> <leader>gcf :Gcommit --amend --verbose<CR>
+
+" Diff working tree vs index vs HEAD
+nnoremap <silent> <leader>gdw :Gdiff<CR>
+nnoremap <silent> <leader>gdh :Gdiff HEAD<CR>
+nnoremap <silent> <leader>gdi :Gdiff --cached HEAD<CR>
+
+" gla, gva, list (a)ll commits
 nnoremap <silent> <leader>gla :FzfCommits<CR>
+nnoremap <silent> <leader>gva :GV<CR>
+
+" glf, gvf, list commits touching current (f)ile
 nnoremap <silent> <leader>glf :FzfBCommits<CR>
-nnoremap <silent> <leader>glF :silent! Glog -- %<CR><C-l>
+nnoremap <silent> <leader>gvf :GV!<CR>
+xnoremap <silent> <leader>gvf :GV<CR>
+
+" gls, gvs, list commits touching current file, but show file revisions or (s)napshots (populates quickfix list)
 nnoremap <silent> <leader>gls :silent! Glog<CR><C-l>
-nnoremap <silent> <leader>go :Git checkout<Space>
-nnoremap <silent> <leader>gb :Gblame<CR>
-" FIXME: only at the beginning of the line
-" cnoreabbrev gd Gdiff
-" cnoreabbrev gc Gcommit -v -a
-" cnoreabbrev ge Gedit
-" cnoreabbrev gl Glog
-" cnoreabbrev gr Ggrep
-" cnoreabbrev go Git<Space>checkout
+nnoremap <silent> <leader>gvs :GV?<CR>
+
+" glF, list commits touching current file, show full commit objects (using vim-fugitive)
+nnoremap <silent> <leader>glF :silent! Glog -- %<CR><C-l>
+
+" Change branch
+nnoremap <silent> <leader>gco :Git checkout<Space>
 
 " Find fugitive status window and return it's number
 function s:GetFugitiveStatusWindow()
@@ -2334,6 +2356,17 @@ function s:IsFugitiveDiffWindow(winnr)
 endfunction
 
 " }}}
+
+" {{{ PLUGIN: junegunn/gv.vim
+
+augroup aug_gv_vim
+  au!
+
+  " Disable folding in "junegunn/gv.vim" plugin buffers
+  au FileType GV set nofoldenable
+augroup END
+
+"}}}
 
 " PLUGIN: vim-gitgutter{{{
 
