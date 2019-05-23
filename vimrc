@@ -590,6 +590,7 @@ endfunction
 
 " Make '*' and '#' search for a selection in visual mode
 " Inspired by https://github.com/nelstrom/vim-visual-star-search
+" Got Ravings?: Vim pr0n: Visual search mappings - http://got-ravings.blogspot.com/2008/07/vim-pr0n-visual-search-mappings.html
 vnoremap * :<C-u>call <SID>search_from_context("/", "selection")<CR>
 vnoremap # :<C-u>call <SID>search_from_context("?", "selection")<CR>
 
@@ -2419,7 +2420,7 @@ xmap <leader>c <Plug>Commentary
 let g:extra_whitespace_ignored_filetypes = ['fugitive', 'markdown', 'diff', 'qf', 'help', 'gitcommit', 'ctrlsf']
 
 " Strips trailing whitespace
-" Remoces extra newlines at EOF
+" Removes extra newlines at EOF
 function! s:StripWhitespace(line1, line2)
   let l:save_cursor = getpos(".")
 
@@ -2463,9 +2464,6 @@ augroup END
 
 " Commands and mappings
 command -range=% -nargs=0 StripWhitespace call <SID>StripWhitespace(<line1>,<line2>)
-
-nnoremap <localleader>w :StripWhitespace<CR>
-vnoremap <localleader>w :StripWhitespace<CR>
 
 " }}}
 
@@ -2570,6 +2568,8 @@ augroup END
 
 " PLUGIN: editorconfig/editorconfig-vim{{{
 let g:EditorConfig_exclude_patterns = ['fugitive://.*']
+
+" Highlights when line exceeds allowed length (column 80 marker)
 let g:EditorConfig_max_line_indicator = 'exceeding'
 let g:EditorConfig_preserve_formatoptions = 1
 " }}}
