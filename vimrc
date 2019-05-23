@@ -1854,9 +1854,9 @@ let s:spc = g:airline_symbols.space
 " - tagbar
 let g:airline#extensions#obsession#enabled=0
 let g:airline#extensions#gutentags#enabled = 0
-let airline#extensions#tagbar#enabled = 0
+let g:airline#extensions#tagbar#enabled = 0
 
-" 'obsession' extension
+" Extension: obsession
 function! GetObsessionStatus()
   return ObsessionStatus('ⓢ' . s:spc, '')
 endfunction
@@ -1864,7 +1864,7 @@ endfunction
 call airline#parts#define_function('_obsession', 'GetObsessionStatus')
 call airline#parts#define_accent('_obsession', 'bold')
 
-" 'gutentags' extensions
+" Extension: gutentags
 function! GetGutentagStatusText(mods) abort
   let l:msg = ''
 
@@ -1888,7 +1888,7 @@ endfunction
 call airline#parts#define_function('_gutentags', 'AirlineGutentagsPart')
 call airline#parts#define_accent('_gutentags', 'bold')
 
-" Diff or merge indicator
+" Extension: Diff or merge indicator
 function! AirlineDiffmergePart()
   if get(g:, 'mergetool_in_merge_mode', 0)
     return '↸' . s:spc . s:spc
@@ -1904,6 +1904,7 @@ endfunction
 call airline#parts#define_function('_diffmerge', 'AirlineDiffmergePart')
 call airline#parts#define_accent('_diffmerge', 'bold')
 
+" Extension: Autosave indicator
 function! AirlineAutosavePart()
   return s:get_var('auto_save', 0) ? '' . s:spc : ''
 endfunction
@@ -1915,14 +1916,14 @@ call airline#parts#define_function('_autosave', 'AirlineAutosavePart')
 call airline#parts#define_raw('modified', '%m')
 call airline#parts#define_accent('modified', 'orange')
 
-" 'ffenc' extension
+" Extension: 'ffenc'
 " Do not show default encoding. Show only when does not match given string
 let g:airline#parts#ffenc#skip_expected_string='utf-8[unix]'
 
-" hunks' extension
+" Extensions: hunks
 let g:airline#extensions#hunks#non_zero_only = 1
 
-" buffer number, show only for diff windows
+" Buffer number, show only for diff windows
 " NOTE: use define_function() instead of define_raw() because raw does not work with condition
 function! AirlineBufnrPart()
   return bufnr('') . ':'
@@ -1931,6 +1932,7 @@ endfunction
 call airline#parts#define_function('bufnr', 'AirlineBufnrPart')
 call airline#parts#define_condition('bufnr', "&diff")
 
+" Extension: scratch buffer indicator
 " Indicator to tell if this is a scratch buffer
 " Show indicator only in NORMAL mode
 function! AirlinsScratchBufferIndicatorPart()
@@ -1944,10 +1946,11 @@ endfunction
 call airline#parts#define_function('scratch', 'AirlinsScratchBufferIndicatorPart')
 call airline#parts#define_condition('scratch', "mode() ==# 'n'")
 
+" Extension: word count
 " Do not show live word count
 let g:airline#extensions#wordcount#enabled = 0
 
-" Whitespace extension
+" Extensions: whitespace
 let g:airline#extensions#whitespace#checks = ['indent', 'trailing', 'mixed-indent-file']
 let g:airline#extensions#whitespace#trailing_format = 't[%s]'
 let g:airline#extensions#whitespace#mixed_indent_format = 'i[%s]'
@@ -1972,7 +1975,6 @@ let g:airline#extensions#default#section_truncate_width = get(g:, 'airline#exten
 
 " Default theme
 let g:airline_theme='jellybeans'
-
 let g:airline_theme_patch_func = 'AirlineThemePatch'
 
 " Do not change coloring of section 'c' and 'x' in visual, replace, insert modes
@@ -2021,13 +2023,8 @@ let g:airline#extensions#tabline#left_alt_sep = ''
 let g:airline#extensions#tabline#right_sep = ''
 let g:airline#extensions#tabline#right_alt_sep = ''
 
-" Buffers (for now disable, Tabline makes sense only for tabs IMO)
+" Buffers (disable, Tabline makes sense only for tabs IMO)
 let g:airline#extensions#tabline#show_buffers = 0
-let g:airline#extensions#tabline#buffer_min_count = 2
-let g:airline#extensions#tabline#buffers_label = 'bufs'
-let g:airline#extensions#tabline#formatter = 'unique_tail'
-let g:airline#extensions#tabline#fnamemod = ':p:~:.'
-let g:airline#extensions#tabline#fnamecollapse = 1
 
 " }}}
 
