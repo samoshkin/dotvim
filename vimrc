@@ -2049,15 +2049,9 @@ let NERDTreeWinSize=40
 " Automatically delete buffer when file is deleted from the tree explorer
 let NERDTreeAutoDeleteBuffer=1
 
-" Toggle tree visibility
-noremap <S-F2> :NERDTreeToggle<CR>
-
-" Close NERD tree
-noremap <leader><F2> :NERDTreeClose<CR>
-
 " Locate current file in a tree
-noremap  <F2> :NERDTreeFind<CR>
-inoremap <F2> <esc>:NERDTreeFind<CR>
+noremap  <F2> :NERDTreeToggle<CR>
+nnoremap <leader>f :NERDTreeFind<CR>
 
 augroup aug_nerd_tree
   au!
@@ -2076,22 +2070,28 @@ augroup aug_nerd_tree
   autocmd FileType nerdtree nmap <buffer> H P
 
   " Disable cursorline in NERDtree to avoid lags
+  " built-in g:NERDTreeHighlightCursorline does not work
   autocmd FileType nerdtree setlocal nocursorline
 augroup END
 
-" Preview in splits without 'g...' prefix
-let g:NERDTreeMapPreviewSplit="I"
-let g:NERDTreeMapPreviewVSplit="S"
-let g:NERDTreeMapToggleHidden="D"
+" Open and preview in splits
+let g:NERDTreeMapOpenSplit="s"
+let g:NERDTreeMapPreviewSplit="S"
+let g:NERDTreeMapOpenVSplit="v"
+let g:NERDTreeMapPreviewVSplit="V"
 
+" Open and preview in current window
+let g:NERDTreeMapActivateNode="o"
 let g:NERDTreeMapPreview="O"
 
-" Do not show '.git' and 'node_modules' directories
-let NERDTreeIgnore=['\~$', '^\.git$[[dir]]', '^node_modules$[[dir]]']
+" Instead of "I" default mapping (D for dotfiles)
+let g:NERDTreeMapToggleHidden="D"
+
+" Do not show '.git' directories, in addition to what specified in .gitignore
+let NERDTreeIgnore=['\~$', '^\.git$[[dir]]']
 
 " Tweak status line, so it shortens path if it's under HOME directory
 let g:NERDTreeStatusline="%{exists('b:NERDTree')? fnamemodify(b:NERDTree.root.path.str(), ':p:~') :''}"
-
 
 " }}}
 
