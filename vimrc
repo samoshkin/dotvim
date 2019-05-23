@@ -2304,12 +2304,18 @@ let g:gitgutter_terminal_reports_focus=0
 let g:gitgutter_enabled = 1
 
 nnoremap <silent> <F4> :GitGutterFold<CR>
+nnoremap <silent> <leader><F4> :GitGutterBufferToggle<CR>
 
 " Use 'd' as a motion for hunks, instead of default 'c'
 " Use '[d' and ']d' to move between hunks in regular files and in diff mode
 " It's easier to use 'do' and 'dp' when a finger is already on 'd' key
 nmap <expr> ]d &diff ? ']czz' : '<Plug>GitGutterNextHunkzz'
 nmap <expr> [d &diff ? '[czz' : '<Plug>GitGutterPrevHunkzz'
+
+nmap <expr> + &diff ? '<Plug>GitGutterStageHunk' : '+'
+nmap <expr> - &diff ? '<Plug>GitGutterUndoHunk' : '-'
+
+" Text objects for diff hunks
 omap id <Plug>GitGutterTextObjectInnerPending
 omap ad <Plug>GitGutterTextObjectOuterPending
 xmap id <Plug>GitGutterTextObjectInnerVisual
