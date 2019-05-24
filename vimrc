@@ -184,7 +184,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'terryma/vim-smooth-scroll'
   Plug 'tpope/vim-commentary'
   Plug 'bronson/vim-trailing-whitespace'
-  Plug 'godlygeek/tabular'
+  Plug 'junegunn/vim-easy-align'
   Plug 'svermeulen/vim-cutlass'
   Plug 'svermeulen/vim-subversive'
   Plug 'svermeulen/vim-yoink'
@@ -2712,6 +2712,48 @@ let g:Hexokinase_refreshEvents = ['CursorHold', 'CursorHoldI']
 let g:Hexokinase_ftAutoload = ['css']
 " two {u258B} unicode characters
 let g:Hexokinase_signIcon = '▋▋'
+
+" }}}
+
+" {{{ PLUGIN: junegunn/easy-align
+
+" Start interactive EasyAlign in visual mode (e.g. vipga)
+" Start interactive EasyAlign for a motion/text object (e.g. gaip)
+" Use :EasyAlign in command mode
+xmap ga <Plug>(EasyAlign)
+nmap ga <Plug>(EasyAlign)
+
+" Always ignore lines that do not have delimiter
+let g:easy_align_ignore_unmatched = 1
+
+" ----------------------------------------
+" Cheatsheet:
+" ----------------------------------------
+
+" Commands:
+" ga{text_object} {delimiter_rule}
+" v{motion_or_text_object}ga {delimiter_rule}
+" :EasyAlign[!] [N-th] DELIMITER_KEY [OPTIONS]
+" :EasyAlign[!] [N-th] /REGEXP/ [OPTIONS]
+" :EasyAlign
+
+" delimiter_rule = [nth_delimiter] [key_or_regex] [options]
+
+" [nth_delimiter] = 1,2,*(all delimiters),**(left-rigth alternating alignment),-1,-2(last Nth delimiter)
+
+" [key] = <Space>, = : . , | & # "
+" [key] = <C-x> /regex/
+
+" Options (interactive mode):
+" - <C-p>, live interactive mode with instant preview
+" - <CR>, cycle through LEFT|CENTER|RIGHT alignment for text between delimiters
+" - <C-f>, filter and align lines matching pattern g/pattern/ or v/pattern/
+" - <C-l>, <C-r>, specify left/right margin
+" - <Down>, reset all margins to zero
+" - <Left>/<Right>, stick to left or right
+" - <C-u>, whether to ignore lines without delimiters or not
+" - <C-g>, whether to ignore delimiters found in "Comment" and "String" syntax groups
+" - <C-I>, whether original indentation of lines should be changed
 
 " }}}
 
