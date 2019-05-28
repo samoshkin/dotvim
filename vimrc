@@ -208,6 +208,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'samoshkin/vim-find-files'
   Plug 'RRethy/vim-hexokinase'
   Plug 'sheerun/vim-polyglot'
+  Plug 'w0rp/ale'
 
   " Markdown
   Plug 'suan/vim-instant-markdown'
@@ -2771,6 +2772,111 @@ let g:easy_align_ignore_unmatched = 1
 " - <C-u>, whether to ignore lines without delimiters or not
 " - <C-g>, whether to ignore delimiters found in "Comment" and "String" syntax groups
 " - <C-I>, whether original indentation of lines should be changed
+
+" }}}
+
+" {{{ PLUGIN: w0rp/ale
+
+" Enable linting, disable completion
+let g:ale_enabled = 1
+let g:ale_completion_enabled = 0
+
+" What triggers linting automatically
+let g:ale_lint_on_text_changed = 'normal'
+let g:ale_lint_on_insert_leave = 1
+let g:ale_lint_on_save = 1
+let g:ale_lint_on_enter = 1
+let g:ale_lint_on_filetype_changed = 1
+
+" Increase delay after which linters are running after text is changed
+let g:ale_lint_delay = 1000
+
+" Mappings
+" :ALELint, lint once manually
+" :ALEToggleBuffer, toggle ALE for individual buffer
+" :ALEToggle, toggle ALE for all buffers
+" :ALEReset, remove all linting errors, but do not disable linting
+nmap <F10> <Plug>(ale_toggle_buffer)
+nmap <S-F10> <Plug>(ale_reset)
+nmap <leader><F10> <Plug>(ale_fix)
+
+" Show marks in sign column
+let g:ale_set_signs = 1
+let g:ale_sign_column_always = 1
+let g:ale_change_sign_column_color = 0
+
+" Use same symbol for error and warnings, but use different colours
+" See highlight groups: ALEErrorSign, ALEWarningSign
+let g:ale_sign_error = ""
+let g:ale_sign_warning = ""
+let g:ale_sign_info = ""
+
+" Echo truncated error message when cursor is near error
+" Do not display preview window with full message when cursor is near error
+" :ALEDetail, show full linter message in a preview window
+let g:ale_echo_cursor = 1
+let g:ale_cursor_detail = 0
+
+" Configure error message format
+let g:ale_echo_msg_error_str = ""
+let g:ale_echo_msg_warning_str = ""
+let g:ale_echo_msg_info_str = ""
+let g:ale_echo_msg_format = '%severity% [%linter%%: code%] %s'
+let ale_loclist_msg_format = '[%linter%%: code%] %s'
+
+" Use loclist to report errors, but do not open automatically
+let g:ale_open_list = 0
+let g:ale_set_loclist = 1
+let g:ale_set_quickfix = 0
+let g:ale_keep_list_window_open = 0
+
+" Set error highlights for erroneous code
+" See ALEError, ALEWarning, ALEInfo highlights
+let g:ale_set_highlights = 1
+
+" Configure linter tools per file type
+let g:ale_linters = {
+      \ 'javascript': ['eslint'],
+      \ }
+
+" ESLint intergration
+let g:ale_javascript_eslint_suppress_missing_config = 1
+let g:ale_javascript_eslint_suppress_eslintignore = 1
+
+" vim-airline + ALE integration
+let g:airline#extensions#ale#enabled = 1
+let airline#extensions#ale#error_symbol = " "
+let airline#extensions#ale#warning_symbol = " "
+
+" Reduce linter's process priority. Nice value is in range -20(highest priority) to 20(lowest priority)
+let g:ale_command_wrapper = 'nice -n10'
+
+" Stop linting when file size is bigger than 96Kbytes
+let g:ale_maximum_file_size = 98304
+
+" Remember up to 5 most recent linting command output
+let g:ale_max_buffer_history_size = 20
+
+" Do not warn about trailing whitespaces, as we have other mechanisms
+" NOTE: it depends on linter programs whether it reports such errors or not
+let g:ale_warn_about_trailing_whitespace = 0
+let g:ale_warn_about_trailing_blank_lines = 1
+
+" TODO: Fix linter errors
+" :ALEFixSuggest, vuew some supported tools for fixing code
+" :ALEFix, fix explicitly
+let g:ale_fix_on_save = 0
+let g:ale_fixers = {
+      \   '*': ['remove_trailing_lines', 'trim_whitespace'],
+      \   'javascript': ['prettier', 'eslint'],
+      \}
+
+" Do not lint and fix minified JS and CSS files
+let g:ale_pattern_options_enabled = 1
+let g:ale_pattern_options = {
+      \ '\.min\.js$': {'ale_linters': [], 'ale_fixers': []},
+      \ '\.min\.css$': {'ale_linters': [], 'ale_fixers': []},
+      \}
 
 " }}}
 
