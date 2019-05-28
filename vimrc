@@ -2737,6 +2737,9 @@ let g:Hexokinase_signIcon = '▋▋'
 xmap ga <Plug>(EasyAlign)
 nmap ga <Plug>(EasyAlign)
 
+" Retain original "ga" behavior to print ASCII value of a character under the cursor
+nnoremap <leader>ga ga
+
 " Always ignore lines that do not have delimiter
 let g:easy_align_ignore_unmatched = 1
 
