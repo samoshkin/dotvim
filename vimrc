@@ -2721,7 +2721,8 @@ endfunction
 
 " {{{ PLUGIN: RRethy/vim-hexokinase
 
-let g:Hexokinase_refreshEvents = ['CursorHold', 'CursorHoldI']
+" TODO: toggle shortcuts: HexokinaseToggle
+let g:Hexokinase_refreshEvents = ['CursorHold', 'CursorHoldI', 'BufWritePost']
 let g:Hexokinase_ftAutoload = ['css']
 " two {u258B} unicode characters
 let g:Hexokinase_signIcon = '▋▋'
