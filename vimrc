@@ -261,9 +261,11 @@ let g:colors = {
       \ 'darkBlue': ["#44788E", 66],
       \ 'purple': ["#834F79", 93],
       \ 'red': ["#AE403F", 131],
+      \ 'darkRed': ["#97050C", 88],
       \ 'beige': ["#F5C06F", 215],
       \ 'yellow': ["#F09F17", 214],
       \ 'orange': ["#D4843E", 172],
+      \ 'orange2': ["#DD5E1C", 166],
       \ 'darkOrange': ["#F16529", 202],
       \ 'pink': ["#CB6F6F", 167],
       \ 'lightGreen': ["#8FAA54", 107],
@@ -291,7 +293,19 @@ fun s:PatchDraculaScheme()
   " dyng/ctrlsf.vim
   hi! link ctrlsfMatch DraculaOrange
   hi! link ctrlsfCuttingLine Title
+
+  " Use a bit deeper yellow/orange color
+  hi! DraculaOrange guifg=#F09F17 ctermfg=214
+  hi! DraculaOrangeBold cterm=bold ctermfg=214 gui=bold guifg=#F09F17
+  hi! DraculaOrangeBoldItalic cterm=bold,italic ctermfg=214 gui=bold,italic guifg=#F09F17
+  hi! DraculaOrangeInverse ctermfg=236 ctermbg=214 guifg=#282A36 guibg=#F09F17
+  hi! DraculaOrangeItalic cterm=italic ctermfg=214 gui=italic guifg=#F09F17
+
+  " In Dracula theme, ALEError->DraculaErrorLine, ALEWarning->DraculaWarnLine
+  " No need to set ALEStyleError and ALEStyleWarning, as they are linked to ALEError/ALEWarning
+  hi! DraculaWarnLine cterm=undercurl ctermfg=214 gui=undercurl guifg=#F09F17 guisp=#F09F17
 endf
+
 
 " Shortcut command to 'vim-scripts/SyntaxAttr.vim'
 command ViewSyntaxAttr call SyntaxAttr()
