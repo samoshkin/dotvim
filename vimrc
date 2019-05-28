@@ -2775,6 +2775,15 @@ let g:easy_align_ignore_unmatched = 1
 
 " }}}
 
+" {{{ PLUGIN: sheerun/vim-polyglot
+
+" JS: https://github.com/pangloss/vim-javascript
+" JSX: https://github.com/mxw/vim-jsx
+" Set "javascript.jsx" filetype only for files with .jsx extension
+let g:jsx_ext_required = 1
+
+" }}}
+
 " {{{ PLUGIN: w0rp/ale
 
 " Enable linting, disable completion
@@ -2879,6 +2888,8 @@ let g:ale_pattern_options = {
       \}
 
 " }}}
+
+
 
 " File types{{{
 augroup ft_gitcommit
