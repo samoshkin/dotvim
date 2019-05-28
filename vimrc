@@ -209,6 +209,8 @@ call plug#begin('~/.vim/plugged')
   Plug 'RRethy/vim-hexokinase'
   Plug 'sheerun/vim-polyglot'
   Plug 'w0rp/ale'
+  Plug 'mattn/gist-vim'
+  Plug 'mattn/webapi-vim'
 
   " Markdown
   Plug 'suan/vim-instant-markdown'
@@ -2784,6 +2786,27 @@ let g:jsx_ext_required = 1
 
 " }}}
 
+" {{{ PLUGIN: mattn/gist-vim
+
+" :Gist, create a public gist
+" :Gist -p, create a private gist
+" :Gist -l, list my gists
+" :Gist -l mattn, list gist from user @mattn
+" :Gist -m, create multifile gist from all open buffers
+" :Gist -d, delete the Gist (provided that you've opened the Gist buffer)
+" :Gist XXXXX, get Gist by ID
+" :Gist -b, open Gist in browser after you post it or updated
+
+" Mappings in Gist listing window:
+" -y, copy the contents of Gist to the clipboard
+" -<CR>, o, open Gist in a buffer and close listing
+" -p, paste contents of the Gist in the buffer from which gist-vim listing was called
+" -b, open Gist in the browser
+let g:gist_open_browser_after_post = 1
+let g:gist_show_privates = 1
+
+" }}}
+
 " {{{ PLUGIN: w0rp/ale
 
 " Enable linting, disable completion
@@ -2888,8 +2911,6 @@ let g:ale_pattern_options = {
       \}
 
 " }}}
-
-
 
 " File types{{{
 augroup ft_gitcommit
