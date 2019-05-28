@@ -1654,22 +1654,18 @@ inoremap <C-S>s <Esc>[sve<C-G>
 " Quickfix and Location list{{{
 
 " <F5> for quickfix list
-nmap <F5><F5> <Plug>(qf_qf_toggle)
+nmap <F5> <Plug>(qf_qf_toggle)
 nmap <S-F5> <Plug>(qf_qf_switch)
-nnoremap <silent> <F5>r :call <SID>qf_loc_reload_list('qf')<CR>
-nnoremap <silent> <F5>l :call <SID>qf_loc_set_files_only('qf')<CR>
-nnoremap <silent> <F5>[ :call <SID>qf_loc_history_navigate('colder')<CR>
-nnoremap <silent> <F5>] :call <SID>qf_loc_history_navigate('cnewer')<CR>
 nnoremap <silent> <leader><F5> :call <SID>qf_loc_quit('qf')<CR>
+nnoremap <silent> [<F5> :call <SID>qf_loc_history_navigate('colder')<CR>
+nnoremap <silent> ]<F5> :call <SID>qf_loc_history_navigate('cnewer')<CR>
 
 " <F6> for location list
-nmap <F6><F6> <Plug>(qf_loc_toggle)
+nmap <F6> <Plug>(qf_loc_toggle)
 nmap <S-F6> <Plug>(qf_loc_switch)
-nmap <silent> <F6>r :call <SID>qf_loc_reload_list('loc')<CR>
-nmap <silent> <F6>l :call <SID>qf_loc_set_files_only('loc')<CR>
-nnoremap <silent> <F6>[ :call <SID>qf_loc_history_navigate('lolder')<CR>
-nnoremap <silent> <F6>] :call <SID>qf_loc_history_navigate('lnewer')<CR>
 nmap <silent> <leader><F6> :call <SID>qf_loc_quit('loc')<CR>
+nnoremap <silent> [<F6> :call <SID>qf_loc_history_navigate('lolder')<CR>
+nnoremap <silent> ]<F6> :call <SID>qf_loc_history_navigate('lnewer')<CR>
 
 " Automatically quit if qf/loc is the last window opened
 let g:qf_auto_quit = 1
@@ -1704,12 +1700,12 @@ nnoremap <silent> ]<C-q> :<C-u>call <SID>qf_loc_list_navigate("cnfile")<CR>
 nnoremap <silent> [<C-q> :<C-u>call <SID>qf_loc_list_navigate("cpfile")<CR>
 
 " Location list
-nnoremap <silent> ]l :<C-u>call <SID>qf_loc_list_navigate("lnext")<CR>
-nnoremap <silent> [l :<C-u>call <SID>qf_loc_list_navigate("lprev")<CR>
-nnoremap <silent> ]L :<C-u>call <SID>qf_loc_list_navigate("llast")<CR>
-nnoremap <silent> [L :<C-u>call <SID>qf_loc_list_navigate("lfirst")<CR>
-nnoremap <silent> ]<C-l> :<C-u>call <SID>qf_loc_list_navigate("lnfile")<CR>
-nnoremap <silent> [<C-l> :<C-u>call <SID>qf_loc_list_navigate("lpfile")<CR>
+nnoremap <silent> ]e :<C-u>call <SID>qf_loc_list_navigate("lnext")<CR>
+nnoremap <silent> [e :<C-u>call <SID>qf_loc_list_navigate("lprev")<CR>
+nnoremap <silent> ]E :<C-u>call <SID>qf_loc_list_navigate("llast")<CR>
+nnoremap <silent> [E :<C-u>call <SID>qf_loc_list_navigate("lfirst")<CR>
+nnoremap <silent> ]<C-e> :<C-u>call <SID>qf_loc_list_navigate("lnfile")<CR>
+nnoremap <silent> [<C-e> :<C-u>call <SID>qf_loc_list_navigate("lpfile")<CR>
 
 " Remove single item from quickfix/loc list using conditional '-' key mapping
 nnoremap <Plug>QfRemoveCurrentItem :<C-U>call <SID>qf_loc_remove_current_item('qf')<CR>
@@ -1722,6 +1718,8 @@ augroup aug_quickfix_list
 
   autocmd QuickFixCmdPre [^l]* call s:qf_loc_on_enter('qf')
   autocmd QuickFixCmdPre    l* call s:qf_loc_on_enter('loc')
+
+  autocmd FileType qf command! -nargs=0 ReloadList call <SID>qf_loc_reload_list(empty(getloclist(0)) ? 'qf' : 'loc')
 augroup END
 
 " Remember cursor position before running quickfix cmd
