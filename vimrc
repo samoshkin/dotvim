@@ -207,6 +207,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'dyng/ctrlsf.vim'
   Plug 'samoshkin/vim-find-files'
   Plug 'RRethy/vim-hexokinase'
+  Plug 'sheerun/vim-polyglot'
 
   " Markdown
   Plug 'suan/vim-instant-markdown'
