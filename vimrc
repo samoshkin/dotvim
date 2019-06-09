@@ -15,15 +15,6 @@ set encoding=utf-8
 " Show absolute line numbers in a gutter
 set number
 
-" Whitespaces and tabs
-" - tabstop, width of a tab chracter
-" - expandtab, cause spaces to be used instead of tabs
-" - softtabstop, number of spaces inserted by Tab when expandtab is on.
-" - shiftwidth, number of spaces to insert/remove for indentation at the BOL (only used for >>)
-" Convert tab<->spaces. Change "expandtab" setting and run "retab!" command
-set tabstop=2 softtabstop=2 shiftwidth=2 expandtab
-set smarttab
-
 " Timeout settings
 " Eliminating ESC delays in vim - Metaserv - https://meta-serv.com/article/vim_delay
 " Delayed esc from insert mode caused by cursor-shape terminal sequence - Vi and Vim Stack Exchange - https://vi.stackexchange.com/questions/15633/delayed-esc-from-insert-mode-caused-by-cursor-shape-terminal-sequence
@@ -531,8 +522,57 @@ augroup aug_trailing_whitespaces
   endfor
 augroup END
 
-" Commands and mappings
-command -range=% -nargs=0 StripWhitespace call <SID>StripWhitespace(<line1>,<line2>)
+" }}}
+
+" {{{ Tabs vs spaces
+
+" Whitespaces and tabs
+" - tabstop, width of a tab chracter
+" - expandtab, cause spaces to be used instead of tabs
+" - softtabstop, number of spaces inserted by Tab when expandtab is on.
+" - shiftwidth, number of spaces to insert/remove for indentation at the BOL (only used for >>)
+" Convert tab<->spaces. Change "expandtab" setting and run "retab!" command
+set tabstop=2 softtabstop=2 shiftwidth=2 expandtab
+set smarttab
+
+" Change between tabs and spaces
+" Borrowed from https://vim.fandom.com/wiki/Super_retab
+command! -nargs=? -range=% Space2Tab call IndentConvert(<line1>,<line2>,0,<q-args>)
+command! -nargs=? -range=% Tab2Space call IndentConvert(<line1>,<line2>,1,<q-args>)
+command! -nargs=? -range=% Retab call IndentConvert(<line1>,<line2>,&et,<q-args>)
+
+" Return indent (all whitespace at start of a line), converted from
+" tabs to spaces if what = 1, or from spaces to tabs otherwise.
+" When converting to tabs, result has no redundant spaces.
+function! Indenting(indent, what, cols)
+  let spccol = repeat(' ', a:cols)
+
+  " Normalize all spaces which are multiple of "tabstop" to tabs
+  let result = substitute(a:indent, spccol, '\t', 'g')
+
+  " Remove spaces less than a "tabstop" mixed among tabs
+  let result = substitute(result, ' \+\ze\t', '', 'g')
+  let result = substitute(result, '\t\zs \+', '', 'g')
+
+  " Leave tabs or convert to spaces
+  if a:what == 1
+    let result = substitute(result, '\t', spccol, 'g')
+  endif
+  return result
+endfunction
+
+" Convert whitespace used for indenting (before first non-whitespace).
+" what = 0 (convert spaces to tabs), or 1 (convert tabs to spaces).
+" cols = string with number of columns per tab, or empty to use 'tabstop'.
+" The cursor position is restored, but the cursor will be in a different
+" column when the number of characters in the indent of the line is changed.
+function! IndentConvert(line1, line2, what, cols)
+  let savepos = getpos('.')
+  let cols = empty(a:cols) ? &tabstop : a:cols
+  execute a:line1 . ',' . a:line2 . 's/^\s\+/\=Indenting(submatch(0), a:what, cols)/e'
+  call histdel('search', -1)
+  call setpos('.', savepos)
+endfunction
 
 " }}}
 
