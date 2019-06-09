@@ -476,36 +476,9 @@ augroup END
 " Trailing whitespaces {{{
 
 " "bronson/vim-trailing-whitespaces" plugin is used for highlighting
-" Custom routines are used to strip whitespaces
-let g:extra_whitespace_ignored_filetypes = ['fugitive', 'markdown', 'diff', 'qf', 'help', 'gitcommit', 'ctrlsf']
-
-" Strips trailing whitespace
-" Removes extra newlines at EOF
-function! s:StripWhitespace(line1, line2)
-  let l:save_cursor = getpos(".")
-
-  " Strip trailing whitespaces
-  silent! execute ':' . a:line1 . ',' . a:line2 . 's/\\\@<!\s\+$//'
-
-  " Remote extra newlines at EOF
-  if a:line2 >= line('$')
-    let nl = &ff == 'dos' ? '\r\n' : '\n'
-    silent execute '%s/\('.nl.'\)\+\%$//e'
-  endif
-
-  call setpos('.', l:save_cursor)
-endfunction
-
-" Automatically strips whitespace on save after checks
-function! s:StripWhitespaceOnSave()
-  if index(g:extra_whitespace_ignored_filetypes, &ft) != -1
-        \ || &buftype == 'nofile'
-        \ || get(b:, '_disable_strip_whitespace_on_save', 0)
-    return
-  endif
-
-  call s:StripWhitespace(1, line('$'))
-endfunction
+" Use :FixWhitespace to remove trailing whitespaces manually
+" Or "w0rp/ale" is used to automatically remove trailing whitespaces, extra empty lines at EOF, and more
+let g:extra_whitespace_ignored_filetypes = ['fugitive', 'markdown', 'diff', 'qf', 'help', 'ctrlsf']
 
 augroup aug_trailing_whitespaces
   au!
@@ -513,12 +486,9 @@ augroup aug_trailing_whitespaces
   " Highlight space characters that appear before or in-between tabs
   au BufRead,BufNew * 2match ExtraWhitespace / \+\ze\t/
 
-  " Strip whitespaces automatically on save
-  au BufWritePre * call <SID>StripWhitespaceOnSave()
-
   " Disable Airline whitespace detection for ignored filetypes
   for wifile in g:extra_whitespace_ignored_filetypes
-    execute "au FileType " . wifile . " let b:airline_whitespace_disabled = 1"
+    exe "au FileType " . wifile . " let b:airline_whitespace_disabled = 1"
   endfor
 augroup END
 
