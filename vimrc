@@ -926,7 +926,7 @@ nnoremap ][ ][zvzz
 " Reselect text this was last changed or yanked
 " https://vim.fandom.com/wiki/Selecting_your_pasted_text
 nnoremap <expr> g[] '`[' . getregtype()[0] . '`]'
-onoremap [] :exec "normal g["<CR>
+onoremap [] :exec "normal g[]"<CR>
 
 " Some aliases for operator pending mode:
 " 8 - operate inside word
@@ -1927,8 +1927,11 @@ nnoremap <silent> <leader><F4> :GitGutterBufferToggle<CR>
 nmap <expr> ]d &diff ? ']czz' : '<Plug>GitGutterNextHunkzz'
 nmap <expr> [d &diff ? '[czz' : '<Plug>GitGutterPrevHunkzz'
 
+" Undo and stage diff hunks in diff and normal modes
 nmap <expr> + &diff ? '<Plug>GitGutterStageHunk' : '+'
 nmap <expr> - &diff ? '<Plug>GitGutterUndoHunk' : '-'
+nmap <silent> <leader>hu <Plug>GitGutterUndoHunk
+nmap <silent> <leader>hs <Plug>GitGutterStageHunk
 
 " Text objects for diff hunks
 omap id <Plug>GitGutterTextObjectInnerPending
