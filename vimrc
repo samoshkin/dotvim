@@ -1575,8 +1575,8 @@ function OnAutoSaveHook()
   endif
 endfunction
 
-" Toggle "907th/vim-auto-save" ON/OFF
-" nnoremap <F10> :AutoSaveToggle<CR>
+" Toggle autosave ON/OFF per buffer
+command -nargs=0 ToggleAutoSave let b:auto_save = !s:get_var('auto_save', 0)
 
 " Directories for backup, undo and swap files
 set undodir=~/.vim/tmp/undo//
