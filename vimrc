@@ -2444,18 +2444,19 @@ nnoremap <silent> <leader>l  :FzfBuffers<CR>
 nnoremap <silent> <leader>b :FzfBLines<CR>
 nnoremap <silent> <leader>`  :FzfMarks<CR>
 nnoremap <silent> <leader>p :FzfCommands<CR>
+nnoremap <silent> <leader>t :FzfFiletypes<CR>
 nnoremap <silent> <F1> :FzfHelptags<CR>
 inoremap <silent> <F1> <ESC>:FzfHelptags<CR>
 cnoremap <silent> <expr> <C-p> getcmdtype() == ":" ? "<C-u>:FzfHistory:\<CR>" : "\<ESC>:FzfHistory/\<CR>"
 cnoremap <silent> <C-_> <C-u>:FzfCommands<CR>
 
 " fzf.Tags uses existing 'tags' file or generates it otherwise
-nnoremap <silent> <leader>t :FzfTags<CR>
-xnoremap <silent> <leader>t "zy:FzfTags <C-r>z<CR>
+nnoremap <silent> <leader>] :FzfTags<CR>
+xnoremap <silent> <leader>] "zy:FzfTags <C-r>z<CR>
 
 " fzf.BTags generate tags on-fly for current file
-nnoremap <silent> <leader>T :FzfBTags<CR>
-xnoremap <silent> <leader>T "zy:FzfBTags <C-r>z<CR>
+nnoremap <silent> <leader>} :FzfBTags<CR>
+xnoremap <silent> <leader>} "zy:FzfBTags <C-r>z<CR>
 
 " Show list of change in fzf
 " Some code is borrowed from ctrlp.vim and tweaked to work with fzf
