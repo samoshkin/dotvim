@@ -2861,7 +2861,7 @@ let g:ale_lint_on_enter = 1
 let g:ale_lint_on_filetype_changed = 1
 
 " Increase delay after which linters are running after text is changed
-let g:ale_lint_delay = 1000
+let g:ale_lint_delay = 500
 
 " Mappings
 " :ALELint, lint once manually
@@ -2911,7 +2911,9 @@ let g:ale_linters = {
       \ 'javascript': ['eslint'],
       \ }
 
-" ESLint intergration
+" ESlint integration
+" Do not report errors when there's no .eslintrc config file
+" Do not report errors for files which are ignored by .eslintignore
 let g:ale_javascript_eslint_suppress_missing_config = 1
 let g:ale_javascript_eslint_suppress_eslintignore = 1
 
@@ -2927,22 +2929,34 @@ let g:ale_command_wrapper = 'nice -n10'
 let g:ale_maximum_file_size = 98304
 
 " Remember up to 5 most recent linting command output
+let g:ale_history_enabled = 0
 let g:ale_max_buffer_history_size = 20
 
-" Do not warn about trailing whitespaces, as we have other mechanisms
-" NOTE: it depends on linter programs whether it reports such errors or not
+" Do not warn about trailing whitespaces, as we highlight them manually
+" NOTE: errors comes from selected linter program, and are not produced by ALE itself
 let g:ale_warn_about_trailing_whitespace = 0
 let g:ale_warn_about_trailing_blank_lines = 1
 
-" TODO: Fix linter errors
-" :ALEFixSuggest, vuew some supported tools for fixing code
-" :ALEFix, fix explicitly
-let g:ale_fix_on_save = 0
+" Declare list of available fixers
+" Remove trailing lines and trim traling whitespaces as default fixers
+" File specific fixers (e.g. prettier) would be declared in respective ftplugin files
 let g:ale_fixers = {
-      \   '*': ['remove_trailing_lines', 'trim_whitespace'],
-      \   'javascript': ['prettier', 'eslint'],
+      \   '*': ['trim_whitespace', 'remove_trailing_lines'],
+      \   'diff': [],
+      \   'fugitive': [],
+      \   'help': [],
+      \   'qf': [],
+      \   'ctrlsf': [],
+      \   'css': ['prettier'],
+      \   'javascript': ['prettier'],
+      \   'json': ['prettier'],
+      \   'yaml': ['prettier'],
+      \   'scss': ['prettier'],
+      \   'less': ['prettier'],
+      \   'markdown': ['remove_trailing_lines']
       \}
 
+" Override ALE options based on Glob pattern (as opposite to filetype only)
 " Do not lint and fix minified JS and CSS files
 let g:ale_pattern_options_enabled = 1
 let g:ale_pattern_options = {
@@ -2950,48 +2964,57 @@ let g:ale_pattern_options = {
       \ '\.min\.css$': {'ale_linters': [], 'ale_fixers': []},
       \}
 
-" }}}
+" Whether to fix formatting automatically on save, text changed and insert leave
+let g:perform_auto_format = 1
 
-" File types{{{
-augroup ft_gitcommit
+" Toggle auto format setting
+command -nargs=0 ToggleAutoFormat let b:perform_auto_format = 0
+
+augroup aug_ale
   au!
 
-  " TODO: change syntax match whenever syntax is applied
-  " Highlight summary line when exceeds 72 columns, not 50 as a default
-  au FileType gitcommit syn clear gitcommitSummary
-  au FileType gitcommit syn match gitcommitSummary "^.\{0,72\}" contained containedin=gitcommitFirstLine nextgroup=gitcommitOverflow contains=@Spell
+  " Auto fix on saving buffer to file
+  " NOTE: do not use "ale_fix_on_save" option, because we have some custom tweaks
+  au BufWritePre * call ReformatBuffer(1)
 
-  " Do not use folds
-  " Use spell checking
-  au FileType gitcommit setlocal foldmethod=manual spell
-
-  " Automatically start insert mode for commit messages
-  au BufEnter COMMIT_EDITMSG startinsert
+  " Auto fix on any text change and when we're leaving insert mode
+  " NOTE: Do it asynchronously to ensure we're in a Normal mode before applying formatting
+  " Some plugins like "Raimondi/delimitMate" jump out of an Insert mode quickly to perform <CR>, <BS>, <SPACE> expansion
+  " We don't want to apply formatting at those moments, only when user leaves Insert mode manually
+  au InsertLeave,TextChanged * call timer_start(50, 'ReformatBuffer')
 augroup END
 
-augroup ft_vim
-  au!
+function ReformatBuffer(timer)
+  " Apply formatting only if we're in a Normal mode
+  if s:get_var('perform_auto_format') && mode('full') ==? 'n' && &modifiable
 
-  " Automatically source vimrc on change
-  au BufWritePost $MYVIMRC source $MYVIMRC
+    " Join fix/formatting changes with last user changes in a single undo block
+    " otherwise next "u" command will undo only formatting changes
+    silent! undojoin
+    ALEFix
+  endif
+endfunction
 
-  au FileType vim setlocal foldmethod=marker
-augroup END
+" Get prettier command to use with "formatprg"
+" formatprg" is used by "gq" command to apply formattings
+" NOTE: not used right now
+function GetPrettierAsFormatPrg()
+  " Set correct file path/file name, so prettier can infer the right parser (JS, JSON, HTML, etc)
+  return "prettier\\ --stdin\\ --stdin-filepath=" . fnameescape(expand('<afile>:p:.'))
+endfunction
 
-augroup ft_help
-  au!
+" Create new ALE fixer: Fix spaces vs tabs indentations
+" NOTE: not used right now
+function! RetabForALE(buffer, lines) abort
+  let l:index = 0
+  let l:lines_new = range(len(a:lines))
 
-  " If current tab has the only window, open help of the rightmost side
-  autocmd BufWinEnter *.txt if winnr('$') == 2 && &buftype == 'help' | wincmd L | endif
-augroup END
+  for l:line in a:lines
+    let l:lines_new[l:index] = substitute(l:line, '^\s\+', printf('\=Indenting(submatch(0), %d, %d)', &expandtab, &tabstop), 'e')
+    let l:index = l:index + 1
+  endfor
 
-augroup ft_markdown
-  au!
-
-  " Enable spell checking and auto-save
-  au FileType markdown setlocal spell |
-        \ let b:auto_save = 1 |
-        \ setlocal synmaxcol=500
-augroup END
+  return l:lines_new
+endfunction
 
 " }}}
