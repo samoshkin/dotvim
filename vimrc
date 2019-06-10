@@ -202,6 +202,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'w0rp/ale'
   Plug 'mattn/gist-vim'
   Plug 'mattn/webapi-vim'
+  Plug 'MarcWeber/vim-addon-local-vimrc'
 
   " Markdown
   Plug 'suan/vim-instant-markdown'
