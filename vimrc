@@ -198,11 +198,16 @@ call plug#begin('~/.vim/plugged')
   Plug 'dyng/ctrlsf.vim'
   Plug 'samoshkin/vim-find-files'
   Plug 'RRethy/vim-hexokinase'
-  Plug 'sheerun/vim-polyglot'
   Plug 'w0rp/ale'
   Plug 'mattn/gist-vim'
   Plug 'mattn/webapi-vim'
   Plug 'MarcWeber/vim-addon-local-vimrc'
+
+  " Languages
+  Plug 'sheerun/vim-polyglot'
+
+  " Popular javascript libraries
+  Plug 'othree/javascript-libraries-syntax.vim'
 
   " Markdown
   Plug 'suan/vim-instant-markdown'
@@ -2992,4 +2997,12 @@ function! RetabForALE(buffer, lines) abort
   return l:lines_new
 endfunction
 
+" }}}
+
+" {{{ PLUGIN: othree/javascript-libraries-syntax.vim
+
+" Load syntax for 'underscore' library by default
+" Specify more libraries in project-specific vimrc, as we don't know which libraries to load in ~/.vimrc
+" Available libraries: jquery, underscore, angularjs, angularui, react, jasmine, chai, handlebars, vue, ramda, d3, tape
+let g:used_javascript_libs = 'underscore'
 " }}}
