@@ -232,7 +232,8 @@ call plug#end()
 syntax off
 
 " Load the version of matchit.vim that ships with Vim
-runtime macros/matchit.vim
+packadd! matchit
+
 " }}}
 
 " Color scheme{{{
@@ -1336,9 +1337,6 @@ endfunction
 " Performance optimizations{{{
 " Indicate we have a fast terminal connection. Improves smooth redrawing
 set ttyfast
-
-" Investigate performance lags when scrolling. Disable highlighting matching parentheses
-let g:loaded_matchparen=1
 
 " Use old regex engine. It's said that it speeds up matching syntax elements
 " https://github.com/vim/vim/issues/2712
