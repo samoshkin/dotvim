@@ -10,6 +10,7 @@ let loaded_nerdtree_gitignore_filter = 1
 
 
 " Hook into NERDTreeIgnore mechanism
+" Use 'f' mapping in NERDTree to toggle file filters
 call NERDTreeAddPathFilter('NERDTreeGitIgnoreFilter')
 
 function NERDTreeGitIgnoreFilter(params)

@@ -1,8 +1,9 @@
-" Enable spelling
-setlocal spell
+" Do not syntax highlighting rows longer than 600 cols
+setlocal synmaxcol=600
 
-" Enable autosaving
-let b:auto_save = 1
+" Disable character conceal
+setl conceallevel=0
 
-" Do not syntax highlighting rows longer than 500 cols
-setlocal synmaxcol=500
+" Disable hard wrap
+setl textwidth=0
+

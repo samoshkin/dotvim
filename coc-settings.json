@@ -1,0 +1,172 @@
+{
+  // autocomplete
+  "suggest.autoTrigger": "always",
+  "suggest.fixInsertedWord": true,
+  "suggest.noselect": false,
+  "suggest.triggerCompletionWait": 500,
+  "suggest.completionItemKindLabels": {
+    "keyword": "\uf1de",
+    "variable": "\ue79b",
+    "value": "\uf89f",
+    "operator": "\u03a8",
+    "constructor": "\uf0ad",
+    "function": "\u0192",
+    "reference": "\ufa46",
+    "constant": "\uf8fe",
+    "method": "\uf09a",
+    "struct": "\ufb44",
+    "class": "\uf0e8",
+    "interface": "\uf417",
+    "text": "\ue612",
+    "enum": "\uf435",
+    "enumMember": "\uf02b",
+    "module": "\uf40d",
+    "color": "\ue22b",
+    "property": "\ue624",
+    "field": "\uf9be",
+    "unit": "\uf475",
+    "event": "\ufacd",
+    "file": "\uf723",
+    "folder": "\uf114",
+    "snippet": "\ue60b",
+    "typeParameter": "\uf728",
+    "default": "\uf29c"
+  },
+
+  // coc-prettier extension
+  // Config resoltion order: prettierrc, editorconfig, CocConfig
+  "prettier.formatterPriority": 1,
+  // Use only local binary, do not fallback to system-wide
+  "prettier.onlyUseLocalVersion": true,
+  // Use prettier to format JS|TS files only
+  "prettier.disableLanguages": [
+    "vue",
+    "json",
+    "graphql",
+    // for HTML use js-beautify instead, that has richer configuration
+    "html"
+  ],
+
+  // coc-html extension
+  "html.format.enable": true,
+  "html.format.endWithNewline": true,
+  "html.format.wrapAttributes": "force-aligned",
+  "html.autoClosingTags": true,
+
+  // formatting
+  "coc.preferences.formatOnType": true,
+  "coc.preferences.formatOnInsertLeave": true,
+  "coc.preferences.formatOnSaveFiletypes": [],
+  "coc.preferences.formatOnTypeFiletypes": [
+    "javascript",
+    "typescript",
+    "javascriptreact",
+    "typescriptreact"
+  ],
+  // gets triggered by coc#on_enter
+  "coc.preferences.bracketEnterImprove": true,
+  "coc.preferences.colorSupport": true,
+
+  // do not use session management from Coc
+  "session.saveOnVimLeave": false,
+
+  // disable completion from {around,buffer,file} sources inside comment and string
+  "coc.source.around.disableSyntaxes": [
+    "comment",
+    "string"
+  ],
+  "coc.source.buffer.disableSyntaxes": [
+    "comment",
+    "string"
+  ],
+  "coc.source.file.disableSyntaxes": [
+    "comment",
+    "string"
+  ],
+
+  // diagnostics
+  "diagnostic.refreshOnInsertMode": true,
+  "diagnostic.checkCurrentLine": true,
+  "diagnostic.errorSign": "",
+  "diagnostic.warningSign": "",
+  "diagnostic.infoSign": "",
+  "diagnostic.displayByAle": false,
+
+  // coc-diagnostic + diagnostic-languageserver, configure linter program per file
+  "diagnostic-languageserver.filetypes": {
+    "vim": "vint",
+    "email": "languagetool",
+    "markdown": [ "write-good", "markdownlint" ],
+    "sh": "shellcheck",
+    "javascript": ["eslint"],
+    "javascriptreact": ["eslint"],
+    "scss": ["stylelint"],
+    "sass": ["stylelint"],
+    "less": ["stylelint"],
+    "css": ["stylelint"]
+  },
+
+  // lists
+  "list.alignColumns": true,
+  "list.height": 15,
+  "list.maxPreviewHeight": 15,
+  "list.normalMappings": {
+    "<C-c>": "do:exit"
+  },
+  "list.insertMappings": {
+    "<C-c>": "do:exit"
+  },
+  "list.source.symbols.excludes": ["**/node_modules/**/*.*"],
+  "list.source.mru.maxLength": 30,
+  "lists.disabledLists": [
+    "buffers",
+    "colors",
+    "helptags",
+    "maps",
+    "marks",
+    "tags",
+    "words",
+    "sessions",
+    "cmdhistory",
+    "filetypes",
+    "lines",
+    "files"
+  ],
+
+  // coc-tsserver extensions
+  "tsserver.npm": "/usr/local/bin/npm",
+  "tsserver.log": "verbose",
+  "tsserver.trace.server": "off",
+  "typescript.format.enabled": true,
+  "javascript.format.enabled": true,
+
+  // coc-eslint extension
+  // TODO: coc-eslint or coc-diagnostics?
+  // Optimal "eslint + prettier" combo is (*)
+  // - prettier-eslint, runs code through Prettier -> eslint autofix
+  // - eslint-plugin-prettier, do not format, but report Prettier issues as ESLint rules
+  // - (*) eslint-config-prettier, disable all formatting-related ESLint rules.
+  "eslint.autoFixOnSave": false,
+
+  // coc-snippets extension
+  "coc.preferences.snippets.enable": true,
+  "snippets.userSnippetsDirectory": "~/.vim/UltiSnips",
+  "snippets.extends": {
+    "javascriptreact": ["javascript"],
+    "typescript": ["javascript"]
+  },
+
+  // coc-css extension
+  "css.enable": true,
+
+  // coc-sh extension
+  "sh.enable": true,
+  // anyway it fails to parse in most cases
+  "sh.highlightParsingErrors": false,
+  // have to specify it explicitly otherwise bash language server fails to start
+  "sh.commandPath": "~/.config/coc/extensions/node_modules/.bin/bash-language-server",
+
+  // coc-vimlsp extension
+  "vimlsp.indexes.gap": 400,
+  "vimlsp.indexes.count": 3
+}
