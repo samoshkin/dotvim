@@ -8,7 +8,7 @@ let g:fzf_layout = { 'window': { 'width': 1, 'height': 0.8, 'yoffset': 0, 'borde
 " let g:fzf_layout = { 'down': '~40%' } " use terminal window
 " let g:fzf_layout = { 'window': 'enew' } " use vim window
 
-let $FZF_DEFAULT_OPTS = '--layout=reverse --preview-window=noborder --info=inline --multi --bind="f2:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-d:half-page-down,ctrl-u:half-page-up,ctrl-l:clear-query"'
+let $FZF_DEFAULT_OPTS = '--layout=reverse --preview-window="noborder:wrap" --info=inline --multi --bind="f2:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-d:half-page-down,ctrl-u:half-page-up,ctrl-l:clear-query"'
 
 " Ctrl-q allows to select multiple elements an open them in quick list
 let g:fzf_action = {
