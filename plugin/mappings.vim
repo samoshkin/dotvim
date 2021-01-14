@@ -18,6 +18,7 @@ set ttimeoutlen=30
 inoremap <C-C> <ESC>
 noremap <C-C> <ESC>
 vnoremap <C-C> <ESC>
+snoremap <C-C> <ESC>
 
 " key bindings - How to map Alt key? - Vi and Vim Stack Exchange - https://vi.stackexchange.com/questions/2350/how-to-map-alt-key
 " https://vim.fandom.com/wiki/Mapping_fast_keycodes_in_terminal_Vim
