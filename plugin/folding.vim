@@ -4,7 +4,8 @@ endif
 let g:__loaded_folding = 1
 
 set foldenable
-set foldlevelstart=0
+set foldlevelstart=99
+set foldlevel=99
 set foldcolumn=1
 " foldmethod is usually set on per-file basis
 " set foldmethod=indent
