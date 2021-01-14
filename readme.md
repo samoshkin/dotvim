@@ -1,15 +1,31 @@
+
 # dotvim
 
 Personal Vim configuration designed in a modular way.
 
 **A warn note**. I tested it on my local machine only so far. Most likely it depends on my own environment (terminal, OS, installed apps) in some unforeseen ways. With that said, I cannot guarantee the smooth experience on your machine. Be prepared to fix issues on your own.
 
-Tested under:
+**Tested under**:
 
 - vim @8.2 (Included patches: 1-2100)
 - iTerm2 @3.3.7
 - tmux @3.1c
 - MacOS Catalina @10.15.7
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Features](#features)
+- [Screenshots](#screenshots)
+- [Installation](#installation)
+- [Mappings](#mappings)
+- [Text objects](#text-objects)
+- [IDE-like experience using language servers](#ide-like-experience-using-language-servers)
+- [Modular configuration](#modular-configuration)
+- [Plugins](#plugins)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Features
 
@@ -37,6 +53,21 @@ Tested under:
 - Use [universal-ctags](https://github.com/universal-ctags/ctags) to generate tags file when there's no language server support for the given file type.
 - **Markdown support** with live preview, syntax highlighting, fenced code block languages, TOC generation.
 - [gruvbox](https://github.com/morhetz/gruvbox) color scheme
+
+
+## Screenshots
+
+- [Screen #1](https://i.imgur.com/faCgH9u.png). Multiple split windows with different file types. Two versions of status line - for active and inactive windows. Sign column with a diff hunk "added/changed/removed" indicators. Insert mode completion. Inline colors for "#hex" colors in CSS. [gruvbox](https://github.com/morhetz/gruvbox) colorscheme.
+- [Screen #2](https://i.imgur.com/lrcK8CN.png). Pick files or explore project structure using [NERDTree](https://github.com/preservim/nerdtree) or an integrated [nnn](https://github.com/jarun/nnn) file manager.
+- [Screen #3](https://i.imgur.com/YW2F3JK.png). Peek into symbol definition in a preview window at the bottom. Tree-view drawer with a document symbols outline on the right side.
+- [Screen #4](https://i.imgur.com/qJMgh5m.png). View linter and syntax errors for the current line in a popup. Sign column with a bug icons of different color depending on an issue level. List of all diagnostic issues within a file at the bottom.
+- [Screen #5](https://i.imgur.com/BwecrD4.png). Explore Git internal object database. Review commit, file tree or a file snapshot at that specific commit.
+- [Screen #6](https://i.imgur.com/5oAI3Dr.png). Use Vim as a git difftool.
+- [Screen #7](https://i.imgur.com/QdImwJb.png). Text-based project search showing results in a quickfix window.
+- [Screen #8](https://i.imgur.com/Jo1ubpy.png). Fuzzy find and open files in a popup with a live file preview on the right side.
+- [Screen #9](https://i.imgur.com/Qlv9mKq.png). Another use case for fuzzy finder. Search available Vim commands and execute them on selection.
+- [Screen #10](https://i.imgur.com/nEGq8AG.png). Text-based project search showing results in a fuzzy finder popup with a live preview of the particular match on the right side.
+- [Screen #11](https://i.imgur.com/vQflvfw.png). Writing markdown file with a side-by-side live preview in a browser.
 
 ## Installation
 
