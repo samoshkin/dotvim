@@ -31,6 +31,11 @@ xmap <silent> <C-h> <Plug>(coc-range-select-backward)
 
 " }}}
 
+
+" Folding {{{
+nmap <silent> <leader>cz :call CocAction("fold")<CR>
+" }}}
+
 " Text objects {{{
 
 " Use K to show documentation
