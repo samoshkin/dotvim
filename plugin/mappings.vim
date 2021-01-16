@@ -45,6 +45,19 @@ if !has("gui_running")
     execute "set <xLeft>=\e[1;*D"
   endif
 
+  " Enable bracketed paste mode in Vim when $TERM is not "xterm"
+  " See ":h xterm-bracketed-paste"
+  if &t_BE == ''
+    let &t_BE = "\e[?2004h"
+    let &t_BD = "\e[?2004l"
+    let &t_PS = "\e[200~"
+    let &t_PE = "\e[201~"
+  endif
+
+  " Teach vim about start and end of the paste escape sequences (bracketed paste)
+  execute "set <f28>=\<Esc>[200~"
+  execute "set <f29>=\<Esc>[201~"
+
   " NOTE: not portable solution, but I need <S-CR> so much
   " I configured iTerm to send '[13;2u' escape sequence for <S-CR>, so I can map it in Vim
   " Map terminal key code to Vim keycode first (pick up any <F13> to <F37>)
