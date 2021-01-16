@@ -56,8 +56,8 @@ command! -nargs=* -complete=custom,s:RipgrepArgs -bang Rgi call _#search#search_
 command! -nargs=+ -complete=custom,s:RipgrepArgs -bang Rgl call _#search#search_fzf_ripgrep_list_files(<q-args>, <bang>0)
 
 " Search all TODOs, FIXMEs, BUGs (project wide or in current file)
-command! -nargs=* Todos silent grep --word-regexp -e 'TODO:' -e 'FIXME:' -e 'BUG:' | redraw!
-command! -nargs=* BTodos silent grep --word-regexp -e 'TODO:' -e 'FIXME:' -e 'BUG:' % | redraw!
+command! -nargs=* Todos silent grep --word-regexp -e 'TODO' -e 'FIXME' -e 'BUG' | redraw!
+command! -nargs=* BTodos silent grep --word-regexp -e 'TODO' -e 'FIXME' -e 'BUG' % | redraw!
 
 " Command line suggestions of ripgrep args
 function! s:RipgrepArgs(...)

@@ -1,7 +1,7 @@
 " Declare syntax groups common to all file types
 function s:OnSyntax()
-  syn match MyTodo /\v<(TODO|FIXME|BUG):/ containedin=.*Comment,vimCommentTitle
-  syn match MyNote /\v<(NOTE):/ containedin=.*Comment,vimCommentTitle
+  syn match MyTodo /\v<(TODO|FIXME|BUG)/ containedin=.*Comment,vimCommentTitle
+  syn match MyNote /\v<(NOTE)/ containedin=.*Comment,vimCommentTitle
 endfunction
 
 " Turn on syntax
